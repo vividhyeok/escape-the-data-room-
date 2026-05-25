@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { useGameStore } from "../store/gameStore";
 import { dialogues } from "../data/story";
 import { SoundEngine } from "../utils/SoundEngine";
+import { resetGameWindows } from "./GameWindow";
 
 export function TitleScreen(): React.JSX.Element {
   const setGameState = useGameStore((state) => state.setGameState);
@@ -16,6 +17,7 @@ export function TitleScreen(): React.JSX.Element {
   const [showSettings, setShowSettings] = useState(false);
   const [showCredits, setShowCredits] = useState(false);
   const [showStoryArchive, setShowStoryArchive] = useState(false);
+  const [resetMsg, setResetMsg] = useState("");
 
   useEffect(() => {
     const initAudio = () => {
@@ -45,6 +47,7 @@ export function TitleScreen(): React.JSX.Element {
     SoundEngine.playClick();
     SoundEngine.stopBGM();
     resetProgress();
+    resetGameWindows();
     setGameState("PLAYING");
     setDialogue("intro");
   };
@@ -102,9 +105,13 @@ export function TitleScreen(): React.JSX.Element {
               </div>
               <button className="cyber-switch-btn" onClick={toggleFullscreen} type="button">TOGGLE FULLSCREEN</button>
               <button className="cyber-switch-btn" onClick={() => {
+                SoundEngine.playClick();
                 resetProgress();
-                alert("데이터가 초기화되었습니다.");
+                resetGameWindows();
+                setResetMsg("[ SYSTEM: ALL DATA RESET ]");
+                setTimeout(() => setResetMsg(""), 2000);
               }} type="button" style={{ color: "#ff6b6b", borderColor: "#ff6b6b" }}>RESET ALL DATA</button>
+              {resetMsg && <div style={{ textAlign: "center", color: "#ff6b6b", fontWeight: "bold" }}>{resetMsg}</div>}
             </div>
           </div>
         </div>

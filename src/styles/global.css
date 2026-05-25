@@ -4725,3 +4725,67 @@ button, a, select, input[type="button"], input[type="submit"] { cursor: pointer;
   90% { transform: translateY(-50vh); opacity: 1; }
   100% { transform: translateY(-50vh); opacity: 1; }
 }
+
+
+/* --- Layout & Responsive Fixes --- */
+/* Ensure GameWindow has a stable minimum and maximum size for PC */
+
+
+/* Fix input placeholder cutoff */
+.inspect-footer .answer-row .unlock-input {
+  width: 250px !important;
+  letter-spacing: 0.1em !important;
+  font-size: 1.1rem !important;
+}
+
+/* Ensure modal content fits */
+.inspect-surface {
+  flex: 1 1 auto;
+  overflow: auto;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Make font sizes more legible on varying screens */
+.situation-text {
+  font-size: clamp(1rem, 1.5vw, 1.2rem) !important;
+  line-height: 1.5;
+}
+
+
+/* --- CodeMirror Cyber Theme --- */
+.cm-tooltip-autocomplete {
+  background: rgba(10, 15, 12, 0.95) !important;
+  border: 1px solid #94ffc5 !important;
+  box-shadow: 0 0 10px rgba(148, 255, 197, 0.3) !important;
+  color: #94ffc5 !important;
+  font-family: monospace !important;
+  border-radius: 4px;
+}
+.cm-tooltip-autocomplete > ul {
+  background: transparent !important;
+}
+.cm-tooltip-autocomplete > ul > li {
+  padding: 5px 10px !important;
+  transition: background 0.1s;
+}
+.cm-tooltip-autocomplete > ul > li[aria-selected="true"] {
+  background: #94ffc5 !important;
+  color: #000 !important;
+  font-weight: bold;
+}
+.cm-completionDetail {
+  color: rgba(148, 255, 197, 0.7) !important;
+  font-style: italic;
+}
+.cm-tooltip-autocomplete > ul > li[aria-selected="true"] .cm-completionDetail {
+  color: rgba(0, 0, 0, 0.7) !important;
+}
+.cm-completionInfo {
+  background: rgba(10, 15, 12, 0.95) !important;
+  border: 1px solid #94ffc5 !important;
+  padding: 10px !important;
+  color: #fff !important;
+  font-family: 'Pretendard', sans-serif !important;
+}

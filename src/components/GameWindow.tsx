@@ -22,12 +22,12 @@ type GameWindowProps = {
 const STORAGE_PREFIX = "escape-the-data-room:window:";
 
 const DEFAULT_WINDOW_SIZES: Record<GameWindowType, Pick<WindowRect, "width" | "height">> = {
-  inspect: { width: 760, height: 560 },
-  python: { width: 560, height: 420 },
-  reference: { width: 420, height: 360 },
-  keypad: { width: 420, height: 520 },
-  notebook: { width: 440, height: 480 },
-  review: { width: 720, height: 560 },
+  inspect: { width: 900, height: 650 },
+  python: { width: 700, height: 500 },
+  reference: { width: 450, height: 400 },
+  keypad: { width: 450, height: 550 },
+  notebook: { width: 500, height: 550 },
+  review: { width: 800, height: 600 },
 };
 
 const DEFAULT_WINDOW_POSITIONS: Record<GameWindowType, Pick<WindowRect, "x" | "y">> = {
@@ -227,6 +227,7 @@ export function GameWindow({ id, type, eyebrow, title, onClose, children, border
     function handlePointerUp(event: PointerEvent): void {
       if (dragRef.current?.pointerId === event.pointerId) {
         dragRef.current = null;
+        document.body.style.userSelect = "";
       }
     }
 
@@ -254,6 +255,7 @@ export function GameWindow({ id, type, eyebrow, title, onClose, children, border
     }
 
     focusWindow();
+    document.body.style.userSelect = "none";
     dragRef.current = {
       mode: "drag",
       pointerId: event.pointerId,
@@ -268,6 +270,7 @@ export function GameWindow({ id, type, eyebrow, title, onClose, children, border
     event.preventDefault();
     event.stopPropagation();
     focusWindow();
+    document.body.style.userSelect = "none";
     dragRef.current = {
       mode: "resize",
       pointerId: event.pointerId,

@@ -103,7 +103,7 @@ export function GameShell(): React.JSX.Element {
         setIntroStage("opening");
         setTimeout(() => {
           setIntroStage("done");
-          useGameStore.getState().setDialogue("tutorial");
+          useGameStore.getState().setDialogue("tutorial-1");
         }, 2500);
       } else if (finishedId === "escape-success" || finishedId === "true-ending") {
         setGameState("CREDITS");
@@ -112,8 +112,21 @@ export function GameShell(): React.JSX.Element {
   }, [currentDialogueId, setGameState]);
 
   useEffect(() => {
+    if (activeLabPuzzle && currentRoomId === "room-0") {
+      const unlocked = useGameStore.getState().unlockedStories;
+      if (!unlocked.includes("tutorial-2")) {
+        useGameStore.getState().setDialogue("tutorial-2");
+      }
+    }
+  }, [activeLabPuzzle, currentRoomId]);
+
+  useEffect(() => {
     if (gameState !== "PLAYING") return;
     const handleKeyDown = (e: KeyboardEvent) => {
+      const active = document.activeElement;
+      if (active && (active.tagName === "INPUT" || active.tagName === "TEXTAREA" || (active as HTMLElement).isContentEditable)) {
+        return; // Ignore shortcuts when typing
+      }
       if (e.key === "Escape") {
         SoundEngine.playClick();
         setIsPaused((prev) => !prev);
