@@ -5,6 +5,7 @@ export type RoomView = {
   title: string;
   description: string;
   placeholderTone: string;
+  backgroundImage?: string;
 };
 
 export type Room = {
@@ -14,6 +15,7 @@ export type Room = {
   description: string;
   views: RoomView[];
   doorCode: string;
+  backgroundImage?: string;
 };
 
 export type RoomObjectKind = "puzzle" | "door";
@@ -27,6 +29,7 @@ export type RoomObject = {
   description: string;
   puzzleId: string;
   placeholderIcon?: string;
+  assetImage?: string;
   kind: RoomObjectKind;
   x: number;
   y: number;
@@ -56,5 +59,13 @@ export type Puzzle = {
   referenceItems: ReferenceItem[];
   rewardHint: RoomHint;
   starterCode?: string;
+  isRequired?: boolean;
+  isHidden?: boolean;
+  requiredForDoor?: boolean;
+  doorCodePiece?: string;
+  doorCodePosition?: number;
+  targetConcepts?: string[];
+  usefulConcepts?: string[];
+  puzzleType?: string;
+  expectedStrategyDescription?: string;
 };
-

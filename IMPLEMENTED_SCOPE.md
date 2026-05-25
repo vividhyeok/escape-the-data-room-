@@ -7,6 +7,7 @@
 - Room 0~4 데이터 구조
 - Room별 left / center / right view 전환
 - Room별 6개 퍼즐 오브젝트 + Door Keypad 구조
+- Room 1~3 필수 퍼즐 4개 + 숨겨진 선택 단서 2개 metadata
 - 전체 화면형 2.5D point-and-click 게임 씬
 - 얇은 HUD, Notebook, Dev Menu, view arrow/dot navigation
 - 클릭 가능한 hotspot object
@@ -27,15 +28,23 @@
 - puzzle별 code draft 저장
 - puzzle별 mock output
 - puzzle unlock code 체크
-- reward hint 수집
+- Door Code 조각 / 숨겨진 선택 단서 수집
 - Door Code 입력과 Room clear 처리
 - Review Panel에서 푼 오브젝트, 놓친 오브젝트, 수집 힌트, 작성 코드 확인
 
 ## 최근 반영 사항
 
+- 프로젝트 방향을 데이터 추리형 방탈출로 재정리
+- Room 1을 필수 퍼즐 4개 + 숨겨진 선택 단서 2개 구조로 재분류
+- Room 2와 Room 3도 필수 퍼즐 4개 + 숨겨진 선택 단서 2개 구조로 재분류
+- 필수 퍼즐 해결 시 Door Code 조각을 지급하도록 변경
+- Door Keypad에서 필수 Door Code 조각 수집 상태 표시
+- 필수 Door Code 조각을 모두 모으기 전 Door Code 입력 제한
+- Room 4를 Review / Missed Clues Room 방향으로 이름과 설명 변경
+- Room 4에 Missed Clues / Solved Route / Play Style / Draft Archive / Final Review 창 추가
 - Room 1 데이터를 손풀이보다 Python 처리가 자연스럽게 느껴지도록 확장
 - Word Billboard 단어 수를 약 100개로 확대
-- OX Monitor를 25줄 신호 데이터로 확대
+- OX Monitor를 20줄 신호 데이터로 조정
 - Number Panel을 80개 숫자 데이터로 확대
 - Name Card Board를 72개 이름 카드 데이터로 확대
 - Radio Signal Device를 72개 주파수 데이터로 확대

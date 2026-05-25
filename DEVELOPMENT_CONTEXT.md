@@ -2,22 +2,100 @@
 
 ## 현재 개발 방향
 
-이 프로젝트는 코딩 문제 사이트가 아니라 Python 복습 활동을 방탈출 게임 형식으로 포장한 교육 도구다.
+이 프로젝트는 코딩 문제 사이트가 아니라 Python을 데이터 정리 도구로 사용하는 데이터 추리형 방탈출 게임이다.
 
-사용자는 방 안의 오브젝트를 조사하고, 그 안의 데이터를 해석해 짧은 Unlock Code를 얻는다. 각 Unlock Code를 맞히면 Door Code를 추론하는 힌트를 받는다.
+플레이어는 방 안의 오브젝트를 조사하고, Data Surface의 데이터를 Python Lab으로 정돈해 Unlock Code를 얻는다. 필수 퍼즐을 해결하면 Door Code 조각을 얻고, Door Code 조각 4개를 모아 다음 Room으로 이동한다.
 
-Python Lab은 정답 제출창이 아니라 선택형 분석 도구다. 데이터가 많아 손으로 처리하기 귀찮거나 실수하기 쉬울 때 자연스럽게 열게 만드는 것이 목표다.
+## 최신 구조 기준
 
-## 최신 구현 기준
+- Room 0: Tutorial / Analysis Basics
+- Room 1: Signal Room
+- Room 2: Records Room
+- Room 3: Dangerous Stairs / Extra Challenge
+- Ending Window: 기본 탈출 엔딩과 짧은 풀이 요약
 
-- 전체 화면은 게임 씬이 중심이다.
-- HUD는 얇게 얹히고, 큰 좌우 대시보드 패널은 기본 화면에 노출하지 않는다.
-- Inspect, Python Lab, Reference, Door Keypad, Notebook, Review는 모두 공통 GameWindow를 사용한다.
-- GameWindow는 드래그 이동, 리사이즈, z-index focus, 위치/크기 저장을 지원한다.
-- Room 1은 발표 시연 중심 방이다.
-- Room 1 데이터는 손으로도 풀 수 있지만 Python을 쓰는 편이 훨씬 빠르게 느껴지도록 밀도를 높였다.
-- 실제 플레이 모드에서는 Python Lab이 빈 상태로 열린다.
-- Demo Mode에서만 Word Billboard의 예시 접근 코드가 미리 저장된다.
+Room 1~2는 본편 방이고, Room 3은 선택형 Extra Challenge다.
+
+- 필수 퍼즐 4개
+- 숨겨진 선택 단서 2개
+- Door Keypad
+
+필수 퍼즐 4개는 Door Code 조각을 하나씩 제공한다. Room 2를 탈출하면 기본 엔딩을 볼 수 있고, 강사가 원하면 위험한 계단을 통해 Room 3으로 진입한다.
+
+## Room 1 현재 설계
+
+Room 1 Door Code는 `7479`다.
+
+필수 퍼즐:
+
+- Word Billboard: Unlock Code `6719` → Door Code 1번째 조각 `7`
+- OX Monitor: Unlock Code `1937` → Door Code 2번째 조각 `4`
+- Number Panel: Unlock Code `4820` → Door Code 3번째 조각 `7`
+- Name Card Board: Unlock Code `8052` → Door Code 4번째 조각 `9`
+
+숨겨진 선택 단서:
+
+- Radio Signal Device: Unlock Code `3164`
+- Noise Strip: Unlock Code `2748`
+
+## Room 2 현재 설계
+
+Room 2 Door Code는 `3547`다.
+
+필수 퍼즐:
+
+- File Cabinet → Door Code 1번째 조각 `3`
+- Broken Name Tags → Door Code 2번째 조각 `5`
+- Score Board → Door Code 3번째 조각 `4`
+- Timeline Board → Door Code 4번째 조각 `7`
+
+숨겨진 선택 단서:
+
+- Access Log Table
+- Archive Note
+
+## Room 3 현재 설계
+
+Room 3은 위험한 계단 아래의 Extra Challenge다. Door Code를 강제하지 않고, 풀 만큼 풀거나 바로 마무리할 수 있다.
+
+필수 퍼즐:
+
+- Logic Gate Board → Door Code 1번째 조각 `4`
+- Candidate Codes Board → Door Code 2번째 조각 `0`
+- Experiment Console → Door Code 3번째 조각 `2`
+- Switch Panel → Door Code 4번째 조각 `6`
+
+숨겨진 선택 단서:
+
+- Warning Lamp Board
+- Candidate Dial
+
+## Ending / Review 현재 설계
+
+기본 흐름에서는 Room 2 탈출 후 엔딩 창을 띄운다. Room 4는 Dev/검토용 Review 공간으로 남아 있으나 본편 흐름의 필수 방은 아니다.
+
+- Missed Clues Board: 놓친 숨겨진 선택 단서 확인 및 다시 풀기
+- Solved Route Board: 해결한 필수 퍼즐과 Door Code 조각 확인
+- Play Style Summary: 사용한 Python 도구와 풀이 방식 요약
+- Saved Draft Archive: 저장된 코드 draft 확인
+- Final Review Console: Room별 필수/숨겨진 단서 현황 확인
+- Final Exit Door: 최종 탈출 연출
+
+중요: Unlock Code와 Door Code 조각은 다른 개념이다. Python Lab의 Signal Output으로 Unlock Code를 확인하고, Unlock Code를 입력하면 Door Code 조각 또는 숨겨진 단서 기록을 얻는다.
+
+## UI 용어 기준
+
+- `Unlock Code`
+- `Check Code`
+- `Copy Data`
+- `Open Python Lab`
+- `Run Analysis`
+- `Signal Output`
+- `Door Code`
+- `Hidden Clue`
+- `Missed Hidden Clues`
+
+`Problem`, `Quiz`, `Answer`, `Submit` 같은 코딩 문제 사이트 용어는 쓰지 않는다.
 
 ## 실행 모드
 
@@ -25,26 +103,12 @@ Python Lab은 정답 제출창이 아니라 선택형 분석 도구다. 데이�
 - `run_test.bat`: 실제 플레이 테스트. `?mode=test`로 시작하며 진행 상태를 초기화한다.
 - `run_demo.bat`: 발표 시연. `?mode=demo`로 시작하며 Room 1 Word Billboard와 Python Lab을 준비한다.
 
-## Room 1 현재 설계
-
-Room 1 Door Code는 `7479`다.
-
-힌트 구조:
-
-- Word Billboard: `6719` 입력 후 `CD - AB = 5다.`
-- OX Monitor: `1937` 입력 후 `마지막 숫자는 9다.`
-- Number Panel: `4820` 입력 후 `첫 번째 숫자는 7이다.`
-- Name Card Board: `8052` 입력 후 `각 자리 숫자의 합은 27이다.`
-- Radio Signal Device: `3164` 입력 후 `코드는 홀수다.`
-- Checksum Tablet: `2748` 입력 후 `두 번째 숫자는 4다.`
-
-중요: 퍼즐의 Python output은 중간 신호일 수 있고, Inspect Window에 입력하는 값은 짧은 Unlock Code다.
-
 ## 다음 개발자가 지킬 것
 
-- 문제 설명에서 특정 문법을 강제하지 않는다.
-- `Problem`, `Submit`, `Expected Answer` 같은 코딩 사이트 용어를 UI에 늘리지 않는다.
-- `Unlock Code`, `Check Code`, `Signal Output`, `Clue Surface`, `Access granted`, `Access denied` 용어를 유지한다.
-- 실제 플레이 모드에 정답 코드가 자동으로 노출되지 않게 한다.
-- 시연 편의 기능은 Dev Menu 또는 Demo Mode에만 둔다.
-- 실행 방법이 바뀌면 `run_app.bat`, `run_test.bat`, `run_demo.bat`, `README.md`를 함께 갱신한다.
+- 문제 설명에서 특정 문법을 직접 강제하지 않는다.
+- 데이터 상황이 Python 활용을 자연스럽게 유도해야 한다.
+- Room 1~3 필수 퍼즐은 해당 Room의 Python 활용 범주를 반드시 경험하게 해야 한다.
+- 숨겨진 선택 단서는 필수 진행을 막지 않는다.
+- Room 2 이후 기본 선택은 엔딩이다.
+- Room 3은 강사가 선택적으로 열어 주는 Extra Challenge다.
+- 실제 Python 실행이 아니면 발표와 문서에서 mock 또는 시뮬레이션임을 과장 없이 설명한다.

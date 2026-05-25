@@ -32,7 +32,7 @@ export function PythonLabWindow({ puzzle, onClose }: PythonLabWindowProps): Reac
   setCodeRef.current = setCode;
 
   useEffect(() => {
-    const initialCode = codeDraft ?? "";
+    const initialCode = codeDraft ?? puzzle.starterCode ?? "";
     setCode(initialCode);
     setStdout("");
     setStderr("");
@@ -106,16 +106,16 @@ export function PythonLabWindow({ puzzle, onClose }: PythonLabWindowProps): Reac
         />
         <div className="lab-actions">
           <button className="primary-button" disabled={isRunning} onClick={runCode} type="button">
-            {isRunning ? "실행 중..." : "실행"}
+            {isRunning ? "Analyzing..." : "Run Analysis"}
           </button>
           {puzzle.starterCode ? (
             <button className="ghost-button" onClick={loadExampleApproach} type="button">
-              예제 불러오기
+              Load Example
             </button>
           ) : null}
         </div>
         <div className="output-panel" aria-live="polite">
-          <span>출력</span>
+          <span>Signal Output</span>
           <pre>{stderr || stdout || ""}</pre>
         </div>
       </div>

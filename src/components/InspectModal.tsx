@@ -57,7 +57,7 @@ function renderClueSurface(puzzle: Puzzle, object: RoomObject): React.JSX.Elemen
   }
 
   if (puzzle.id === "room-0-mini-ox-card") {
-    const chars = puzzle.dataText.split("");
+    const chars = /\s/.test(puzzle.dataText) ? puzzle.dataText.split(/\s+/).filter(Boolean) : puzzle.dataText.split("");
     return (
       <div className="clue-surface mini-ox-surface">
         <div className="ox-row" style={{ gridTemplateColumns: `repeat(${chars.length}, 1fr)` }}>
@@ -566,16 +566,12 @@ function renderClueSurface(puzzle: Puzzle, object: RoomObject): React.JSX.Elemen
 
   if (puzzle.id === "room-1-checksum-tablet") {
     return (
-      <div className="clue-surface checksum-surface">
-        {puzzle.dataText.split(/\r?\n/).map((line, index) => {
-          const [code, status] = line.split(/\s+/);
-          return (
-            <span className={status === "PASS" ? "log-pass" : "log-fail"} key={`${puzzle.id}-${index}`}>
-              <strong>{code}</strong>
-              <em>{status}</em>
-            </span>
-          );
-        })}
+      <div className="clue-surface noise-strip-surface">
+        {puzzle.dataText.split("").map((char, index) => (
+          <span className={/\d/.test(char) ? "noise-digit" : "noise-char"} key={`${puzzle.id}-${index}`}>
+            {char}
+          </span>
+        ))}
       </div>
     );
   }
@@ -632,7 +628,7 @@ export function InspectModal({
   function checkAnswer(): void {
     const normalized = normalizeAnswer(answer);
     if (normalized.length < 3) {
-      onHintAcquired?.("3~4자리(숫자/영문) 해제 코드를 입력하세요.");
+      onHintAcquired?.("3~4자리(숫자/영문) Unlock Code를 입력하세요.");
       setIsShaking(true);
       window.setTimeout(() => setIsShaking(false), 360);
       return;
@@ -640,11 +636,11 @@ export function InspectModal({
 
     if (normalized === normalizeAnswer(puzzle.expectedAnswer)) {
       solvePuzzle(puzzle);
-      onHintAcquired?.("단서가 키패드에 추가되었습니다!");
+      onHintAcquired?.(puzzle.requiredForDoor ? "Door Code piece acquired!" : "Hidden clue recorded.");
       return;
     }
 
-    onHintAcquired?.("코드 불일치 — 다시 확인하세요.");
+    onHintAcquired?.("Code mismatch — 다시 확인하세요.");
     setIsShaking(true);
     window.setTimeout(() => setIsShaking(false), 360);
   }
@@ -663,7 +659,7 @@ export function InspectModal({
 
         <div className="inspect-footer">
           <label className="answer-row">
-            <span>해제 코드</span>
+            <span>Unlock Code</span>
             <input
               className="unlock-input"
               onChange={(event) => setAnswer(event.target.value.toUpperCase().replace(/[^A-Z0-9]/g, "").slice(0, 4))}
@@ -676,16 +672,16 @@ export function InspectModal({
           {copyStatus ? <p className="copy-status">{copyStatus}</p> : null}
           <div className="modal-actions">
             <button className="primary-button" onClick={checkAnswer} type="button">
-              확인
+              Check Code
             </button>
             <button className="secondary-button" onClick={copyData} type="button">
-              복사
+              Copy Data
             </button>
             <button className="secondary-button" onClick={() => onOpenLab(puzzle)} type="button">
-              Python 실행
+              Open Python Lab
             </button>
             <button className="ghost-button" onClick={onOpenHelp} type="button">
-              참조
+              ? Reference
             </button>
           </div>
         </div>

@@ -5,7 +5,7 @@
 - [ ] `npm install` succeeds.
 - [ ] `npm run dev` starts the local server.
 - [ ] App loads without a blank screen.
-- [ ] Room 1 is visible on first load.
+- [ ] Room 0 is visible on first load.
 - [ ] left / center / right view buttons work.
 
 ## Room 1 Objects
@@ -24,13 +24,14 @@
 - [ ] `Open Python Lab` opens the lab window.
 - [ ] Starter code is visible.
 - [ ] Editing code persists the draft.
-- [ ] `Run` outputs `SIXSEVENONENINE`.
-- [ ] Entering `6719` and pressing `Check` collects `CD - AB = 5다.`
+- [ ] `Run Analysis` outputs `SIXSEVENONENINE`.
+- [ ] Entering `6719` and pressing `Check Code` collects Door Code piece `7`.
 - [ ] Refreshing keeps the solved state and draft.
 
 ## Room Clear Flow
 
-- [ ] Multiple hints can be collected.
+- [ ] Required Door Code pieces can be collected.
+- [ ] Hidden clues do not block Room clear.
 - [ ] Door code attempt is saved.
 - [ ] Door code `7479` clears Room 1.
 - [ ] Review Panel shows solved puzzles.
@@ -39,3 +40,11 @@
 - [ ] Review Panel shows code drafts.
 - [ ] Next Room button moves to Room 2.
 
+## Room 4 Review Flow
+
+- [ ] Room 4 shows Missed Clues Board.
+- [ ] Missed Clues Board lists unsolved hidden clues from Room 1~3.
+- [ ] `다시 풀기` moves back to the original room/object.
+- [ ] Solved Route Board shows required puzzle route.
+- [ ] Play Style Summary shows used Python tools without score/grade language.
+- [ ] Final Exit Door does not require a new code puzzle.

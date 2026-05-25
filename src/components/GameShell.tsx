@@ -4,20 +4,26 @@ import { getRoomObjects, roomOrder, roomsById } from "../data/rooms";
 import type { Puzzle as _Puzzle, RoomObject } from "../data/types";
 import { useGameStore } from "../store/gameStore";
 import { DoorKeypad } from "./DoorKeypad";
+import { EndingWindow } from "./EndingWindow";
 import { resetGameWindows, setDemoLayout } from "./GameWindow";
 import { HelpModal } from "./HelpModal";
 import { InspectModal } from "./InspectModal";
 import { PythonLabWindow } from "./PythonLabWindow";
 import { ReviewPanel } from "./ReviewPanel";
+import { ReviewRoomWindow } from "./ReviewRoomWindow";
 import { RoomView } from "./RoomView";
 
 export function GameShell(): React.JSX.Element {
   const bootModeApplied = useRef(false);
   const [selectedObject, setSelectedObject] = useState<RoomObject | null>(null);
+  const [reviewRoomObject, setReviewRoomObject] = useState<RoomObject | null>(null);
   const [labPuzzleId, setLabPuzzleId] = useState<string | null>(null);
   const [helpOpen, setHelpOpen] = useState(false);
   const [doorOpen, setDoorOpen] = useState(false);
+  const [endingOpen, setEndingOpen] = useState(false);
   const [toast, setToast] = useState("");
+  const [transitioning, setTransitioning] = useState(false);
+  const [devMode, setDevMode] = useState(false);
 
   const currentRoomId = useGameStore((state) => state.currentRoomId);
   const setCurrentRoom = useGameStore((state) => state.setCurrentRoom);
@@ -42,6 +48,9 @@ export function GameShell(): React.JSX.Element {
     const mode = params.get("mode");
     const shouldReset = mode === "test" || params.get("reset") === "1";
     const shouldDemo = mode === "demo" || params.get("demo") === "1";
+    const shouldDev = params.get("dev") === "1";
+
+    if (shouldDev) setDevMode(true);
 
     if (shouldDemo) {
       activateDemoMode();
@@ -67,6 +76,11 @@ export function GameShell(): React.JSX.Element {
       return;
     }
 
+    if (roomObject.roomId === "room-4") {
+      setReviewRoomObject(roomObject);
+      return;
+    }
+
     setSelectedObject(roomObject);
   }
 
@@ -79,9 +93,24 @@ export function GameShell(): React.JSX.Element {
   }
 
   function changeRoom(roomId: string): void {
-    setCurrentRoom(roomId);
-    setSelectedObject(null);
+    if (roomId === currentRoomId) return;
+    setTransitioning(true);
+    window.setTimeout(() => {
+      setCurrentRoom(roomId);
+      setSelectedObject(null);
+      setReviewRoomObject(null);
+      setDoorOpen(false);
+      setEndingOpen(false);
+      setTransitioning(false);
+    }, 210);
+  }
+
+  function revisitPuzzle(roomObject: RoomObject): void {
+    setCurrentRoom(roomObject.roomId);
+    useGameStore.getState().setCurrentView(roomObject.viewId);
+    setReviewRoomObject(null);
     setDoorOpen(false);
+    setSelectedObject(roomObject);
   }
 
   function showToast(message: string): void {
@@ -113,32 +142,34 @@ export function GameShell(): React.JSX.Element {
           <h1>{room.title}</h1>
           <p>{room.subtitle}</p>
         </div>
-        <details className="dev-room-panel">
-          <summary>Dev</summary>
-          <nav className="room-nav" aria-label="방 이동">
-            {roomOrder.map((roomId) => {
-              const navRoom = roomsById[roomId];
-              const isActive = room.id === roomId;
-              const isCleared = clearedRoomIds.includes(roomId);
-              return (
-                <button
-                  className={`nav-chip ${isActive ? "active" : ""} ${isCleared ? "cleared" : ""}`}
-                  key={roomId}
-                  onClick={() => changeRoom(roomId)}
-                  type="button"
-                >
-                  {navRoom.title.replace("Room ", "R")}
-                </button>
-              );
-            })}
-            <button className="nav-chip demo-chip" onClick={activateDemoMode} type="button">
-              데모
-            </button>
-            <button className="nav-chip demo-chip" onClick={resetGameWindows} type="button">
-              창 리셋
-            </button>
-          </nav>
-        </details>
+        {devMode && (
+          <details className="dev-room-panel">
+            <summary>Dev</summary>
+            <nav className="room-nav" aria-label="방 이동">
+              {roomOrder.map((roomId) => {
+                const navRoom = roomsById[roomId];
+                const isActive = room.id === roomId;
+                const isCleared = clearedRoomIds.includes(roomId);
+                return (
+                  <button
+                    className={`nav-chip ${isActive ? "active" : ""} ${isCleared ? "cleared" : ""}`}
+                    key={roomId}
+                    onClick={() => changeRoom(roomId)}
+                    type="button"
+                  >
+                    {navRoom.title.replace("Room ", "R")}
+                  </button>
+                );
+              })}
+              <button className="nav-chip demo-chip" onClick={activateDemoMode} type="button">
+                데모
+              </button>
+              <button className="nav-chip demo-chip" onClick={resetGameWindows} type="button">
+                창 리셋
+              </button>
+            </nav>
+          </details>
+        )}
       </header>
 
       <div className="objective-strip hud-layer">
@@ -159,8 +190,17 @@ export function GameShell(): React.JSX.Element {
       {activeLabPuzzle ? <PythonLabWindow onClose={() => setLabPuzzleId(null)} puzzle={activeLabPuzzle} /> : null}
       {helpOpen ? <HelpModal onClose={() => setHelpOpen(false)} /> : null}
       {doorOpen ? <DoorKeypad onClose={() => setDoorOpen(false)} room={room} /> : null}
-      {reviewRoomId ? <ReviewPanel room={roomsById[reviewRoomId]} /> : null}
+      {reviewRoomId ? <ReviewPanel onFinalExit={() => setEndingOpen(true)} room={roomsById[reviewRoomId]} /> : null}
+      {reviewRoomObject ? (
+        <ReviewRoomWindow
+          object={reviewRoomObject}
+          onClose={() => setReviewRoomObject(null)}
+          onRevisitPuzzle={revisitPuzzle}
+        />
+      ) : null}
+      {endingOpen ? <EndingWindow onClose={() => setEndingOpen(false)} /> : null}
       {toast ? <div className="game-toast">{toast}</div> : null}
+      {transitioning ? <div className="room-transition-flash" aria-hidden="true" /> : null}
     </div>
   );
 }

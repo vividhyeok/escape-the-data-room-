@@ -323,7 +323,7 @@ async function run() {
     await clickText(client, "단어 전광판");
     await waitFor(client, `document.body.innerText.includes("단어 전광판")`, "Word Billboard inspect opens");
 
-    await clickText(client, "Python 실행");
+    await clickText(client, "Open Python Lab");
     await waitFor(client, `document.querySelector(".lab-window")`, "Python Lab opens");
     await waitFor(client, `typeof window.__setCodeEditor === "function"`, "CodeMirror editor ready");
     await evaluate(client, `window.__setCodeEditor("print('smoke draft')\\n# smoke draft")`);
@@ -337,8 +337,8 @@ async function run() {
     await waitFor(client, `document.body.innerText.includes("SIXSEVENONENINE")`, "Mock output renders");
 
     await fillSelector(client, ".inspect-modal .unlock-input", "6719");
-    await clickText(client, "확인");
-    await waitFor(client, `localStorage.getItem(${JSON.stringify(storageKey)})?.includes("CD - AB = 5다.")`, "Word Billboard hint collected");
+    await clickText(client, "Check Code");
+    await waitFor(client, `localStorage.getItem(${JSON.stringify(storageKey)})?.includes("Door Code 1번째 조각: 7")`, "Word Billboard door piece collected");
 
     await clickSelector(client, ".game-window-inspect .window-close");
     await waitFor(client, `!document.querySelector(".inspect-modal")`, "Inspect modal closes");
@@ -348,11 +348,29 @@ async function run() {
     await clickText(client, "숫자 패널");
     await waitFor(client, `document.body.innerText.includes("숫자 패널")`, "Number Panel inspect opens");
     await fillSelector(client, ".inspect-modal .unlock-input", "4820");
-    await clickText(client, "확인");
-    await waitFor(client, `localStorage.getItem(${JSON.stringify(storageKey)})?.includes("첫 번째 숫자는 7이다.")`, "Second hint collected");
+    await clickText(client, "Check Code");
+    await waitFor(client, `localStorage.getItem(${JSON.stringify(storageKey)})?.includes("Door Code 3번째 조각: 7")`, "Number Panel door piece collected");
+    await clickSelector(client, ".game-window-inspect .window-close");
+
+    await clickText(client, "◀");
+    await waitFor(client, `document.body.innerText.includes("OX 모니터")`, "Left view renders OX Monitor");
+    await clickText(client, "OX 모니터");
+    await waitFor(client, `document.body.innerText.includes("OX 모니터")`, "OX Monitor inspect opens");
+    await fillSelector(client, ".inspect-modal .unlock-input", "1937");
+    await clickText(client, "Check Code");
+    await waitFor(client, `localStorage.getItem(${JSON.stringify(storageKey)})?.includes("Door Code 2번째 조각: 4")`, "OX Monitor door piece collected");
     await clickSelector(client, ".game-window-inspect .window-close");
 
     await clickText(client, "▶");
+    await clickText(client, "▶");
+    await waitFor(client, `document.body.innerText.includes("명함 보드")`, "Right view renders Name Card Board");
+    await clickText(client, "명함 보드");
+    await waitFor(client, `document.body.innerText.includes("명함 보드")`, "Name Card inspect opens");
+    await fillSelector(client, ".inspect-modal .unlock-input", "8052");
+    await clickText(client, "Check Code");
+    await waitFor(client, `localStorage.getItem(${JSON.stringify(storageKey)})?.includes("Door Code 4번째 조각: 9")`, "Name Card door piece collected");
+    await clickSelector(client, ".game-window-inspect .window-close");
+
     await waitFor(client, `document.body.innerText.includes("출입문 키패드")`, "Right view renders Door Keypad");
     await clickText(client, "출입문 키패드");
     await waitFor(client, `document.querySelector(".door-modal")`, "Door keypad opens");
@@ -365,7 +383,7 @@ async function run() {
     );
     await clickText(client, "입력");
     await waitFor(client, `document.body.innerText.includes("방 클리어")`, "Room 1 clears");
-    await waitFor(client, `document.body.innerText.includes("OX 모니터")`, "Review shows unsolved puzzles");
+    await waitFor(client, `document.body.innerText.includes("Missed Hidden Clues")`, "Review shows hidden clue recap");
 
     await client.send("Page.reload", { ignoreCache: true });
     await waitFor(client, `document.body.innerText.includes("방 클리어")`, "Saved state restores after reload");
@@ -386,28 +404,28 @@ async function run() {
         title: "신호실",
         center: ["단어 전광판", "숫자 패널"],
         left: ["OX 모니터", "라디오 장치"],
-        right: ["명함 보드", "체크섬 태블릿", "출입문 키패드"],
+        right: ["명함 보드", "노이즈 스트립", "출입문 키패드"],
       },
       {
         nav: "R2",
         title: "기록실",
         center: ["점수 보드", "접근 로그"],
         left: ["파일 캐비닛", "손상된 명찰"],
-        right: ["타임라인 보드", "체크섬 장부", "출입문 키패드"],
+        right: ["타임라인 보드", "아카이브 쪽지", "출입문 키패드"],
       },
       {
         nav: "R3",
-        title: "제어실",
+        title: "위험한 계단 아래",
         center: ["논리 게이트 보드", "실험 콘솔"],
         left: ["스위치 패널", "경고 램프 보드"],
-        right: ["후보 코드 보드", "전력 측정기", "출입문 키패드"],
+        right: ["후보 코드 보드", "후보 다이얼", "출입문 키패드"],
       },
       {
         nav: "R4",
-        title: "디버그실",
-        center: ["손상된 검증기", "후보 다이얼", "합계 분석기"],
-        left: ["테스트 로그", "손상된 CRT"],
-        right: ["에러 로그 서버", "출입문 키패드"],
+        title: "놓친 단서 보관실",
+        center: ["Missed Clues Board", "Play Style Summary", "Final Review Console"],
+        left: ["Solved Route Board", "Optional Signal Shelf"],
+        right: ["Saved Draft Archive", "Final Exit Door"],
       },
     ];
 
@@ -422,6 +440,13 @@ async function run() {
       await clickText(client, "▶");
       await checkVisibleHotspots(client, roomExpectation.right, `${roomExpectation.nav} right hotspots`);
     }
+
+    await clickText(client, "R4");
+    await waitFor(client, `document.body.innerText.includes("놓친 단서 보관실")`, "Room 4 review room loads");
+    await clickText(client, "Missed Clues Board");
+    await waitFor(client, `document.body.innerText.includes("Missed Hidden Clues")`, "Room 4 missed clues window opens");
+    await clickSelector(client, ".game-window-review .window-close");
+    await waitFor(client, `!document.body.innerText.includes("Missed Hidden Clues")`, "Room 4 missed clues window closes");
 
     if (browserErrors.length) {
       throw new Error(`Browser errors detected: ${browserErrors.join(" | ")}`);

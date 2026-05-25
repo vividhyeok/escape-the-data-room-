@@ -40,51 +40,21 @@ OOOOOOOOOOOOOOOOOOOO
 XXXXOOOOOOOOOOOOOOOO
 OOOOOOOOOOOOOOOOOOOO`;
 
-const room1NumberPanelData = `80 122 19 21 39 121 190 72 51
-70 138 48 20 23 132 188 62 143 193
-164 33 80 67 15 127 41 194 130
-144 75 190 74 113 33 27 108 06 191
-49 161 94 114 88 78 72 47 93 193 174
-68 99 62 39 118 85 26 152 109 142
-45 166 18 199 56 136 191 184 177 63
-150 148 26 192 141 154 148 122 88 74 141`;
+const room1NumberPanelData = `13 48 77 91 35 20 57 83
+64 101 29 75 39 94 118 27
+55 70 33 86 121 17 62 99
+41 58 73 105 111 25 69 87`;
 
-const room1NameCardData = `MIRA ZOE AXEL FAYE RINA NORA JONAS REED LEO MINA SORA KAI
-DANA IRIS AXEL NORA TEO FAYE YUNA EDEN KAI LEO JUNE SORA
-KIAN MIRA DANA REED OMAR YUNA TEO JONAS RHEA SENA LINA ARIA
-IVAN FAYE ENZO NORA MIRA AXEL SORA KAI LEO DANA REED YUNA
-TEO JONAS NOEL CORA ELI FINN GIA HUGO ISLA JACE LARA MAX
-OPAL PAX QUIN ROAN TARA ULI VERA WREN XENA YURI ZARA NICO`;
+const room1NameCardData = `MIRA:8 ZOE:3 AXEL:0 FAYE:5 RINA:2 NORA:6
+JONAS:4 MIRA:8 KAI:1 AXEL:0 EDEN:9
+FAYE:5 LEO:7 SORA:4 RINA:2 YUNA:6
+DANA:1 REED:3 OMAR:9 LINA:7`;
 
-const room1RadioSignalData = `516 338 822 174 441 230 413 174 413
-446 534 522 489 316 358 464 194
-477 211 398 252 512 240 328 674 845 378
-569 846 132 354 282 828 986 696 231
-873 882 822 930 409 252 956 769 865
-675 684 612 347 531 298 705 697 768
-346 601 942 560 975 598 441 554 593
-616 599 462 414 115 985 260 991 692`;
+const room1RadioSignalData = `3:822 8:441 5:230 1:522 7:413
+6:252 9:845 4:132 2:211 0:569
+5:846 8:409 1:697 7:768 2:985`;
 
-const room1ChecksumTabletData = `7479 PASS
-7379 FAIL
-7469 FAIL
-7471 FAIL
-8479 FAIL
-4079 FAIL
-7429 FAIL
-7478 FAIL
-6479 FAIL
-7449 FAIL
-7470 FAIL
-7079 FAIL
-7475 FAIL
-1479 FAIL
-7472 FAIL
-7979 FAIL
-7489 FAIL
-7409 FAIL
-9479 FAIL
-7419 FAIL`;
+const room1NoiseStripData = `A2X7Q4M8`;
 
 export const puzzles: Puzzle[] = [
   {
@@ -92,86 +62,133 @@ export const puzzles: Puzzle[] = [
     roomId: "room-0",
     title: "CRT TV",
     objectId: "room-0-tv-sequence",
-    situationText: "화면 숫자들이 일정한 규칙으로 이어진다. 다음 숫자를 구한 뒤 그 숫자를 4번 반복한 값이 해제 코드다.",
-    dataText: "2 4 6 ?",
+    situationText: "CRT 화면에 신호 단어가 공백으로 이어져 있다. 단어를 나눈 뒤 전체 단어 수를 확인하라. 그 숫자를 4번 반복한 값이 해제 코드다.",
+    dataText: "red blue green yellow white black orange purple",
     expectedAnswer: "8888",
-    mockOutput: "8888",
+    mockOutput: `['red', 'blue', 'green', 'yellow', 'white', 'black', 'orange', 'purple']\n8\n8888`,
     referenceItems: [
-      ref("nums[-1]", "리스트의 마지막 값 가져오기"),
-      ref("+ 2", "일정한 차이를 더하기"),
-      ref("print()", "결과 출력하기"),
+      ref("text.split()", "공백을 기준으로 문자열 나누기"),
+      ref("len(words)", "나눈 조각의 개수 확인하기"),
+      ref("str(number)", "숫자를 문자열로 바꾸기"),
     ],
     rewardHint: hint("room-0-hint-crt-tv", "room-0", "room-0-tv-sequence", "첫째 자리는 8이다."),
-    starterCode: `nums = [2, 4, 6]\nnext_num = nums[-1] + 2\nprint(str(next_num) * 4)\n`,
+    starterCode: `text = "red blue green yellow white black orange purple"\nwords = text.split()\n\nprint(words)\ncount = len(words)\nprint(count)\nprint(str(count) * 4)\n`,
+    isRequired: true,
+    requiredForDoor: true,
+    doorCodePiece: "8",
+    doorCodePosition: 1,
+    targetConcepts: ["split", "len", "str", "print"],
+    usefulConcepts: ["tokenization", "counting"],
+    puzzleType: "tutorial_split_count",
+    expectedStrategyDescription: "공백으로 이어진 문자열을 단어 목록으로 나누고 전체 개수를 확인한다.",
   },
   {
     id: "room-0-desk-terminal",
     roomId: "room-0",
     title: "데스크 터미널",
     objectId: "room-0-desk-terminal",
-    situationText: "단말기에 코드 한 줄이 남아 있다. 그 코드를 실행했을 때 출력되는 4글자 텍스트가 해제 코드다.",
-    dataText: 'print("ECHO")',
+    situationText: "단말기에 가장 짧은 분석 예제가 남아 있다. 공백으로 나눈 뒤 두 번째 조각을 출력하면 해제 코드가 된다.",
+    dataText: "OPEN ECHO LOCK",
     expectedAnswer: "ECHO",
-    mockOutput: "ECHO",
-    referenceItems: [ref("print()", "화면에 결과 출력하기"), ref('"ECHO"', "문자열은 따옴표로 감싸기")],
-    rewardHint: hint("room-0-hint-desk-terminal", "room-0", "room-0-desk-terminal", "탈출 코드는 숫자 4자리다."),
-    starterCode: `print("ECHO")\n`,
+    mockOutput: `['OPEN', 'ECHO', 'LOCK']\nECHO`,
+    referenceItems: [ref("text.split()", "공백 기준으로 나누기"), ref("parts[1]", "두 번째 조각 읽기"), ref("print()", "결과 출력하기")],
+    rewardHint: hint("room-0-hint-desk-terminal", "room-0", "room-0-desk-terminal", "목록 인덱스는 0부터 시작한다."),
+    starterCode: `text = "OPEN ECHO LOCK"\nparts = text.split()\n\nprint(parts)\nprint(parts[1])\n`,
+    isRequired: false,
+    requiredForDoor: false,
+    targetConcepts: ["split", "indexing", "print"],
+    usefulConcepts: ["tokenization", "output_reading"],
+    puzzleType: "tutorial_split_indexing",
+    expectedStrategyDescription: "공백으로 나눈 목록에서 원하는 위치의 값을 읽는다.",
   },
   {
     id: "room-0-mini-ox-card",
     roomId: "room-0",
     title: "OX 카드",
     objectId: "room-0-mini-ox-card",
-    situationText: "카드에 O와 X가 늘어서 있다. X의 총 개수를 센 다음 그 숫자를 4번 반복한 값이 해제 코드다.",
-    dataText: "OOXOXOXXOX",
+    situationText: "카드의 O와 X 신호가 공백으로 나뉘어 있다. X 신호의 개수를 센 다음 그 숫자를 4번 반복한 값이 해제 코드다.",
+    dataText: "O O X O X O X X O X",
     expectedAnswer: "5555",
-    mockOutput: "5555",
-    referenceItems: [ref('.count("X")', "문자열 안의 X 개수 세기"), ref("signal = ...", "변수에 문자열 저장하기")],
+    mockOutput: `['O', 'O', 'X', 'O', 'X', 'O', 'X', 'X', 'O', 'X']\n5\n5555`,
+    referenceItems: [ref("signal.split()", "공백 기준으로 O/X 신호 나누기"), ref('tokens.count("X")', "목록 안의 X 개수 세기"), ref("str(count)", "숫자를 문자열로 바꾸기")],
     rewardHint: hint("room-0-hint-mini-ox", "room-0", "room-0-mini-ox-card", "둘째 자리는 5다."),
-    starterCode: `signal = "OOXOXOXXOX"\ncount = signal.count("X")\nprint(str(count) * 4)\n`,
+    starterCode: `signal = "O O X O X O X X O X"\ntokens = signal.split()\n\nprint(tokens)\ncount = tokens.count("X")\nprint(count)\nprint(str(count) * 4)\n`,
+    isRequired: true,
+    requiredForDoor: true,
+    doorCodePiece: "5",
+    doorCodePosition: 2,
+    targetConcepts: ["split", "count", "str"],
+    usefulConcepts: ["signal_counting", "tokenization"],
+    puzzleType: "tutorial_split_count_value",
+    expectedStrategyDescription: "공백으로 나뉜 신호를 목록으로 만든 뒤 특정 값이 몇 번 나오는지 센다.",
   },
   {
     id: "room-0-name-tags",
     roomId: "room-0",
     title: "명찰 묶음",
     objectId: "room-0-name-tags",
-    situationText: "이름표 중 두 번 이상 등장한 이름의 수를 센 다음 그 숫자를 4번 반복한 값이 해제 코드다.",
+    situationText: "이름표가 한 줄에 공백으로 붙어 있다. 이름을 나눈 뒤 두 번 이상 등장한 이름의 수를 세어라. 그 숫자를 4번 반복한 값이 해제 코드다.",
     dataText: "MIRA JONAS AXEL MIRA NORA AXEL",
     expectedAnswer: "2222",
     mockOutput: "['AXEL', 'MIRA']\n2222",
     referenceItems: [
+      ref("data.split()", "공백 기준으로 이름표 나누기"),
       ref("set(names)", "중복을 제거한 이름 목록 만들기"),
       ref("names.count(name)", "특정 이름이 몇 번 나오는지 세기"),
       ref("len()", "개수 확인하기"),
     ],
     rewardHint: hint("room-0-hint-name-tags", "room-0", "room-0-name-tags", "셋째 자리는 2다."),
-    starterCode: `names = ["MIRA", "JONAS", "AXEL", "MIRA", "NORA", "AXEL"]\n\nrepeated = []\nfor name in set(names):\n    if names.count(name) >= 2:\n        repeated.append(name)\n\nprint(sorted(repeated))\ncount = len(repeated)\nprint(str(count) * 4)\n`,
+    starterCode: `data = "MIRA JONAS AXEL MIRA NORA AXEL"\nnames = data.split()\n\nrepeated = []\nfor name in set(names):\n    if names.count(name) >= 2:\n        repeated.append(name)\n\nprint(sorted(repeated))\ncount = len(repeated)\nprint(str(count) * 4)\n`,
+    isRequired: true,
+    requiredForDoor: true,
+    doorCodePiece: "2",
+    doorCodePosition: 3,
+    targetConcepts: ["split", "set", "count", "for", "if"],
+    usefulConcepts: ["duplicate_detection", "tokenization"],
+    puzzleType: "tutorial_duplicate_detection",
+    expectedStrategyDescription: "공백으로 나뉜 이름 목록에서 반복되는 이름만 골라 개수를 확인한다.",
   },
   {
     id: "room-0-pattern-tiles",
     roomId: "room-0",
     title: "패턴 타일 박스",
     objectId: "room-0-pattern-tiles",
-    situationText: "도형이 같은 순서로 반복된다. 빈칸에 오는 도형의 약어를 입력하라.\n약어: triangle=TRI, square=SQU, circle=CIRC",
-    dataText: "triangle square circle triangle square ?",
-    expectedAnswer: "CIRC",
-    mockOutput: "CIRC",
-    referenceItems: [ref("%", "나머지 구하기"), ref("len(pattern)", "반복 길이 구하기"), ref("pattern[index]", "리스트 인덱싱")],
+    situationText: "타일 상자에는 숫자 신호가 공백으로 나열되어 있다. 왼쪽에서 세 번째 신호를 꺼낸 뒤 그 값을 4번 반복한 값이 해제 코드다.",
+    dataText: "4 1 8 3 6",
+    expectedAnswer: "8888",
+    mockOutput: `['4', '1', '8', '3', '6']\n8\n8888`,
+    referenceItems: [ref("data.split()", "공백 기준으로 신호 나누기"), ref("signals[2]", "세 번째 조각 읽기"), ref("value * 4", "문자열을 반복해 코드 만들기")],
     rewardHint: hint("room-0-hint-pattern-tiles", "room-0", "room-0-pattern-tiles", "넷째 자리는 8이다."),
-    starterCode: `pattern = ["triangle", "square", "circle"]\nshape = pattern[5 % len(pattern)]\nabbr = {"triangle": "TRI", "square": "SQU", "circle": "CIRC"}\nprint(abbr[shape])\n`,
+    starterCode: `data = "4 1 8 3 6"\nsignals = data.split()\n\nprint(signals)\nvalue = signals[2]\nprint(value)\nprint(value * 4)\n`,
+    isRequired: true,
+    requiredForDoor: true,
+    doorCodePiece: "8",
+    doorCodePosition: 4,
+    targetConcepts: ["split", "indexing", "string_repetition"],
+    usefulConcepts: ["tokenization", "position_lookup"],
+    puzzleType: "tutorial_split_indexing",
+    expectedStrategyDescription: "공백으로 나뉜 신호 목록에서 특정 위치의 값을 꺼낸다.",
   },
   {
     id: "room-0-bookshelf-note",
     roomId: "room-0",
     title: "책장 쪽지",
     objectId: "room-0-bookshelf-note",
-    situationText: "쪽지의 두 조건을 동시에 만족하는 한 자리 숫자를 찾은 뒤 그 숫자를 4번 반복한 값이 해제 코드다.",
-    dataText: "한 자리 숫자 중에서 짝수이고, 6보다 큰 값",
-    expectedAnswer: "8888",
-    mockOutput: "8888",
-    referenceItems: [ref("range(10)", "0부터 9까지 확인하기"), ref("n % 2 == 0", "짝수 확인하기"), ref("if", "조건 확인하기")],
-    rewardHint: hint("room-0-hint-bookshelf-note", "room-0", "room-0-bookshelf-note", "첫째 자리는 8이다."),
-    starterCode: `for n in range(10):\n    if n % 2 == 0 and n > 6:\n        print(str(n) * 4)\n`,
+    situationText: "책장 쪽지에는 줄마다 이름과 번호가 슬래시로 나뉘어 있다. PASS 줄의 번호를 읽으면 해제 코드가 된다.",
+    dataText: `MIRA / 2301 / WAIT
+JONAS / 4410 / PASS
+AXEL / 1220 / WAIT`,
+    expectedAnswer: "4410",
+    mockOutput: "4410",
+    referenceItems: [ref("data.splitlines()", "여러 줄 데이터를 줄 단위로 나누기"), ref('line.split("/")', "슬래시 기준으로 한 줄 나누기"), ref("part.strip()", "앞뒤 공백 제거하기")],
+    rewardHint: hint("room-0-hint-bookshelf-note", "room-0", "room-0-bookshelf-note", "줄 데이터는 먼저 줄 단위로 나누면 다루기 쉽다."),
+    starterCode: `data = """MIRA / 2301 / WAIT\nJONAS / 4410 / PASS\nAXEL / 1220 / WAIT"""\n\nfor line in data.splitlines():\n    name, code, state = [part.strip() for part in line.split("/")]\n    if state == "PASS":\n        print(code)\n`,
+    isRequired: false,
+    requiredForDoor: false,
+    targetConcepts: ["splitlines", "split", "strip", "for", "if"],
+    usefulConcepts: ["line_parsing", "delimiter_parsing"],
+    puzzleType: "tutorial_line_parsing",
+    expectedStrategyDescription: "여러 줄 기록을 줄 단위로 나눈 뒤 각 줄을 구분자로 다시 나눠 조건에 맞는 값을 읽는다.",
   },
   {
     id: "room-1-word-billboard",
@@ -188,7 +205,7 @@ export const puzzles: Puzzle[] = [
       ref("word[2]", "세 번째 글자 가져오기"),
       ref("for word in words", "단어를 하나씩 확인하기"),
     ],
-    rewardHint: hint("room-1-hint-word-billboard", "room-1", "room-1-word-billboard", "CD - AB = 5다."),
+    rewardHint: hint("room-1-hint-word-billboard", "room-1", "room-1-word-billboard", "Door Code 1번째 조각: 7"),
     starterCode: `text = """${room1WordBillboardData}"""
 
 words = text.split()
@@ -200,13 +217,21 @@ for word in words:
 
 print(result)
 `,
+    isRequired: true,
+    requiredForDoor: true,
+    doorCodePiece: "7",
+    doorCodePosition: 1,
+    targetConcepts: ["split", "len", "indexing", "for", "if"],
+    usefulConcepts: ["string_processing", "filtering"],
+    puzzleType: "filtering",
+    expectedStrategyDescription: "많은 단어 중 길이 조건에 맞는 항목을 고르고 특정 위치의 문자를 추출한다.",
   },
   {
     id: "room-1-ox-monitor",
     roomId: "room-1",
     title: "OX 모니터",
     objectId: "room-1-ox-monitor",
-    situationText: "각 줄에서 X의 개수를 세어라.\nX의 개수가 홀수인 줄에 대해, 그 줄의 X 개수만 위에서부터 이어 읽어라.",
+    situationText: "각 줄의 X 신호는 두 개씩 짝을 지어 꺼진다.\n짝을 이루지 못하고 X가 하나 남는 줄만 살아 있는 신호다.\n살아 있는 줄의 X 개수를 위에서부터 이어 읽어라.",
     dataText: room1OxMonitorData,
     expectedAnswer: "1937",
     mockOutput: "1937",
@@ -214,9 +239,10 @@ print(result)
       ref("splitlines()", "여러 줄 문자열 나누기"),
       ref('row.count("X")', "X 개수 세기"),
       ref("% 2", "홀수/짝수 판별하기"),
-      ref("for row in rows", "줄을 하나씩 확인하기"),
+      ref("enumerate(rows, 1)", "줄 번호를 1부터 함께 세기"),
+      ref("str(number)", "숫자를 코드 조각으로 바꾸기"),
     ],
-    rewardHint: hint("room-1-hint-ox-monitor", "room-1", "room-1-ox-monitor", "마지막 숫자는 9다."),
+    rewardHint: hint("room-1-hint-ox-monitor", "room-1", "room-1-ox-monitor", "Door Code 2번째 조각: 4"),
     starterCode: `data = """${room1OxMonitorData}"""
 
 rows = data.strip().splitlines()
@@ -229,116 +255,169 @@ for row in rows:
 
 print(code)
 `,
+    isRequired: true,
+    requiredForDoor: true,
+    doorCodePiece: "4",
+    doorCodePosition: 2,
+    targetConcepts: ["splitlines", "count", "modulo", "enumerate"],
+    usefulConcepts: ["line_processing", "signal_counting"],
+    puzzleType: "counting",
+    expectedStrategyDescription: "여러 줄의 X 신호 개수를 세고 홀수 조건을 만족하는 줄의 값을 이어 읽는다.",
   },
   {
     id: "room-1-number-panel",
     roomId: "room-1",
     title: "숫자 패널",
     objectId: "room-1-number-panel",
-    situationText: "패널의 숫자 중 4로 나누어 떨어지는 것만 골라라.",
+    situationText: "숫자 패널에는 잡음 신호가 섞여 있다. 50보다 작은 4의 배수만 남기고, 살아남은 신호를 위에서부터 이어 붙여라.",
     dataText: room1NumberPanelData,
     expectedAnswer: "4820",
-    mockOutput: "[80, 72, 48, 20, 132, 188, 164, 80, 144, 108, 88, 72, 68, 152, 56, 136, 184, 148, 192, 148, 88]",
+    mockOutput: "4820",
     referenceItems: [
       ref("int(x)", "문자열을 숫자로 바꾸기"),
       ref("n % 4 == 0", "4의 배수 확인"),
       ref("append()", "결과 리스트에 추가하기"),
       ref("for x in nums", "숫자를 하나씩 확인하기"),
     ],
-    rewardHint: hint("room-1-hint-number-panel", "room-1", "room-1-number-panel", "첫 번째 숫자는 7이다."),
+    rewardHint: hint("room-1-hint-number-panel", "room-1", "room-1-number-panel", "Door Code 3번째 조각: 7"),
     starterCode: `data = """${room1NumberPanelData}"""
 
 nums = data.split()
 
-result = []
+result = ""
 for x in nums:
     n = int(x)
-    if n % 4 == 0:
-        result.append(n)
+    if n < 50 and n % 4 == 0:
+        result += str(n)
 
 print(result)
 `,
+    isRequired: true,
+    requiredForDoor: true,
+    doorCodePiece: "7",
+    doorCodePosition: 3,
+    targetConcepts: ["int", "modulo", "for", "if", "filtering"],
+    usefulConcepts: ["numeric_filtering"],
+    puzzleType: "filtering",
+    expectedStrategyDescription: "숫자 후보를 정수로 바꾸고 조건에 맞는 신호만 남겨 이어 붙인다.",
   },
   {
     id: "room-1-name-card",
     roomId: "room-1",
     title: "명함 보드",
     objectId: "room-1-name-card",
-    situationText: "보드의 이름 중 두 번 이상 등장한 이름의 수를 세면 해제 코드를 알 수 있다.",
+    situationText: "명함마다 이름과 작은 숫자 태그가 붙어 있다. 두 번 이상 등장한 이름만 남기고, 처음 발견된 순서대로 숫자 태그를 이어 읽어라.",
     dataText: room1NameCardData,
     expectedAnswer: "8052",
-    mockOutput: "['AXEL', 'DANA', 'FAYE', 'JONAS', 'KAI', 'LEO', 'MIRA', 'NORA', 'REED', 'SORA', 'TEO', 'YUNA']\n12",
+    mockOutput: "8052",
     referenceItems: [
+      ref("token.split(':')", "이름과 숫자 태그 나누기"),
       ref("set(names)", "중복 없는 이름 목록 만들기"),
       ref("names.count(name)", "특정 이름이 몇 번 나오는지 세기"),
       ref("if names.count(name) >= 2", "반복 이름 확인"),
-      ref("len(repeated)", "반복 이름 개수 확인"),
     ],
-    rewardHint: hint("room-1-hint-name-card", "room-1", "room-1-name-card", "각 자리 숫자의 합은 27이다."),
+    rewardHint: hint("room-1-hint-name-card", "room-1", "room-1-name-card", "Door Code 4번째 조각: 9"),
     starterCode: `data = """${room1NameCardData}"""
 
-names = data.split()
+cards = data.split()
+names = []
+digits = {}
 
-repeated = []
-for name in set(names):
+for card in cards:
+    name, digit = card.split(":")
+    names.append(name)
+    if name not in digits:
+        digits[name] = digit
+
+code = ""
+used = []
+for name in names:
+    if name in used:
+        continue
     if names.count(name) >= 2:
-        repeated.append(name)
+        code += digits[name]
+        used.append(name)
 
-print(sorted(repeated))
-print(len(repeated))
+print(code)
 `,
+    isRequired: true,
+    requiredForDoor: true,
+    doorCodePiece: "9",
+    doorCodePosition: 4,
+    targetConcepts: ["split", "set", "count", "for", "if"],
+    usefulConcepts: ["duplicate_detection"],
+    puzzleType: "deduplication",
+    expectedStrategyDescription: "이름과 숫자 태그를 분리하고 반복 등장한 이름의 태그만 처음 발견된 순서대로 이어 읽는다.",
   },
   {
     id: "room-1-radio-signal",
     roomId: "room-1",
     title: "라디오 장치",
     objectId: "room-1-radio-signal",
-    situationText: "목록의 숫자 중 3의 배수이고 끝자리가 2인 것만 골라라.",
+    situationText: "희미한 라디오가 선택 신호를 흘린다. 3의 배수이고 끝자리가 2인 주파수만 남긴 뒤, 각 신호 앞의 채널 번호를 이어 읽어라.",
     dataText: room1RadioSignalData,
     expectedAnswer: "3164",
-    mockOutput: "[822, 522, 252, 132, 282, 882, 822, 252, 612, 942, 462]",
+    mockOutput: "3164",
     referenceItems: [
+      ref('token.split(":")', "채널 번호와 주파수 나누기"),
       ref('str(n).endswith("2")', "끝자리가 2인지 확인"),
       ref("n % 3 == 0", "3의 배수 확인"),
       ref("int(x)", "문자열을 숫자로 바꾸기"),
       ref("for / if", "조건에 맞는 값만 고르기"),
     ],
-    rewardHint: hint("room-1-hint-radio-signal", "room-1", "room-1-radio-signal", "코드는 홀수다."),
+    rewardHint: hint("room-1-hint-radio-signal", "room-1", "room-1-radio-signal", "숨겨진 단서 확인: 주파수 필터를 사용했다."),
     starterCode: `data = """${room1RadioSignalData}"""
 
-nums = [int(x) for x in data.split()]
+tokens = data.split()
 
-result = []
-for n in nums:
-    if n % 3 == 0 and str(n).endswith("2"):
-        result.append(n)
+code = ""
+for token in tokens:
+    channel, freq_text = token.split(":")
+    freq = int(freq_text)
+    if freq % 3 == 0 and str(freq).endswith("2"):
+        code += channel
 
-print(result)
+print(code)
 `,
+    isRequired: false,
+    isHidden: true,
+    requiredForDoor: false,
+    targetConcepts: ["int", "str", "endswith", "modulo", "filtering"],
+    usefulConcepts: ["numeric_filtering"],
+    puzzleType: "hidden_filtering",
+    expectedStrategyDescription: "채널과 주파수를 분리하고 두 조건을 동시에 만족하는 주파수의 채널 번호만 이어 읽는다.",
   },
   {
     id: "room-1-checksum-tablet",
     roomId: "room-1",
-    title: "체크섬 태블릿",
+    title: "노이즈 스트립",
     objectId: "room-1-checksum-tablet",
-    situationText: "PASS 판정을 받은 코드의 두 번째 자리 숫자가 해제 코드와 관련된 단서다.",
-    dataText: room1ChecksumTabletData,
+    situationText: "숨겨진 노이즈 스트립에는 문자 사이에 숫자 신호가 끼어 있다. 숫자만 남겨 위에서부터 이어 읽어라.",
+    dataText: room1NoiseStripData,
     expectedAnswer: "2748",
-    mockOutput: "4",
+    mockOutput: "2748",
     referenceItems: [
-      ref("splitlines()", "줄 단위로 나누기"),
-      ref("line.split()", "코드와 결과 나누기"),
-      ref("code[1]", "두 번째 숫자 가져오기"),
-      ref('result == "PASS"', "통과한 코드만 확인하기"),
+      ref("for ch in text", "문자를 하나씩 확인하기"),
+      ref("ch.isdigit()", "숫자인 문자만 확인하기"),
+      ref("result += ch", "필요한 문자만 이어 붙이기"),
     ],
-    rewardHint: hint("room-1-hint-checksum-tablet", "room-1", "room-1-checksum-tablet", "두 번째 숫자는 4다."),
-    starterCode: `data = """${room1ChecksumTabletData}"""
+    rewardHint: hint("room-1-hint-checksum-tablet", "room-1", "room-1-checksum-tablet", "숨겨진 단서 확인: 노이즈에서 숫자만 추출했다."),
+    starterCode: `data = "${room1NoiseStripData}"
 
-for line in data.strip().splitlines():
-    code, result = line.split()
-    if result == "PASS":
-        print(code[1])
+code = ""
+for ch in data:
+    if ch.isdigit():
+        code += ch
+
+print(code)
 `,
+    isRequired: false,
+    isHidden: true,
+    requiredForDoor: false,
+    targetConcepts: ["for", "isdigit", "string_processing"],
+    usefulConcepts: ["pattern_extraction"],
+    puzzleType: "hidden_pattern",
+    expectedStrategyDescription: "문자열에서 숫자 문자만 골라 숨겨진 코드를 만든다.",
   },
   {
     id: "room-2-file-cabinet",
@@ -356,10 +435,10 @@ A400 / sync / fail
 A221 / access / success
 A510 / backup / success
 A400 / sync / fail`,
-    expectedAnswer: "4106",
-    mockOutput: "6",
+    expectedAnswer: "6666",
+    mockOutput: "6\n6666",
     referenceItems: [ref("splitlines()", "여러 줄 문자열 나누기"), ref("set(records)", "중복 제거하기"), ref("len()", "개수 확인하기")],
-    rewardHint: hint("room-2-hint-file-cabinet", "room-2", "room-2-file-cabinet", "첫 번째 숫자는 3이다."),
+    rewardHint: hint("room-2-hint-file-cabinet", "room-2", "room-2-file-cabinet", "Door Code 1번째 조각: 3"),
     starterCode: `data = """A104 / login / success
 A117 / scan / fail
 A104 / login / success
@@ -374,8 +453,18 @@ A400 / sync / fail"""
 records = data.strip().splitlines()
 unique = set(records)
 
-print(len(unique))
+count = len(unique)
+print(count)
+print(str(count) * 4)
 `,
+    isRequired: true,
+    requiredForDoor: true,
+    doorCodePiece: "3",
+    doorCodePosition: 1,
+    targetConcepts: ["splitlines", "set", "len"],
+    usefulConcepts: ["deduplication", "record_processing"],
+    puzzleType: "deduplication",
+    expectedStrategyDescription: "중복 기록을 제거해 실제로 다른 기록만 남긴다.",
   },
   {
     id: "room-2-broken-tags",
@@ -393,15 +482,15 @@ PARK JIHOON
 choi-yuna
 CHOI_YUNA
 choi-yuna`,
-    expectedAnswer: "5204",
-    mockOutput: "4",
+    expectedAnswer: "4444",
+    mockOutput: "4\n4444",
     referenceItems: [
       ref("lower()", "소문자로 통일하기"),
       ref("replace()", "문자 바꾸기"),
       ref("set()", "중복 제거하기"),
       ref("strip()", "앞뒤 공백 제거하기"),
     ],
-    rewardHint: hint("room-2-hint-broken-tags", "room-2", "room-2-broken-tags", "두 번째 숫자는 5다."),
+    rewardHint: hint("room-2-hint-broken-tags", "room-2", "room-2-broken-tags", "Door Code 2번째 조각: 5"),
     starterCode: `data = """kim-minhyuk
 Kim Minhyuk
 KIM_MINHYUK
@@ -422,9 +511,18 @@ for name in names:
     name = name.replace("_", " ")
     cleaned.append(name)
 
-print(set(cleaned))
-print(len(set(cleaned)))
+count = len(set(cleaned))
+print(count)
+print(str(count) * 4)
 `,
+    isRequired: true,
+    requiredForDoor: true,
+    doorCodePiece: "5",
+    doorCodePosition: 2,
+    targetConcepts: ["lower", "replace", "strip", "set"],
+    usefulConcepts: ["normalization", "deduplication"],
+    puzzleType: "normalization",
+    expectedStrategyDescription: "표기가 다른 이름을 같은 형식으로 맞춘 뒤 실제 고유 인원을 확인한다.",
   },
   {
     id: "room-2-score-board",
@@ -445,15 +543,15 @@ P01 / 92
 P05 / 78
 P02 / 95
 P04 / 81`,
-    expectedAnswer: "9421",
-    mockOutput: "JONAS 95",
+    expectedAnswer: "9595",
+    mockOutput: "JONAS 95\n9595",
     referenceItems: [
       ref("dict", "ID와 이름 연결하기"),
       ref('split("/")', "구분자로 나누기"),
       ref("int(score)", "점수를 숫자로 바꾸기"),
       ref(">", "값 비교하기"),
     ],
-    rewardHint: hint("room-2-hint-score-board", "room-2", "room-2-score-board", "세 번째 숫자는 4다."),
+    rewardHint: hint("room-2-hint-score-board", "room-2", "room-2-score-board", "Door Code 3번째 조각: 4"),
     starterCode: `names_text = """P01 / MIRA
 P02 / JONAS
 P03 / FAYE
@@ -484,7 +582,16 @@ for line in scores_text.strip().splitlines():
         best_name = name_by_id[pid]
 
 print(best_name, best_score)
+print(str(best_score) * 2)
 `,
+    isRequired: true,
+    requiredForDoor: true,
+    doorCodePiece: "4",
+    doorCodePosition: 3,
+    targetConcepts: ["dict", "split", "int", "comparison"],
+    usefulConcepts: ["id_matching", "record_join"],
+    puzzleType: "matching",
+    expectedStrategyDescription: "ID를 기준으로 이름과 점수 기록을 연결하고 가장 높은 점수의 대상을 찾는다.",
   },
   {
     id: "room-2-access-log",
@@ -499,14 +606,14 @@ print(best_name, best_score)
 12:08 / FILE / removed / success
 12:10 / ADMIN / logout / success
 12:12 / SYSTEM / sync / fail`,
-    expectedAnswer: "7710",
-    mockOutput: "ADMIN logout 12:10",
+    expectedAnswer: "1210",
+    mockOutput: "12:10 / ADMIN / logout / success\n1210",
     referenceItems: [
       ref('"success" in line', "문자열 포함 여부 확인하기"),
       ref("last_success = line", "변수 갱신하기"),
       ref("splitlines()", "줄 단위로 나누기"),
     ],
-    rewardHint: hint("room-2-hint-access-log", "room-2", "room-2-access-log", "마지막 숫자는 7이다."),
+    rewardHint: hint("room-2-hint-access-log", "room-2", "room-2-access-log", "숨겨진 단서 확인: 마지막 성공 로그를 찾았다."),
     starterCode: `data = """11:52 / CAMERA / noise
 12:01 / ADMIN / login / success
 12:03 / GUEST / access / fail
@@ -522,7 +629,15 @@ for line in data.strip().splitlines():
         last_success = line
 
 print(last_success)
+print(last_success.split("/")[0].strip().replace(":", ""))
 `,
+    isRequired: false,
+    isHidden: true,
+    requiredForDoor: false,
+    targetConcepts: ["splitlines", "in", "variable_update"],
+    usefulConcepts: ["log_search"],
+    puzzleType: "hidden_log_search",
+    expectedStrategyDescription: "여러 로그에서 조건에 맞는 마지막 기록을 추적한다.",
   },
   {
     id: "room-2-timeline",
@@ -537,10 +652,10 @@ print(last_success)
 12:08 / file removed
 11:52 / camera noise
 12:10 / admin logout`,
-    expectedAnswer: "8305",
-    mockOutput: "12:10 / admin logout",
+    expectedAnswer: "1210",
+    mockOutput: "1210",
     referenceItems: [ref("sorted()", "정렬하기"), ref("events[-1]", "마지막 항목 가져오기"), ref("시간 문자열 정렬", "HH:MM 형식은 문자열 정렬로도 순서를 맞출 수 있음")],
-    rewardHint: hint("room-2-hint-timeline", "room-2", "room-2-timeline", "코드는 홀수다."),
+    rewardHint: hint("room-2-hint-timeline", "room-2", "room-2-timeline", "Door Code 4번째 조각: 7"),
     starterCode: `data = """12:05 / door opened
 11:58 / power off
 12:01 / admin login
@@ -555,27 +670,36 @@ events = sorted(events)
 for event in events:
     print(event)
 
-print("last:", events[-1])
+last_time = events[-1].split("/")[0].strip().replace(":", "")
+print(last_time)
 `,
+    isRequired: true,
+    requiredForDoor: true,
+    doorCodePiece: "7",
+    doorCodePosition: 4,
+    targetConcepts: ["sorted", "indexing", "splitlines"],
+    usefulConcepts: ["timeline_sorting"],
+    puzzleType: "sorting",
+    expectedStrategyDescription: "시간 형식 기록을 정렬해 가장 마지막 사건을 확인한다.",
   },
   {
     id: "room-2-checksum-ledger",
     roomId: "room-2",
-    title: "체크섬 장부",
+    title: "아카이브 쪽지",
     objectId: "room-2-checksum-ledger",
     situationText: "PASS 판정된 코드의 각 자리 숫자를 모두 더한 값이 해제 코드와 관련된 단서다.",
     dataText: `3547 / digit sum / PASS
 3546 / digit sum / FAIL
 2547 / digit sum / FAIL
 3557 / digit sum / FAIL`,
-    expectedAnswer: "6251",
-    mockOutput: "19",
+    expectedAnswer: "1919",
+    mockOutput: "19\n1919",
     referenceItems: [
       ref("line.split('/')", "슬래시 구분자로 나누기"),
       ref("sum(int(x) for x in code)", "자리수 합 구하기"),
       ref('status == "PASS"', "통과 기록 확인하기"),
     ],
-    rewardHint: hint("room-2-hint-checksum-ledger", "room-2", "room-2-checksum-ledger", "각 자리 숫자의 합은 19다."),
+    rewardHint: hint("room-2-hint-checksum-ledger", "room-2", "room-2-checksum-ledger", "숨겨진 단서 확인: 기록 조각의 합계를 확인했다."),
     starterCode: `data = """3547 / digit sum / PASS
 3546 / digit sum / FAIL
 2547 / digit sum / FAIL
@@ -584,8 +708,17 @@ print("last:", events[-1])
 for line in data.strip().splitlines():
     code, _, status = [x.strip() for x in line.split("/")]
     if status == "PASS":
-        print(sum(int(x) for x in code))
+        total = sum(int(x) for x in code)
+        print(total)
+        print(str(total) * 2)
 `,
+    isRequired: false,
+    isHidden: true,
+    requiredForDoor: false,
+    targetConcepts: ["split", "sum", "int", "status_filtering"],
+    usefulConcepts: ["record_summary"],
+    puzzleType: "hidden_summary",
+    expectedStrategyDescription: "상태가 표시된 기록에서 통과한 항목만 골라 요약 값을 계산한다.",
   },
   {
     id: "room-3-switch-panel",
@@ -607,7 +740,7 @@ S1과 S6은 다르다`,
       ref("continue", "조건에 맞지 않으면 건너뛰기"),
       ref("list", "상태를 리스트로 표현하기"),
     ],
-    rewardHint: hint("room-3-hint-switch-panel", "room-3", "room-3-switch-panel", "마지막 숫자는 6이다."),
+    rewardHint: hint("room-3-hint-switch-panel", "room-3", "room-3-switch-panel", "Door Code 4번째 조각: 6"),
     starterCode: `count = 0
 valid = []
 
@@ -634,6 +767,14 @@ for s1 in [0, 1]:
 print(count)
 print(valid)
 `,
+    isRequired: true,
+    requiredForDoor: true,
+    doorCodePiece: "6",
+    doorCodePosition: 4,
+    targetConcepts: ["nested_loop", "sum", "continue"],
+    usefulConcepts: ["candidate_generation", "condition_filtering"],
+    puzzleType: "candidate_generation",
+    expectedStrategyDescription: "가능한 스위치 조합을 만들고 여러 조건을 만족하는 후보만 남긴다.",
   },
   {
     id: "room-3-logic-gate",
@@ -654,7 +795,7 @@ OUT = G1 또는 G2 중 하나라도 1이면 1, 아니면 0`,
     expectedAnswer: "1101",
     mockOutput: "0\n1\n1\n0",
     referenceItems: [ref("^", "둘 중 하나만 1일 때 1"), ref("&", "둘 다 1일 때 1"), ref("|", "하나 이상 1일 때 1"), ref("for", "여러 행에 같은 규칙 적용하기")],
-    rewardHint: hint("room-3-hint-logic-gate", "room-3", "room-3-logic-gate", "첫 번째 숫자는 4다."),
+    rewardHint: hint("room-3-hint-logic-gate", "room-3", "room-3-logic-gate", "Door Code 1번째 조각: 4"),
     starterCode: `cases = [
     (0, 0, 0, 1),
     (0, 1, 1, 0),
@@ -668,6 +809,14 @@ for a, b, c, d in cases:
     out = g1 | g2
     print(out)
 `,
+    isRequired: true,
+    requiredForDoor: true,
+    doorCodePiece: "4",
+    doorCodePosition: 1,
+    targetConcepts: ["boolean_logic", "bitwise_operators", "for"],
+    usefulConcepts: ["logic_evaluation"],
+    puzzleType: "logic",
+    expectedStrategyDescription: "각 행의 입력값에 논리 규칙을 적용해 출력값을 계산한다.",
   },
   {
     id: "room-3-candidate-codes",
@@ -691,7 +840,7 @@ for a, b, c, d in cases:
       ref("continue", "조건 불일치 시 건너뛰기"),
       ref("int()", "문자 숫자를 정수로 바꾸기"),
     ],
-    rewardHint: hint("room-3-hint-candidate-codes", "room-3", "room-3-candidate-codes", "두 번째 숫자는 0이다."),
+    rewardHint: hint("room-3-hint-candidate-codes", "room-3", "room-3-candidate-codes", "Door Code 2번째 조각: 0"),
     starterCode: `data = """4026 4726 4926 4028 4126 9026
 4006 3026 4426 4016 4022 4024"""
 
@@ -711,6 +860,14 @@ for code in candidates:
 
     print(code)
 `,
+    isRequired: true,
+    requiredForDoor: true,
+    doorCodePiece: "0",
+    doorCodePosition: 2,
+    targetConcepts: ["string_indexing", "int", "sum", "filtering"],
+    usefulConcepts: ["candidate_filtering"],
+    puzzleType: "candidate_filtering",
+    expectedStrategyDescription: "후보 코드 목록에서 여러 조건을 모두 만족하는 코드만 남긴다.",
   },
   {
     id: "room-3-warning-lamp",
@@ -729,7 +886,7 @@ A가 켜져 있고, B 또는 C 중 하나 이상이 켜져 있으면 경고등�
     expectedAnswer: "2408",
     mockOutput: "1\n1\n0\n0",
     referenceItems: [ref("and", "그리고"), ref("or", "또는"), ref("( )", "괄호로 조건 묶기"), ref("int(lamp)", "bool 결과를 숫자로 바꾸기")],
-    rewardHint: hint("room-3-hint-warning-lamp", "room-3", "room-3-warning-lamp", "첫 번째 숫자는 짝수다."),
+    rewardHint: hint("room-3-hint-warning-lamp", "room-3", "room-3-warning-lamp", "숨겨진 단서 확인: 경고 램프 조건식을 해석했다."),
     starterCode: `cases = [
     (1, 0, 1),
     (1, 1, 0),
@@ -741,6 +898,13 @@ for a, b, c in cases:
     lamp = a == 1 and (b == 1 or c == 1)
     print(int(lamp))
 `,
+    isRequired: false,
+    isHidden: true,
+    requiredForDoor: false,
+    targetConcepts: ["and", "or", "boolean"],
+    usefulConcepts: ["condition_expression"],
+    puzzleType: "hidden_condition",
+    expectedStrategyDescription: "조건식을 읽고 각 경우에 경고등이 켜지는지 판단한다.",
   },
   {
     id: "room-3-experiment",
@@ -758,7 +922,7 @@ for a, b, c in cases:
     expectedAnswer: "7022",
     mockOutput: "4026\n9026",
     referenceItems: [ref("def", "함수 만들기"), ref("return", "결과 반환하기"), ref("if", "조건을 함수로 묶기"), ref("for", "여러 후보에 같은 규칙 적용하기")],
-    rewardHint: hint("room-3-hint-experiment", "room-3", "room-3-experiment", "세 번째 숫자는 2다."),
+    rewardHint: hint("room-3-hint-experiment", "room-3", "room-3-experiment", "Door Code 3번째 조각: 2"),
     starterCode: `candidates = "4026 4726 4926 4028 4126 9026".split()
 
 def valid(code):
@@ -774,11 +938,19 @@ for code in candidates:
     if valid(code):
         print(code)
 `,
+    isRequired: true,
+    requiredForDoor: true,
+    doorCodePiece: "2",
+    doorCodePosition: 3,
+    targetConcepts: ["def", "return", "validation", "for"],
+    usefulConcepts: ["function_based_validation"],
+    puzzleType: "validation",
+    expectedStrategyDescription: "검증 함수를 만들어 후보 코드가 조건을 만족하는지 반복해서 확인한다.",
   },
   {
     id: "room-3-power-meter",
     roomId: "room-3",
-    title: "전력 측정기",
+    title: "후보 다이얼",
     objectId: "room-3-power-meter",
     situationText: "stable로 표시된 코드의 자리 숫자를 모두 더한 값이 해제 코드와 관련된 단서다.",
     dataText: `4026 stable
@@ -792,7 +964,7 @@ for code in candidates:
       ref("sum()", "합계 구하기"),
       ref("int(digit)", "문자 숫자를 정수로 바꾸기"),
     ],
-    rewardHint: hint("room-3-hint-power-meter", "room-3", "room-3-power-meter", "각 자리 숫자의 합은 12다."),
+    rewardHint: hint("room-3-hint-power-meter", "room-3", "room-3-power-meter", "숨겨진 단서 확인: 후보의 자리 합을 비교했다."),
     starterCode: `data = """4026 stable
 4726 overload
 3026 low
@@ -803,6 +975,13 @@ for line in data.strip().splitlines():
     if state == "stable":
         print(sum(int(digit) for digit in code))
 `,
+    isRequired: false,
+    isHidden: true,
+    requiredForDoor: false,
+    targetConcepts: ["sum", "int", "string_iteration"],
+    usefulConcepts: ["numeric_summary"],
+    puzzleType: "hidden_candidate_check",
+    expectedStrategyDescription: "후보 코드의 각 자리 숫자를 합산해 상태와 비교한다.",
   },
   {
     id: "room-4-validator",

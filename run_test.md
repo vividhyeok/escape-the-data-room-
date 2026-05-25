@@ -20,13 +20,16 @@ http://127.0.0.1:5173/?mode=test
 
 ## 확인할 것
 
-- Room 1에 정상 진입하는가
+- Room 0에서 정상 시작하는가
+- Room 1로 이동할 수 있는가
 - Word Billboard 데이터가 손으로 고르기에는 충분히 많은가
 - `Copy Data`가 동작하는가
 - Python Lab이 기본적으로 빈 상태인가
 - 사용자가 직접 코드 draft를 작성할 수 있는가
-- `Run Analysis` 후 Signal Output을 보고 `6719`를 해석할 수 있는가
+- `Run Analysis` 후 `Signal Output`을 보고 `6719`를 해석할 수 있는가
+- Room 1 필수 퍼즐 4개의 Door Code 조각 `7`, `4`, `7`, `9`를 모을 수 있는가
 - Door Code `7479`로 Room 1을 클리어할 수 있는가
+- 숨겨진 선택 단서가 필수 클리어를 막지 않는가
 - 새로고침 후 진행 상태가 복원되는가
 
 ## 주의

@@ -1,5 +1,35 @@
+# ── Dependencies ─────────────────────────────────────────────────
 node_modules/
+
+# ── Build output ─────────────────────────────────────────────────
 dist/
-*.log
 *.tsbuildinfo
+
+# ── Logs ─────────────────────────────────────────────────────────
+*.log
+*.log.*
+
+# ── Environment / secrets ─────────────────────────────────────────
+.env
+.env.local
+.env.*.local
+
+# ── Image generation (API key, prompts, scripts) ──────────────────
+scripts/generate_assets.mjs
+image_prompts/
+
+# ── Panorama segment intermediates (stitching artifacts) ──────────
+public/assets/images/backgrounds/**/seg-*.png
+public/assets/images/backgrounds/**/left.png
+public/assets/images/backgrounds/**/center.png
+public/assets/images/backgrounds/**/right.png
+
+# ── Internal planning docs ────────────────────────────────────────
+plan_v11.md
+CLASSROOM_30MIN_REDESIGN.md
+
+# ── Editor / tool local config ────────────────────────────────────
+.claude/
 .browser-test-profile/
+.vscode/settings.json
+.idea/

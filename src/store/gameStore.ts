@@ -97,7 +97,7 @@ export const useGameStore = create<GameStore>()(
     {
       name: GAME_STORAGE_KEY,
       storage: createJSONStorage(getGameStorage),
-      version: 2,
+      version: 3,
       partialize: (state) => ({
         currentRoomId: state.currentRoomId,
         currentViewId: state.currentViewId,
