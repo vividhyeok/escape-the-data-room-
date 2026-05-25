@@ -78,77 +78,87 @@ export function TitleScreen(): React.JSX.Element {
       </div>
 
       {showSettings && (
-        <div className="settings-modal">
-          <div className="settings-content" style={{ width: "400px" }}>
-            <h2 style={{ color: "#94ffc5" }}>SETTINGS</h2>
-            
-            <div style={{ display: "flex", flexDirection: "column", gap: "10px", textAlign: "left" }}>
-              <label style={{ fontSize: "1.2rem" }}>텍스트 속도 (Text Speed)</label>
-              <select 
-                value={textSpeed} 
-                onChange={(e) => { SoundEngine.playClick(); setTextSpeed(e.target.value as any); }}
-                style={{ padding: "8px", background: "#222", color: "#fff", border: "1px solid #444", fontSize: "1.1rem" }}
-              >
-                <option value="slow">느림 (Slow)</option>
-                <option value="normal">보통 (Normal)</option>
-                <option value="fast">빠름 (Fast)</option>
-                <option value="instant">즉시 출력 (Instant)</option>
-              </select>
+        <div className="cyber-modal-overlay">
+          <div className="cyber-modal" style={{ width: "500px" }}>
+            <div className="cyber-modal-header">
+              <span>SYSTEM.SETTINGS</span>
+              <button className="cyber-modal-close" onClick={() => setShowSettings(false)} type="button">✕</button>
             </div>
-
-            <button className="title-btn" onClick={toggleFullscreen} type="button" style={{ textAlign: "center" }}>전체화면 전환 (FULLSCREEN)</button>
-            
-            <button className="title-btn" onClick={() => {
-              resetProgress();
-              alert("데이터가 초기화되었습니다.");
-            }} type="button" style={{ textAlign: "center", color: "#ff6b6b" }}>데이터 초기화 (RESET DATA)</button>
-            
-            <button className="title-btn" onClick={() => setShowSettings(false)} type="button" style={{ textAlign: "center" }}>CLOSE</button>
+            <div className="cyber-modal-content" style={{ display: "flex", flexDirection: "column", gap: "20px" }}>
+              <div style={{ display: "flex", flexDirection: "column", gap: "10px", textAlign: "left" }}>
+                <label style={{ fontSize: "1.2rem", fontWeight: "bold" }}>TEXT OUTPUT SPEED</label>
+                <div className="cyber-btn-group">
+                  {["slow", "normal", "fast", "instant"].map(speed => (
+                    <button 
+                      key={speed}
+                      className={`cyber-switch-btn ${textSpeed === speed ? "active" : ""}`}
+                      onClick={() => { SoundEngine.playClick(); setTextSpeed(speed as any); }}
+                      type="button"
+                    >
+                      {speed.toUpperCase()}
+                    </button>
+                  ))}
+                </div>
+              </div>
+              <button className="cyber-switch-btn" onClick={toggleFullscreen} type="button">TOGGLE FULLSCREEN</button>
+              <button className="cyber-switch-btn" onClick={() => {
+                resetProgress();
+                alert("데이터가 초기화되었습니다.");
+              }} type="button" style={{ color: "#ff6b6b", borderColor: "#ff6b6b" }}>RESET ALL DATA</button>
+            </div>
           </div>
         </div>
       )}
 
       {showCredits && (
-        <div className="settings-modal">
-          <div className="settings-content">
-            <h2 style={{ color: "#94ffc5" }}>CREDITS</h2>
-            <p style={{ margin: "20px 0", fontSize: "1.2rem", lineHeight: "1.6" }}>
-              2026-1 캡스톤 프로젝트<br />
-              김민혁, 공원호 제작
-            </p>
-            <button className="title-btn" onClick={() => setShowCredits(false)} type="button" style={{ textAlign: "center" }}>CLOSE</button>
+        <div className="cyber-modal-overlay">
+          <div className="cyber-modal" style={{ width: "400px", textAlign: "center" }}>
+            <div className="cyber-modal-header">
+              <span>SYSTEM.CREDITS</span>
+              <button className="cyber-modal-close" onClick={() => setShowCredits(false)} type="button">✕</button>
+            </div>
+            <div className="cyber-modal-content">
+              <p style={{ margin: "20px 0", fontSize: "1.2rem", lineHeight: "1.6" }}>
+                2026-1 캡스톤 프로젝트<br /><br />
+                김민혁, 공원호 제작
+              </p>
+            </div>
           </div>
         </div>
       )}
 
       {showStoryArchive && (
-        <div className="settings-modal">
-          <div className="story-archive-content">
-            <h2 style={{ color: "#94ffc5" }}>STORY ARCHIVE</h2>
-            <div className="story-log-container">
+        <div className="cyber-modal-overlay">
+          <div className="cyber-modal" style={{ maxWidth: "800px" }}>
+            <div className="cyber-modal-header">
+              <span>SYSTEM.ARCHIVE.STORY</span>
+              <button className="cyber-modal-close" onClick={() => setShowStoryArchive(false)} type="button">✕</button>
+            </div>
+            <div className="cyber-modal-content" style={{ maxHeight: "60vh", overflowY: "auto" }}>
               {unlockedStories.length === 0 ? (
-                <p className="no-story-msg">아직 해금된 스토리가 없습니다.</p>
+                <p style={{ textAlign: "center", fontStyle: "italic", opacity: 0.5 }}>NO STORY DATA FOUND.</p>
               ) : (
-                unlockedStories.map((id) => {
-                  const seq = dialogues[id];
-                  if (!seq) return null;
-                  return (
-                    <div key={id} className="story-log-item">
-                      <h3 className="story-log-title">{seq.title}</h3>
-                      <div className="story-log-lines">
-                        {seq.lines.map((line, idx) => (
-                          <div key={idx} className="story-log-line">
-                            {line.speaker && <span className="story-speaker">{line.speaker}: </span>}
-                            <span className="story-text">{line.text}</span>
-                          </div>
-                        ))}
-                      </div>
-                    </div>
-                  );
-                })
+                <ul className="cyber-list">
+                  {unlockedStories.map((id) => {
+                    const seq = dialogues[id];
+                    if (!seq) return null;
+                    return (
+                      <li key={id} className="cyber-list-item">
+                        <span className="cyber-item-title">{seq.title}</span>
+                        <div style={{ marginTop: "10px", display: "flex", flexDirection: "column", gap: "8px" }}>
+                          {seq.lines.map((line, idx) => (
+                            <div key={idx} style={{ fontSize: "1rem", opacity: 0.9 }}>
+                              {line.speaker && <span style={{ color: "#fff", fontWeight: "bold" }}>[{line.speaker}] </span>}
+                              <span>{line.text}</span>
+                            </div>
+                          ))}
+                        </div>
+                      </li>
+                    );
+                  })}
+                </ul>
               )}
             </div>
-            <button className="title-btn" onClick={() => setShowStoryArchive(false)} type="button" style={{ textAlign: "center" }}>CLOSE</button>
           </div>
         </div>
       )}

@@ -5,7 +5,7 @@ function ref(label: string, description: string): ReferenceItem {
 }
 
 function hint(id: string, roomId: string, puzzleId: string, text: string): RoomHint {
-  return { id, roomId, puzzleId, text };
+  return { id, roomId, puzzleId, text, description: text, value: text };
 }
 
 const room1WordBillboardData = `MONITOR DOOR ARCHIVE ROUTER BASIC WINDOW SIGNAL DESK CONSOLE

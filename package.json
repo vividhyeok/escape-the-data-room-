@@ -15,6 +15,7 @@
     "gen:obj": "node scripts/generate_assets.mjs --only=obj"
   },
   "dependencies": {
+    "@codemirror/autocomplete": "^6.20.2",
     "@codemirror/lang-python": "^6.2.1",
     "@react-three/drei": "^10.7.7",
     "@react-three/fiber": "^9.6.1",

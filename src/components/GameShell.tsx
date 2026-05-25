@@ -101,7 +101,10 @@ export function GameShell(): React.JSX.Element {
       
       if (finishedId === "intro") {
         setIntroStage("opening");
-        setTimeout(() => setIntroStage("done"), 2500);
+        setTimeout(() => {
+          setIntroStage("done");
+          useGameStore.getState().setDialogue("tutorial");
+        }, 2500);
       } else if (finishedId === "escape-success" || finishedId === "true-ending") {
         setGameState("CREDITS");
       }
@@ -115,7 +118,7 @@ export function GameShell(): React.JSX.Element {
         SoundEngine.playClick();
         setIsPaused((prev) => !prev);
       }
-      if (e.key === "Tab" || e.key.toLowerCase() === "i") {
+      if (e.key.toLowerCase() === "i") {
         e.preventDefault();
         SoundEngine.playGlitch();
         setShowInventory((prev) => !prev);
@@ -288,35 +291,40 @@ export function GameShell(): React.JSX.Element {
       {transitioning ? <div className="room-transition-flash" aria-hidden="true" /> : null}
 
       {isPaused && (
-        <div className="settings-modal" style={{ zIndex: 10000 }}>
-          <div className="settings-content" style={{ minWidth: "400px" }}>
-            <h2 style={{ color: "#94ffc5" }}>PAUSED</h2>
-            <button className="title-btn" onClick={() => setIsPaused(false)} type="button" style={{ textAlign: "center" }}>RESUME</button>
-            <button className="title-btn" onClick={handleReturnToTitle} type="button" style={{ textAlign: "center" }}>RETURN TO TITLE</button>
+        <div className="cyber-modal-overlay">
+          <div className="cyber-modal" style={{ maxWidth: "400px" }}>
+            <div className="cyber-modal-header">
+              <span>SYSTEM.PAUSED</span>
+              <button className="cyber-modal-close" onClick={() => setIsPaused(false)} type="button">✕</button>
+            </div>
+            <div className="cyber-modal-content" style={{ display: "flex", flexDirection: "column", gap: "20px" }}>
+              <button className="cyber-switch-btn" onClick={() => setIsPaused(false)} type="button">RESUME</button>
+              <button className="cyber-switch-btn" onClick={handleReturnToTitle} type="button">RETURN TO TITLE</button>
+            </div>
           </div>
         </div>
       )}
 
       {showInventory && (
-        <div className="settings-modal" style={{ zIndex: 9000 }}>
-          <div className="settings-content" style={{ width: "80vw", maxWidth: "900px", height: "80vh", background: "rgba(10, 15, 20, 0.95)" }}>
-            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-              <h2 style={{ color: "#94ffc5", margin: 0 }}>INVENTORY / HINTS</h2>
-              <button onClick={() => setShowInventory(false)} style={{ background: "none", border: "none", color: "#fff", cursor: "pointer", fontSize: "1.5rem" }}>✕</button>
+        <div className="cyber-modal-overlay">
+          <div className="cyber-modal" style={{ maxWidth: "800px" }}>
+            <div className="cyber-modal-header">
+              <span>SYSTEM.INVENTORY.ACCESS</span>
+              <button className="cyber-modal-close" onClick={() => setShowInventory(false)} type="button">✕</button>
             </div>
-            
-            <div className="story-log-container" style={{ flex: 1, overflowY: "auto", textAlign: "left" }}>
+            <div className="cyber-modal-content">
               {collectedHints.length === 0 ? (
-                <p style={{ color: "#666", textAlign: "center", marginTop: "50px", fontStyle: "italic" }}>아직 수집된 힌트가 없습니다.</p>
+                <p style={{ textAlign: "center", fontStyle: "italic", opacity: 0.5 }}>NO DATA FOUND.</p>
               ) : (
-                <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(250px, 1fr))", gap: "20px" }}>
+                <ul className="cyber-list">
                   {collectedHints.map((hint, idx) => (
-                    <div key={idx} style={{ background: "rgba(148, 255, 197, 0.1)", border: "1px solid rgba(148, 255, 197, 0.3)", padding: "15px", borderRadius: "8px" }}>
-                      <h4 style={{ color: "#94ffc5", marginBottom: "10px" }}>{hint.description}</h4>
-                      <p style={{ color: "#fff", margin: 0, wordBreak: "break-all" }}>{hint.value}</p>
-                    </div>
+                    <li key={idx} className="cyber-list-item">
+                      <span className="cyber-item-id">DATA_{String(idx).padStart(3, '0')}</span>
+                      <span className="cyber-item-title">{hint.description}</span>
+                      <span className="cyber-item-desc">{hint.value}</span>
+                    </li>
                   ))}
-                </div>
+                </ul>
               )}
             </div>
           </div>

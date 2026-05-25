@@ -20,6 +20,18 @@ export const dialogues: Record<string, StorySequence> = {
       { speaker: "SYSTEM", text: "나갈 방법은 하나야. 네 코딩 실력으로 저 문들을 열고 증명해 봐." },
     ]
   },
+  "tutorial": {
+    title: "가이드: 데이터 룸 이용 방법",
+    lines: [
+      { speaker: "SYSTEM", text: "이제 룰을 설명하지. 이곳은 오래전 방치된 '데이터 룸(Data Room)'이다." },
+      { speaker: "SYSTEM", text: "방 안의 단서들을 클릭(조사)해서 데이터를 수집해라." },
+      { speaker: "SYSTEM", text: "수집한 단서는 [I] 키를 눌러 언제든 확인할 수 있다." },
+      { speaker: "SYSTEM", text: "하지만 데이터는 엉망진창으로 오염되어 있지." },
+      { speaker: "SYSTEM", text: "화면 상단의 [Python Lab]을 열어, 수집한 데이터를 가공해라." },
+      { speaker: "SYSTEM", text: "Python 코드를 모른다고? 걱정 마라. 코드를 입력할 때 내비게이션(자동완성 힌트)이 도와줄 것이다." },
+      { speaker: "SYSTEM", text: "데이터를 모두 정제하면, 저 굳게 닫힌 문을 열 코드를 얻게 될 것이다. 건투를 빈다." }
+    ]
+  },
   "enter-room-1": {
     title: "제2장: 실전 데이터",
     lines: [

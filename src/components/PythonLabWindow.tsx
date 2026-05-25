@@ -3,6 +3,7 @@ import { indentWithTab } from "@codemirror/commands";
 import { indentOnInput } from "@codemirror/language";
 import { keymap } from "@codemirror/view";
 import { oneDark } from "@codemirror/theme-one-dark";
+import { autocompletion, CompletionContext, CompletionResult } from "@codemirror/autocomplete";
 import CodeMirror from "@uiw/react-codemirror";
 import { Play, RotateCcw, Loader2 } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
@@ -10,6 +11,37 @@ import type { Puzzle } from "../data/types";
 import { pythonRunner } from "../lib/pythonRunner";
 import { useGameStore } from "../store/gameStore";
 import { GameWindow } from "./GameWindow";
+import { SoundEngine } from "../utils/SoundEngine";
+
+function pythonCustomCompletions(context: CompletionContext): CompletionResult | null {
+  const word = context.matchBefore(/\w*/);
+  const dotWord = context.matchBefore(/\.\w*/);
+
+  if (dotWord && dotWord.from !== dotWord.to) {
+    return {
+      from: dotWord.from + 1,
+      options: [
+        { label: "split", type: "function", apply: "split()", detail: "나누기", info: "문자열을 특정 기준으로 나눕니다. 예: split('/')" },
+        { label: "replace", type: "function", apply: "replace('', '')", detail: "바꾸기", info: "문자열의 일부를 다른 문자로 교체합니다." },
+        { label: "strip", type: "function", apply: "strip()", detail: "공백제거", info: "문자열 양 끝의 공백이나 줄바꿈을 제거합니다." },
+        { label: "join", type: "function", apply: "join()", detail: "합치기", info: "리스트 요소들을 문자열로 결합합니다." },
+      ]
+    };
+  }
+
+  if (word && word.from !== word.to && !context.matchBefore(/['"]/)) {
+    return {
+      from: word.from,
+      options: [
+        { label: "data", type: "variable", detail: "기본변수", info: "현재 가공할 데이터가 담긴 변수입니다." },
+        { label: "len", type: "function", apply: "len()", detail: "길이구하기", info: "리스트나 문자열의 길이(개수)를 반환합니다." },
+        { label: "print", type: "function", apply: "print()", detail: "출력", info: "터미널에 값을 출력해 확인합니다." },
+      ]
+    };
+  }
+
+  return null;
+}
 
 declare global {
   interface Window {
@@ -93,6 +125,7 @@ export function PythonLabWindow({ puzzle, onClose }: PythonLabWindowProps): Reac
             python(),
             indentOnInput(),
             keymap.of([indentWithTab]),
+            autocompletion({ override: [pythonCustomCompletions] })
           ]}
           basicSetup={{
             lineNumbers: true,
@@ -101,7 +134,7 @@ export function PythonLabWindow({ puzzle, onClose }: PythonLabWindowProps): Reac
             highlightSelectionMatches: true,
             bracketMatching: true,
             closeBrackets: true,
-            autocompletion: true,
+            autocompletion: false,
             indentOnInput: true,
           }}
         />

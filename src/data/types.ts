@@ -47,6 +47,8 @@ export type RoomHint = {
   roomId: string;
   puzzleId: string;
   text: string;
+  description: string;
+  value: string;
 };
 
 export type Puzzle = {
