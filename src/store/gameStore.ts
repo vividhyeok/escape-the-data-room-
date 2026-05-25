@@ -20,6 +20,7 @@ type GameProgress = {
   bgmVolume: number;
   sfxVolume: number;
   isMuted: boolean;
+  isDemoMode: boolean;
 };
 
 type GameActions = {
@@ -38,6 +39,7 @@ type GameActions = {
   setBgmVolume: (vol: number) => void;
   setSfxVolume: (vol: number) => void;
   setIsMuted: (muted: boolean) => void;
+  setDemoMode: (enabled: boolean) => void;
 };
 
 export type GameStore = GameProgress & GameActions;
@@ -59,6 +61,7 @@ const initialProgress: GameProgress = {
   bgmVolume: 0.2,
   sfxVolume: 0.8,
   isMuted: false,
+  isDemoMode: false,
 };
 
 function addUnique<T>(items: T[], item: T, predicate: (existing: T) => boolean): T[] {
@@ -125,6 +128,7 @@ export const useGameStore = create<GameStore>()(
       setBgmVolume: (vol) => set({ bgmVolume: vol }),
       setSfxVolume: (vol) => set({ sfxVolume: vol }),
       setIsMuted: (muted) => set({ isMuted: muted }),
+      setDemoMode: (enabled) => set({ isDemoMode: enabled }),
     }),
     {
       name: GAME_STORAGE_KEY,

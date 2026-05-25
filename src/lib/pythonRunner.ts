@@ -1,5 +1,3 @@
-import { puzzlesById } from "../data/puzzles";
-
 export type PythonExecutionResult = {
   stdout: string;
   stderr?: string;
@@ -10,25 +8,47 @@ export interface PythonRunner {
   run(code: string, context?: Record<string, unknown>): Promise<PythonExecutionResult>;
 }
 
-export class MockPythonRunner implements PythonRunner {
-  async run(code: string, context?: Record<string, unknown>): Promise<PythonExecutionResult> {
-    const puzzleId = typeof context?.puzzleId === "string" ? context.puzzleId : undefined;
-    const puzzle = puzzleId ? puzzlesById[puzzleId] : undefined;
+type WorkerMessage = {
+  id: number;
+  success: boolean;
+  stdout: string;
+  stderr: string;
+};
 
-    if (!code.trim()) {
-      return {
-        stdout: "",
-        stderr: "No code draft found.",
-        success: false,
+class PyodideRunner implements PythonRunner {
+  private worker: Worker | null = null;
+  private pending = new Map<number, (result: PythonExecutionResult) => void>();
+  private nextId = 0;
+
+  private getWorker(): Worker {
+    if (!this.worker) {
+      this.worker = new Worker(
+        new URL("./pyodideWorker.ts", import.meta.url),
+        { type: "module" }
+      );
+      this.worker.onmessage = (event: MessageEvent<WorkerMessage>) => {
+        const { id, success, stdout, stderr } = event.data;
+        const resolve = this.pending.get(id);
+        if (resolve) {
+          this.pending.delete(id);
+          resolve({ success, stdout, stderr: stderr || undefined });
+        }
       };
     }
+    return this.worker;
+  }
 
-    return {
-      stdout: puzzle?.mockOutput ?? "Mock execution complete.",
-      success: true,
-    };
+  run(code: string): Promise<PythonExecutionResult> {
+    if (!code.trim()) {
+      return Promise.resolve({ stdout: "", stderr: "코드를 입력해 주세요.", success: false });
+    }
+
+    return new Promise((resolve) => {
+      const id = this.nextId++;
+      this.pending.set(id, resolve);
+      this.getWorker().postMessage({ id, code });
+    });
   }
 }
 
-export const pythonRunner: PythonRunner = new MockPythonRunner();
-
+export const pythonRunner: PythonRunner = new PyodideRunner();

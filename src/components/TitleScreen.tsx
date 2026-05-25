@@ -20,6 +20,8 @@ export function TitleScreen(): React.JSX.Element {
   const setSfxVolume = useGameStore((state) => state.setSfxVolume);
   const isMuted = useGameStore((state) => state.isMuted);
   const setIsMuted = useGameStore((state) => state.setIsMuted);
+  const isDemoMode = useGameStore((state) => state.isDemoMode);
+  const setDemoMode = useGameStore((state) => state.setDemoMode);
 
   const [showSettings, setShowSettings] = useState(false);
   const [showCredits, setShowCredits] = useState(false);
@@ -181,7 +183,10 @@ export function TitleScreen(): React.JSX.Element {
             <div className="cyber-modal-content">
               <p style={{ margin: "20px 0", fontSize: "1.2rem", lineHeight: "1.6" }}>
                 2026-1 캡스톤 프로젝트<br /><br />
-                김민혁, 공원호 제작
+                김민혁, 공원<span
+                  onClick={() => setDemoMode(!isDemoMode)}
+                  style={{ color: isDemoMode ? "#00ff88" : "inherit", cursor: "default", userSelect: "none" }}
+                >호</span> 제작
               </p>
             </div>
           </div>

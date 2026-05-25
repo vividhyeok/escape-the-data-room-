@@ -57,6 +57,7 @@ type PythonLabWindowProps = {
 export function PythonLabWindow({ puzzle, onClose }: PythonLabWindowProps): React.JSX.Element {
   const codeDraft = useGameStore((state) => state.codeDrafts[puzzle.id]);
   const saveCodeDraft = useGameStore((state) => state.saveCodeDraft);
+  const isDemoMode = useGameStore((state) => state.isDemoMode);
   const [code, setCode] = useState(codeDraft ?? "");
   const [stdout, setStdout] = useState("");
   const [stderr, setStderr] = useState("");
@@ -65,7 +66,8 @@ export function PythonLabWindow({ puzzle, onClose }: PythonLabWindowProps): Reac
   setCodeRef.current = setCode;
 
   useEffect(() => {
-    const initialCode = codeDraft ?? puzzle.starterCode ?? "";
+    const fallback = isDemoMode ? (puzzle.starterCode ?? "") : "";
+    const initialCode = codeDraft ?? fallback;
     setCode(initialCode);
     setStdout("");
     setStderr("");
@@ -73,7 +75,7 @@ export function PythonLabWindow({ puzzle, onClose }: PythonLabWindowProps): Reac
     if (!codeDraft && initialCode) {
       saveCodeDraft(puzzle.id, initialCode);
     }
-  }, [codeDraft, puzzle.id, puzzle.starterCode, saveCodeDraft]);
+  }, [codeDraft, isDemoMode, puzzle.id, puzzle.starterCode, saveCodeDraft]);
 
   useEffect(() => {
     window.__setCodeEditor = (value: string) => {
@@ -142,7 +144,7 @@ export function PythonLabWindow({ puzzle, onClose }: PythonLabWindowProps): Reac
           <button className="primary-button sk-action-btn" disabled={isRunning} onClick={runCode} type="button" title="코드 실행 및 분석 (Run Analysis)">
             {isRunning ? <Loader2 className="spinner" size={20} /> : <Play size={20} />}
           </button>
-          {puzzle.starterCode ? (
+          {isDemoMode && puzzle.starterCode ? (
             <button className="ghost-button sk-action-btn" onClick={loadExampleApproach} type="button" title="예제 코드 불러오기 (Load Example)">
               <RotateCcw size={20} />
             </button>
