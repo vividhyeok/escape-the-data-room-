@@ -13,6 +13,10 @@ export function TitleScreen(): React.JSX.Element {
   const clearedRoomIds = useGameStore((state) => state.clearedRoomIds);
   const textSpeed = useGameStore((state) => state.textSpeed);
   const setTextSpeed = useGameStore((state) => state.setTextSpeed);
+  const bgmVolume = useGameStore((state) => state.bgmVolume);
+  const setBgmVolume = useGameStore((state) => state.setBgmVolume);
+  const sfxVolume = useGameStore((state) => state.sfxVolume);
+  const setSfxVolume = useGameStore((state) => state.setSfxVolume);
 
   const [showSettings, setShowSettings] = useState(false);
   const [showCredits, setShowCredits] = useState(false);
@@ -103,7 +107,32 @@ export function TitleScreen(): React.JSX.Element {
                   ))}
                 </div>
               </div>
-              <button className="cyber-switch-btn" onClick={toggleFullscreen} type="button">TOGGLE FULLSCREEN</button>
+              <div style={{ display: "flex", flexDirection: "column", gap: "10px", textAlign: "left" }}>
+                <label style={{ fontSize: "1.2rem", fontWeight: "bold" }}>BGM VOLUME: {Math.round(bgmVolume * 100)}%</label>
+                <input 
+                  type="range" 
+                  min="0" max="1" step="0.05" 
+                  value={bgmVolume} 
+                  onChange={(e) => {
+                    setBgmVolume(parseFloat(e.target.value));
+                    SoundEngine.updateBGMVolume();
+                  }}
+                  className="cyber-slider" 
+                />
+              </div>
+              <div style={{ display: "flex", flexDirection: "column", gap: "10px", textAlign: "left" }}>
+                <label style={{ fontSize: "1.2rem", fontWeight: "bold" }}>SFX VOLUME: {Math.round(sfxVolume * 100)}%</label>
+                <input 
+                  type="range" 
+                  min="0" max="1" step="0.05" 
+                  value={sfxVolume} 
+                  onChange={(e) => {
+                    setSfxVolume(parseFloat(e.target.value));
+                    SoundEngine.playHover();
+                  }}
+                  className="cyber-slider" 
+                />
+              </div>
               <button className="cyber-switch-btn" onClick={() => {
                 SoundEngine.playClick();
                 resetProgress();

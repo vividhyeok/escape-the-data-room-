@@ -23,22 +23,34 @@ export const dialogues: Record<string, StorySequence> = {
   "tutorial-1": {
     title: "가이드: 데이터 룸 수칙 1",
     lines: [
-      { speaker: "SYSTEM", text: "이제 룰을 설명하지. 이곳은 오래전 방치된 '데이터 룸(Data Room)'이다." },
-      { speaker: "SYSTEM", text: "방 안의 단서들을 클릭(조사)해서 데이터를 수집해라." },
-      { speaker: "SYSTEM", text: "수집한 단서는 [I] 키를 눌러 언제든 확인할 수 있다." },
-      { speaker: "SYSTEM", text: "하지만 데이터는 엉망진창으로 오염되어 있지. 이대로는 쓸 수 없어." },
-      { speaker: "SYSTEM", text: "단서를 클릭하면 뜨는 창 하단에 [파이썬 터미널] 모양의 아이콘이 보일 거다." },
-      { speaker: "SYSTEM", text: "그 아이콘을 클릭해서 Python Lab을 열어봐라." }
+      { speaker: "SYSTEM", text: "이곳은 오래전 방치된 데이터 룸이다. 너의 파이썬 활용 능력을 테스트할 곳이지." },
+      { speaker: "SYSTEM", text: "방 안의 사물을 클릭해 단서를 수집해라." },
+      { speaker: "SYSTEM", text: "혹시 파이썬 문법이 가물가물하다고? 걱정 마라." },
+      { speaker: "SYSTEM", text: "하단 우측의 [Reference] 버튼을 누르면 언제든 문법 사전을 열 수 있다. 한번 열고 닫아봐라." }
     ]
   },
   "tutorial-2": {
     title: "가이드: 데이터 룸 수칙 2",
     lines: [
-      { speaker: "SYSTEM", text: "좋아. 여기가 수집한 데이터를 가공하는 Python Lab이다." },
-      { speaker: "SYSTEM", text: "코드 창에 코드를 입력하고, 하단의 [재생] 모양 버튼을 누르면 우측에 결과가 출력되지." },
-      { speaker: "SYSTEM", text: "방향을 잘못 잡았다면 [되돌리기] 버튼으로 초기화해라." },
-      { speaker: "SYSTEM", text: "Python 코드를 모른다고? 걱정 마라. 코드를 입력할 때 내비게이션(자동완성 힌트)이 도와줄 것이다." },
-      { speaker: "SYSTEM", text: "데이터를 모두 정제하면 저 굳게 닫힌 문을 열 코드를 얻게 될 것이다. 건투를 빈다." }
+      { speaker: "SYSTEM", text: "좋아. 이렇게 문법 사전을 언제든 참고할 수 있다." },
+      { speaker: "SYSTEM", text: "이제 방 정중앙에 있는 굳게 닫힌 문(출입문 키패드)을 클릭해봐라." }
+    ]
+  },
+  "tutorial-3": {
+    title: "가이드: 데이터 룸 수칙 3",
+    lines: [
+      { speaker: "SYSTEM", text: "저 문을 열기 위해선, 이 방에 있는 4개의 필수 단서를 모두 분석해서 각각의 비밀 코드를 알아내야 한다." },
+      { speaker: "SYSTEM", text: "단서를 열고 하단의 [파이썬 터미널] 아이콘을 누르면 데이터를 정제할 수 있지. 직접 열어봐라." }
+    ]
+  },
+  "tutorial-4": {
+    title: "가이드: 데이터 룸 수칙 4",
+    lines: [
+      { speaker: "SYSTEM", text: "이곳이 Python Lab이다. 코드를 실행해 정답을 알아내고, 4자리 코드를 모아 문을 열어라." },
+      { speaker: "SYSTEM", text: "코드가 꼬였다면 [되돌리기] 버튼으로 리셋해라. 자동완성 기능도 너의 코딩을 도울 거다." },
+      { speaker: "SYSTEM", text: "아, 참고로 방 안을 탐색하다 보면 보라색 빛이 나는 단서들이 있을 거다." },
+      { speaker: "SYSTEM", text: "그건 일종의 이스터에그 같은 선택형 문제야. 굳이 풀지 않아도 다음 방으로 넘어가는 데는 지장이 없으니 네 자유에 맡기지." },
+      { speaker: "SYSTEM", text: "건투를 빈다." }
     ]
   },
   "enter-room-1": {

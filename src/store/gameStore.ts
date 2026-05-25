@@ -17,6 +17,9 @@ type GameProgress = {
   currentDialogueId: string | null;
   unlockedStories: string[];
   textSpeed: "fast" | "normal" | "slow" | "instant";
+  bgmVolume: number;
+  sfxVolume: number;
+  isMuted: boolean;
 };
 
 type GameActions = {
@@ -32,6 +35,9 @@ type GameActions = {
   setGameState: (state: "TITLE" | "PLAYING" | "CREDITS") => void;
   setDialogue: (dialogueId: string | null) => void;
   setTextSpeed: (speed: "fast" | "normal" | "slow" | "instant") => void;
+  setBgmVolume: (vol: number) => void;
+  setSfxVolume: (vol: number) => void;
+  setIsMuted: (muted: boolean) => void;
 };
 
 export type GameStore = GameProgress & GameActions;
@@ -50,6 +56,9 @@ const initialProgress: GameProgress = {
   currentDialogueId: null,
   unlockedStories: [],
   textSpeed: "normal",
+  bgmVolume: 0.2,
+  sfxVolume: 0.8,
+  isMuted: false,
 };
 
 function addUnique<T>(items: T[], item: T, predicate: (existing: T) => boolean): T[] {
@@ -112,7 +121,10 @@ export const useGameStore = create<GameStore>()(
           unlocked.add(id);
           return { currentDialogueId: id, unlockedStories: Array.from(unlocked) };
         }),
-      setTextSpeed: (textSpeed) => set({ textSpeed }),
+      setTextSpeed: (speed) => set({ textSpeed: speed }),
+      setBgmVolume: (vol) => set({ bgmVolume: vol }),
+      setSfxVolume: (vol) => set({ sfxVolume: vol }),
+      setIsMuted: (muted) => set({ isMuted: muted }),
     }),
     {
       name: GAME_STORAGE_KEY,

@@ -35,6 +35,7 @@ export type RoomObject = {
   y: number;
   scale?: number;
   rotation?: number;
+  isOptional?: boolean;
 };
 
 export type ReferenceItem = {

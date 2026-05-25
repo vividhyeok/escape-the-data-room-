@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from "react";
 import { puzzlesById } from "../data/puzzles";
 import { getRoomObjects, roomOrder, roomsById } from "../data/rooms";
 import type { Puzzle as _Puzzle, RoomObject } from "../data/types";
+import { Maximize, Volume2, VolumeX } from "lucide-react";
 import { useGameStore } from "../store/gameStore";
 import { DoorKeypad } from "./DoorKeypad";
 import { resetGameWindows, setDemoLayout } from "./GameWindow";
@@ -39,6 +40,9 @@ export function GameShell(): React.JSX.Element {
   const reviewRoomId = useGameStore((state) => state.reviewRoomId);
   const resetProgress = useGameStore((state) => state.resetProgress);
   const saveCodeDraft = useGameStore((state) => state.saveCodeDraft);
+  const isMuted = useGameStore((state) => state.isMuted);
+  const setIsMuted = useGameStore((state) => state.setIsMuted);
+  const activeDoorId = useGameStore((state) => state.activeDoorId);
 
   const room = roomsById[currentRoomId] ?? roomsById["room-1"];
   const objects = getRoomObjects(room.id);
@@ -112,13 +116,22 @@ export function GameShell(): React.JSX.Element {
   }, [currentDialogueId, setGameState]);
 
   useEffect(() => {
-    if (activeLabPuzzle && currentRoomId === "room-0") {
-      const unlocked = useGameStore.getState().unlockedStories;
-      if (!unlocked.includes("tutorial-2")) {
-        useGameStore.getState().setDialogue("tutorial-2");
-      }
+    if (currentRoomId !== "room-0") return;
+    const unlocked = useGameStore.getState().unlockedStories;
+
+    // Trigger tutorial-2 when Help (Reference) is opened
+    if (helpOpen && !unlocked.includes("tutorial-2")) {
+      useGameStore.getState().setDialogue("tutorial-2");
     }
-  }, [activeLabPuzzle, currentRoomId]);
+    // Trigger tutorial-3 when Door keypad is clicked
+    if (activeDoorId === "door-room-0" && !unlocked.includes("tutorial-3")) {
+      useGameStore.getState().setDialogue("tutorial-3");
+    }
+    // Trigger tutorial-4 when Python Lab is opened
+    if (activeLabPuzzle && !unlocked.includes("tutorial-4")) {
+      useGameStore.getState().setDialogue("tutorial-4");
+    }
+  }, [helpOpen, activeDoorId, activeLabPuzzle, currentRoomId]);
 
   useEffect(() => {
     if (gameState !== "PLAYING") return;
@@ -222,6 +235,26 @@ export function GameShell(): React.JSX.Element {
     showToast("데모 모드 로드됨.");
   }
 
+  function toggleFullscreen() {
+    SoundEngine.playClick();
+    if (!document.fullscreenElement) {
+      document.documentElement.requestFullscreen().catch(() => {});
+    } else {
+      if (document.exitFullscreen) {
+        document.exitFullscreen();
+      }
+    }
+  }
+
+  function toggleMute() {
+    SoundEngine.playClick();
+    const nextMuted = !isMuted;
+    setIsMuted(nextMuted);
+    setTimeout(() => {
+      SoundEngine.updateBGMVolume();
+    }, 0);
+  }
+
   if (gameState === "TITLE") return <TitleScreen />;
   if (gameState === "CREDITS") return <CreditsScreen />;
 
@@ -275,6 +308,24 @@ export function GameShell(): React.JSX.Element {
             </nav>
           </details>
         )}
+        <div style={{ marginLeft: "auto", display: "flex", gap: "10px", paddingRight: "20px" }}>
+          <button 
+            className="title-btn" 
+            style={{ minWidth: "40px", padding: "5px", background: "rgba(0,0,0,0.5)", border: "1px solid var(--neon-cyan)" }}
+            onClick={toggleMute} 
+            title="Mute Audio"
+          >
+            {isMuted ? <VolumeX size={20} color="var(--neon-cyan)" /> : <Volume2 size={20} color="var(--neon-cyan)" />}
+          </button>
+          <button 
+            className="title-btn" 
+            style={{ minWidth: "40px", padding: "5px", background: "rgba(0,0,0,0.5)", border: "1px solid var(--neon-cyan)" }}
+            onClick={toggleFullscreen} 
+            title="Toggle Fullscreen"
+          >
+            <Maximize size={20} color="var(--neon-cyan)" />
+          </button>
+        </div>
       </header>
 
       {selectedObject && selectedPuzzle ? (

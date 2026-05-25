@@ -1,3 +1,5 @@
+import { useGameStore } from "../store/gameStore";
+
 class WebAudioEngine {
   private ctx: AudioContext | null = null;
   private bgmAudio: HTMLAudioElement | null = null;
@@ -19,9 +21,17 @@ class WebAudioEngine {
     }
   }
 
+  // Helper to get current SFX volume multiplier
+  private get sfxMultiplier() {
+    const state = useGameStore.getState();
+    return state.isMuted ? 0 : state.sfxVolume * 1.5; // boosted base SFX slightly
+  }
+
   // Helper to create basic oscillators
   private playOscillator(type: OscillatorType, frequency: number, duration: number, vol: number = 0.1, slideFreq?: number) {
     if (!this.ctx) return;
+    const mult = this.sfxMultiplier;
+    if (mult === 0) return;
     this.resume();
 
     const osc = this.ctx.createOscillator();
@@ -33,7 +43,7 @@ class WebAudioEngine {
       osc.frequency.exponentialRampToValueAtTime(slideFreq, this.ctx.currentTime + duration);
     }
 
-    gain.gain.setValueAtTime(vol, this.ctx.currentTime);
+    gain.gain.setValueAtTime(vol * mult, this.ctx.currentTime);
     gain.gain.exponentialRampToValueAtTime(0.001, this.ctx.currentTime + duration);
 
     osc.connect(gain);
@@ -61,6 +71,8 @@ class WebAudioEngine {
   // 4. Glitch: White noise burst
   public playGlitch() {
     if (!this.ctx) return;
+    const mult = this.sfxMultiplier;
+    if (mult === 0) return;
     this.resume();
     
     const bufferSize = this.ctx.sampleRate * 0.2; // 0.2 seconds
@@ -79,7 +91,7 @@ class WebAudioEngine {
     filter.frequency.value = 1000;
 
     const gain = this.ctx.createGain();
-    gain.gain.setValueAtTime(0.2, this.ctx.currentTime);
+    gain.gain.setValueAtTime(0.2 * mult, this.ctx.currentTime);
     gain.gain.exponentialRampToValueAtTime(0.01, this.ctx.currentTime + 0.2);
 
     noiseSource.connect(filter);
@@ -101,16 +113,23 @@ class WebAudioEngine {
     this.playOscillator("sawtooth", 150, 0.4, 0.1, 100);
   }
 
-  // 7. BGM Playback
   public playBGM(url: string) {
     if (!this.bgmAudio) {
       this.bgmAudio = new Audio(url);
       this.bgmAudio.loop = true;
-      this.bgmAudio.volume = 0.4;
     } else if (this.bgmAudio.getAttribute('src') !== url) {
       this.bgmAudio.src = url;
     }
+    this.updateBGMVolume();
     this.bgmAudio.play().catch(e => console.warn("BGM autoplay blocked:", e));
+  }
+
+  public updateBGMVolume() {
+    if (this.bgmAudio) {
+      const state = useGameStore.getState();
+      // default volume was 0.4. We map slider 0-1 to a max of 0.3 for a gentler BGM
+      this.bgmAudio.volume = state.isMuted ? 0 : state.bgmVolume * 0.3;
+    }
   }
 
   public stopBGM() {

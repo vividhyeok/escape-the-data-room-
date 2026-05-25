@@ -27,7 +27,7 @@ export function HotspotObject({ object, onSelect }: HotspotObjectProps): React.J
 
   return (
     <button
-      className={`hotspot ${object.kind === "door" ? "door" : ""} ${isSolved ? "solved" : ""} ${isHiddenClue ? "hidden-clue" : ""} ${showSprite ? "has-sprite" : ""}`}
+      className={`hotspot ${object.kind === "door" ? "door" : ""} ${isSolved ? "solved" : ""} ${isHiddenClue ? "hidden-clue" : ""} ${showSprite ? "has-sprite" : ""} ${object.isOptional ? "is-optional" : ""}`}
       onClick={() => onSelect(object)}
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}

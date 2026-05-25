@@ -75,9 +75,10 @@ function object(
   assetImage?: string,
   rotation?: number,
 ): RoomObject {
+  const isOptional = description.includes("선택") || description.includes("Optional");
   return {
     id, roomId, viewId, title, shortLabel, description, puzzleId,
-    placeholderIcon, assetImage, kind, x, y, scale, rotation
+    placeholderIcon, assetImage, kind, x, y, scale, rotation, isOptional
   };
 }
 

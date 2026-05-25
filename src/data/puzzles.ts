@@ -56,118 +56,137 @@ const room1RadioSignalData = `3:822 8:441 5:230 1:522 7:413
 
 const room1NoiseStripData = `A2X7Q4M8`;
 
-export const puzzles: Puzzle[] = [
   {
     id: "room-0-tv-sequence",
     roomId: "room-0",
     title: "CRT TV",
     objectId: "room-0-tv-sequence",
-    situationText: "CRT 화면에 신호 단어가 공백으로 이어져 있다. 단어를 나눈 뒤 전체 단어 수를 확인하라. 그 숫자를 4번 반복한 값이 해제 코드다.",
-    dataText: "red blue green yellow white black orange purple",
+    situationText: "TV 화면에 엄청난 양의 센서 데이터가 표시된다. 눈으로 찾기엔 너무 많다. 가장 높은 수치(Max)를 구하라.",
+    dataText: "[3, 2, 5, 1, 4, 6, 2, 5, 7, 1, 3, 2, 4, 6, 5, 1, 2, 4, 7, 3, 5, 2, 1, 6, 4, 3, 5, 2, 7, 1, 4, 6, 8, 2, 5, 3, 1, 4, 7, 2, 5, 6, 1, 3, 4, 2, 5, 1, 6, 3]",
     expectedAnswer: "8888",
-    mockOutput: `['red', 'blue', 'green', 'yellow', 'white', 'black', 'orange', 'purple']\n8\n8888`,
+    mockOutput: "8\n8888",
     referenceItems: [
-      ref("text.split()", "공백을 기준으로 문자열 나누기"),
-      ref("len(words)", "나눈 조각의 개수 확인하기"),
-      ref("str(number)", "숫자를 문자열로 바꾸기"),
+      ref("max(list)", "리스트 안에서 가장 큰 값 찾기"),
+      ref("min(list)", "리스트 안에서 가장 작은 값 찾기"),
+      ref("str(number)", "숫자를 문자열로 바꾸기")
     ],
     rewardHint: hint("room-0-hint-crt-tv", "room-0", "room-0-tv-sequence", "첫째 자리는 8이다."),
-    starterCode: `text = "red blue green yellow white black orange purple"\nwords = text.split()\n\nprint(words)\ncount = len(words)\nprint(count)\nprint(str(count) * 4)\n`,
+    starterCode: `sensors = [3, 2, 5, 1, 4, 6, 2, 5, 7, 1, 3, 2, 4, 6, 5, 1, 2, 4, 7, 3, 5, 2, 1, 6, 4, 3, 5, 2, 7, 1, 4, 6, 8, 2, 5, 3, 1, 4, 7, 2, 5, 6, 1, 3, 4, 2, 5, 1, 6, 3]
+
+# 최댓값을 찾아 출력하세요
+highest = max(sensors)
+print(highest)
+print(str(highest) * 4)
+`,
     isRequired: true,
     requiredForDoor: true,
     doorCodePiece: "8",
     doorCodePosition: 1,
-    targetConcepts: ["split", "len", "str", "print"],
-    usefulConcepts: ["tokenization", "counting"],
-    puzzleType: "tutorial_split_count",
-    expectedStrategyDescription: "공백으로 이어진 문자열을 단어 목록으로 나누고 전체 개수를 확인한다.",
-  },
-  {
-    id: "room-0-desk-terminal",
-    roomId: "room-0",
-    title: "데스크 터미널",
-    objectId: "room-0-desk-terminal",
-    situationText: "단말기에 가장 짧은 분석 예제가 남아 있다. 공백으로 나눈 뒤 두 번째 조각을 출력하면 해제 코드가 된다.",
-    dataText: "OPEN ECHO LOCK",
-    expectedAnswer: "ECHO",
-    mockOutput: `['OPEN', 'ECHO', 'LOCK']\nECHO`,
-    referenceItems: [ref("text.split()", "공백 기준으로 나누기"), ref("parts[1]", "두 번째 조각 읽기"), ref("print()", "결과 출력하기")],
-    rewardHint: hint("room-0-hint-desk-terminal", "room-0", "room-0-desk-terminal", "목록 인덱스는 0부터 시작한다."),
-    starterCode: `text = "OPEN ECHO LOCK"\nparts = text.split()\n\nprint(parts)\nprint(parts[1])\n`,
-    isRequired: false,
-    requiredForDoor: false,
-    targetConcepts: ["split", "indexing", "print"],
-    usefulConcepts: ["tokenization", "output_reading"],
-    puzzleType: "tutorial_split_indexing",
-    expectedStrategyDescription: "공백으로 나눈 목록에서 원하는 위치의 값을 읽는다.",
+    targetConcepts: ["max", "list", "str", "print"],
+    usefulConcepts: ["finding_maximum", "aggregation"],
+    puzzleType: "tutorial_max_value",
+    expectedStrategyDescription: "리스트 내의 숫자 중 가장 큰 값을 max() 함수로 찾는다.",
   },
   {
     id: "room-0-mini-ox-card",
     roomId: "room-0",
     title: "OX 카드",
     objectId: "room-0-mini-ox-card",
-    situationText: "카드의 O와 X 신호가 공백으로 나뉘어 있다. X 신호의 개수를 센 다음 그 숫자를 4번 반복한 값이 해제 코드다.",
-    dataText: "O O X O X O X X O X",
+    situationText: "과거 데이터룸 직원들의 수많은 OX 출입 카드 기록이다. 시스템은 30 이상인 값만 유효한(O) 신호로 취급한다. 유효한(30 이상) 데이터가 총 몇 개인지 세어라.",
+    dataText: "[12, 15, 22, 18, 29, 14, 19, 21, 25, 28, 11, 17, 24, 26, 13, 20, 27, 23, 16, 29, 31, 12, 15, 22, 18, 35, 14, 19, 21, 42, 28, 11, 17, 50, 26, 13, 20, 65, 23, 16]",
     expectedAnswer: "5555",
-    mockOutput: `['O', 'O', 'X', 'O', 'X', 'O', 'X', 'X', 'O', 'X']\n5\n5555`,
-    referenceItems: [ref("signal.split()", "공백 기준으로 O/X 신호 나누기"), ref('tokens.count("X")', "목록 안의 X 개수 세기"), ref("str(count)", "숫자를 문자열로 바꾸기")],
+    mockOutput: "5\n5555",
+    referenceItems: [
+      ref("for x in list:", "리스트의 요소를 하나씩 확인하기"),
+      ref("if x >= 30:", "값이 30 이상인지 조건 검사하기"),
+      ref("count += 1", "개수 누적해서 세기")
+    ],
     rewardHint: hint("room-0-hint-mini-ox", "room-0", "room-0-mini-ox-card", "둘째 자리는 5다."),
-    starterCode: `signal = "O O X O X O X X O X"\ntokens = signal.split()\n\nprint(tokens)\ncount = tokens.count("X")\nprint(count)\nprint(str(count) * 4)\n`,
+    starterCode: `data = [12, 15, 22, 18, 29, 14, 19, 21, 25, 28, 11, 17, 24, 26, 13, 20, 27, 23, 16, 29, 31, 12, 15, 22, 18, 35, 14, 19, 21, 42, 28, 11, 17, 50, 26, 13, 20, 65, 23, 16]
+count = 0
+
+for x in data:
+    if x >= 30:
+        count += 1
+
+print(count)
+print(str(count) * 4)
+`,
     isRequired: true,
     requiredForDoor: true,
     doorCodePiece: "5",
     doorCodePosition: 2,
-    targetConcepts: ["split", "count", "str"],
-    usefulConcepts: ["signal_counting", "tokenization"],
-    puzzleType: "tutorial_split_count_value",
-    expectedStrategyDescription: "공백으로 나뉜 신호를 목록으로 만든 뒤 특정 값이 몇 번 나오는지 센다.",
+    targetConcepts: ["for", "if", "comparison_operator", "counting"],
+    usefulConcepts: ["filtering", "counting_with_conditions"],
+    puzzleType: "tutorial_conditional_counting",
+    expectedStrategyDescription: "반복문과 조건문을 사용하여 특정 조건을 만족하는 데이터의 개수를 센다.",
   },
   {
     id: "room-0-name-tags",
     roomId: "room-0",
     title: "명찰 묶음",
     objectId: "room-0-name-tags",
-    situationText: "이름표가 한 줄에 공백으로 붙어 있다. 이름을 나눈 뒤 두 번 이상 등장한 이름의 수를 세어라. 그 숫자를 4번 반복한 값이 해제 코드다.",
-    dataText: "MIRA JONAS AXEL MIRA NORA AXEL",
+    situationText: "이미지 인식 모델이 예측한 대량의 명찰 묶음이다. 너무 많아서 눈으로 세기 어렵다. 가장 빈번하게 등장한 'cat' 명찰의 개수를 찾아라.",
+    dataText: "['bat', 'rat', 'mat', 'pat', 'bat', 'rat', 'mat', 'pat', 'bat', 'cat', 'rat', 'mat', 'pat', 'bat', 'rat', 'mat', 'pat', 'bat', 'rat', 'mat', 'pat', 'bat', 'rat', 'cat', 'mat', 'pat', 'bat', 'rat', 'mat', 'pat', 'bat', 'rat', 'mat', 'pat']",
     expectedAnswer: "2222",
-    mockOutput: "['AXEL', 'MIRA']\n2222",
+    mockOutput: "2\n2222",
     referenceItems: [
-      ref("data.split()", "공백 기준으로 이름표 나누기"),
-      ref("set(names)", "중복을 제거한 이름 목록 만들기"),
-      ref("names.count(name)", "특정 이름이 몇 번 나오는지 세기"),
-      ref("len()", "개수 확인하기"),
+      ref("dict = {}", "비어 있는 딕셔너리 만들기"),
+      ref("dict[key] = value", "딕셔너리에 키와 값 저장하기"),
+      ref("if key in dict:", "딕셔너리에 키가 존재하는지 확인하기")
     ],
     rewardHint: hint("room-0-hint-name-tags", "room-0", "room-0-name-tags", "셋째 자리는 2다."),
-    starterCode: `data = "MIRA JONAS AXEL MIRA NORA AXEL"\nnames = data.split()\n\nrepeated = []\nfor name in set(names):\n    if names.count(name) >= 2:\n        repeated.append(name)\n\nprint(sorted(repeated))\ncount = len(repeated)\nprint(str(count) * 4)\n`,
+    starterCode: `labels = ['bat', 'rat', 'mat', 'pat', 'bat', 'rat', 'mat', 'pat', 'bat', 'cat', 'rat', 'mat', 'pat', 'bat', 'rat', 'mat', 'pat', 'bat', 'rat', 'mat', 'pat', 'bat', 'rat', 'cat', 'mat', 'pat', 'bat', 'rat', 'mat', 'pat', 'bat', 'rat', 'mat', 'pat']
+counts = {}
+
+for label in labels:
+    if label in counts:
+        counts[label] += 1
+    else:
+        counts[label] = 1
+
+print(counts["cat"])
+print(str(counts["cat"]) * 4)
+`,
     isRequired: true,
     requiredForDoor: true,
     doorCodePiece: "2",
     doorCodePosition: 3,
-    targetConcepts: ["split", "set", "count", "for", "if"],
-    usefulConcepts: ["duplicate_detection", "tokenization"],
-    puzzleType: "tutorial_duplicate_detection",
-    expectedStrategyDescription: "공백으로 나뉜 이름 목록에서 반복되는 이름만 골라 개수를 확인한다.",
+    targetConcepts: ["dict", "for", "if", "frequency_counting"],
+    usefulConcepts: ["dictionary_frequency", "data_aggregation"],
+    puzzleType: "tutorial_frequency_count",
+    expectedStrategyDescription: "딕셔너리를 활용해 각 데이터의 출현 빈도수를 계산한다.",
   },
   {
     id: "room-0-pattern-tiles",
     roomId: "room-0",
     title: "패턴 타일 박스",
     objectId: "room-0-pattern-tiles",
-    situationText: "타일 상자에는 숫자 신호가 공백으로 나열되어 있다. 왼쪽에서 세 번째 신호를 꺼낸 뒤 그 값을 4번 반복한 값이 해제 코드다.",
-    dataText: "4 1 8 3 6",
+    situationText: "패턴 타일 상자 안에 엄청나게 긴 시계열 데이터가 나열되어 있다. 파이썬의 인덱스는 0부터 시작한다. 직접 세지 말고 파이썬으로 인덱스 38번 위치의 값을 확인하시오.",
+    dataText: "[4, 1, 3, 6, 9, 2, 5, 7, 1, 3, 2, 4, 6, 5, 1, 2, 4, 7, 3, 5, 2, 1, 6, 4, 3, 5, 2, 7, 1, 4, 6, 2, 5, 3, 1, 4, 7, 2, 8, 1, 3, 4, 2, 5, 1, 6, 3]",
     expectedAnswer: "8888",
-    mockOutput: `['4', '1', '8', '3', '6']\n8\n8888`,
-    referenceItems: [ref("data.split()", "공백 기준으로 신호 나누기"), ref("signals[2]", "세 번째 조각 읽기"), ref("value * 4", "문자열을 반복해 코드 만들기")],
+    mockOutput: "8\n8888",
+    referenceItems: [
+      ref("list[index]", "리스트에서 특정 인덱스의 값 가져오기"),
+      ref("list[0]", "첫 번째 항목 가져오기")
+    ],
     rewardHint: hint("room-0-hint-pattern-tiles", "room-0", "room-0-pattern-tiles", "넷째 자리는 8이다."),
-    starterCode: `data = "4 1 8 3 6"\nsignals = data.split()\n\nprint(signals)\nvalue = signals[2]\nprint(value)\nprint(value * 4)\n`,
+    starterCode: `series = [4, 1, 3, 6, 9, 2, 5, 7, 1, 3, 2, 4, 6, 5, 1, 2, 4, 7, 3, 5, 2, 1, 6, 4, 3, 5, 2, 7, 1, 4, 6, 2, 5, 3, 1, 4, 7, 2, 8, 1, 3, 4, 2, 5, 1, 6, 3]
+
+# 인덱스 38번 값을 찾아 출력하세요
+value = series[38]
+
+print(value)
+print(str(value) * 4)
+`,
     isRequired: true,
     requiredForDoor: true,
     doorCodePiece: "8",
     doorCodePosition: 4,
-    targetConcepts: ["split", "indexing", "string_repetition"],
-    usefulConcepts: ["tokenization", "position_lookup"],
-    puzzleType: "tutorial_split_indexing",
-    expectedStrategyDescription: "공백으로 나뉜 신호 목록에서 특정 위치의 값을 꺼낸다.",
+    targetConcepts: ["indexing", "list"],
+    usefulConcepts: ["position_lookup"],
+    puzzleType: "tutorial_indexing",
+    expectedStrategyDescription: "리스트의 인덱싱 기능을 활용해 특정 위치의 데이터를 추출한다.",
   },
   {
     id: "room-0-bookshelf-note",
