@@ -32,25 +32,25 @@ export function ReviewPanel({ room, onFinalExit }: ReviewPanelProps): React.JSX.
   const isDangerousRoom = room.id === "room-3";
 
   function goNext(): void {
-    if ((isExitBranchRoom || isDangerousRoom) && onFinalExit) {
+    if (isExitBranchRoom && onFinalExit) {
       closeReview();
-      onFinalExit();
+      useGameStore.getState().setDialogue("escape-success");
+      return;
+    }
+
+    if (isDangerousRoom && onFinalExit) {
+      closeReview();
+      useGameStore.getState().setDialogue("true-ending");
       return;
     }
 
     if (nextRoom) {
       setCurrentRoom(nextRoom.id);
+      useGameStore.getState().setDialogue(`enter-${nextRoom.id}`);
       return;
     }
 
     closeReview();
-  }
-
-  function goDangerousStairs(): void {
-    if (dangerousRoom) {
-      setCurrentRoom(dangerousRoom.id);
-      closeReview();
-    }
   }
 
   return (
@@ -133,11 +133,6 @@ export function ReviewPanel({ room, onFinalExit }: ReviewPanelProps): React.JSX.
           <button className="primary-button" onClick={goNext} type="button">
             {isExitBranchRoom ? "밖으로 나간다" : isDangerousRoom ? "탐색을 마무리한다" : nextRoom ? `다음: ${nextRoom.subtitle}` : "완료"}
           </button>
-          {isExitBranchRoom ? (
-            <button className="secondary-button" onClick={goDangerousStairs} type="button">
-              위험한 계단으로 내려간다
-            </button>
-          ) : null}
           <button className="ghost-button" onClick={closeReview} type="button">
             방으로 돌아가기
           </button>

@@ -1,4 +1,4 @@
-export type ViewId = "left" | "center" | "right";
+export type ViewId = "left" | "center" | "right" | "bottom";
 
 export type RoomView = {
   id: ViewId;
@@ -15,7 +15,7 @@ export type Room = {
   description: string;
   views: RoomView[];
   doorCode: string;
-  backgroundImage?: string;
+  panoramaImage?: string;
 };
 
 export type RoomObjectKind = "puzzle" | "door";
@@ -33,6 +33,8 @@ export type RoomObject = {
   kind: RoomObjectKind;
   x: number;
   y: number;
+  scale?: number;
+  rotation?: number;
 };
 
 export type ReferenceItem = {

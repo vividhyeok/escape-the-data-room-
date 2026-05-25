@@ -18,7 +18,7 @@ export const rooms: Room[] = [
     description: "Data Surface를 조사하고 Python Lab으로 정돈해 첫 Door Code를 완성하라.",
     views: defaultViews,
     doorCode: "8528",
-    backgroundImage: `${BG}/room-0/panorama.png`,
+    panoramaImage: `${BG}/room-0/pano.png`,
   },
   {
     id: "room-1",
@@ -27,7 +27,7 @@ export const rooms: Room[] = [
     description: "필수 신호 4개를 분석해 Door Code 조각을 모아라. 숨겨진 단서는 선택이다.",
     views: defaultViews,
     doorCode: "7479",
-    backgroundImage: `${BG}/room-1/panorama.png`,
+    panoramaImage: `${BG}/room-1/pano.png`,
   },
   {
     id: "room-2",
@@ -36,7 +36,7 @@ export const rooms: Room[] = [
     description: "분산된 기록을 필터링해 일관된 코드를 찾아내라.",
     views: defaultViews,
     doorCode: "3547",
-    backgroundImage: `${BG}/room-2/panorama.png`,
+    panoramaImage: `${BG}/room-2/pano.png`,
   },
   {
     id: "room-3",
@@ -45,7 +45,7 @@ export const rooms: Room[] = [
     description: "선택 도전 구간이다. 남은 조건 검증 단서를 풀어도 되고, 언제든 마무리해도 된다.",
     views: defaultViews,
     doorCode: "4026",
-    backgroundImage: `${BG}/room-3/panorama.png`,
+    panoramaImage: `${BG}/room-3/pano.png`,
   },
   {
     id: "room-4",
@@ -70,22 +70,14 @@ function object(
   placeholderIcon: string,
   x: number,
   y: number,
+  scale: number = 1,
   kind: RoomObject["kind"] = "puzzle",
   assetImage?: string,
+  rotation?: number,
 ): RoomObject {
   return {
-    id,
-    roomId,
-    viewId,
-    title,
-    shortLabel,
-    description,
-    puzzleId,
-    placeholderIcon,
-    assetImage,
-    kind,
-    x,
-    y,
+    id, roomId, viewId, title, shortLabel, description, puzzleId,
+    placeholderIcon, assetImage, kind, x, y, scale, rotation
   };
 }
 
@@ -93,47 +85,53 @@ const OBJ = "/assets/images/objects";
 const SHARED = `${OBJ}/shared`;
 
 export const roomObjects: RoomObject[] = [
-  object("room-0-tv-sequence",  "room-0", "right",  "CRT TV",         "TV",    "공백으로 이어진 단어 신호를 보여 주는 튜토리얼 화면.", "room-0-tv-sequence",  "TV",   24, 38, "puzzle", `${OBJ}/room-0/crt-tv.png`),
-  object("room-0-desk-terminal","room-0", "left",   "데스크 터미널",  "TERM",  "split과 인덱싱을 가장 짧게 확인하는 잠긴 터미널.",   "room-0-desk-terminal","PC",   34, 48, "puzzle", `${OBJ}/room-0/desk-terminal.png`),
-  object("room-0-mini-ox-card", "room-0", "right",  "OX 카드",        "OX",    "공백으로 나뉜 O와 X 신호가 적힌 종이 카드.",         "room-0-mini-ox-card", "OX",   52, 57, "puzzle", `${OBJ}/room-0/mini-ox-card.png`),
-  object("room-0-name-tags",    "room-0", "left",   "명찰 묶음",      "NAMES", "공백으로 붙은 이름표에서 반복 이름을 찾는 명찰 묶음.", "room-0-name-tags",    "ID",   70, 58, "puzzle", `${OBJ}/room-0/name-tags-bundle.png`),
-  object("room-0-pattern-tiles","room-0", "right",  "패턴 타일 박스", "TILES", "나뉜 숫자 신호 중 특정 위치를 꺼내는 타일 상자.",    "room-0-pattern-tiles","GRID", 76, 42, "puzzle", `${OBJ}/room-0/pattern-tile-box.png`),
-  object("room-0-bookshelf-note","room-0","center",  "책장 쪽지",      "NOTE",  "줄 단위 기록과 슬래시 구분자를 연습하는 짧은 쪽지.",  "room-0-bookshelf-note","NT",  32, 56, "puzzle", `${OBJ}/room-0/bookshelf-note.png`),
-  object("room-0-door",         "room-0", "center", "출입문 키패드",  "DOOR",  "네 자리 코드를 기다리는 서재 문.",                    "door-room-0",         "KEY",  73, 38, "door",   `${SHARED}/door-keypad.png`),
+  // Room 0
+  object("room-0-tv-sequence",  "room-0", "center", "CRT TV",         "TV",    "공백으로 이어진 단어 신호를 보여 주는 튜토리얼 화면.", "room-0-tv-sequence",  "TV",   59.3, 56.9, 2.1, "puzzle", `${OBJ}/room-0/crt-tv.png`),
+  object("room-0-desk-terminal","room-0", "center", "데스크 터미널",  "TERM",  "split과 인덱싱을 가장 짧게 확인하는 잠긴 터미널.",   "room-0-desk-terminal","PC",   5.1, 56, 1.9, "puzzle", `${OBJ}/room-0/desk-terminal.png`),
+  object("room-0-mini-ox-card", "room-0", "center", "OX 카드",        "OX",    "공백으로 나뉜 O와 X 신호가 적힌 종이 카드.",         "room-0-mini-ox-card", "OX",   30, 83.8, 1.3, "puzzle", `${OBJ}/room-0/mini-ox-card.png`),
+  object("room-0-name-tags",    "room-0", "center", "명찰 묶음",      "NAMES", "공백으로 붙은 이름표에서 반복 이름을 찾는 명찰 묶음.", "room-0-name-tags",    "ID",   65.3, 88.4, 1.6, "puzzle", `${OBJ}/room-0/name-tags-bundle.png`),
+  object("room-0-pattern-tiles","room-0", "center", "패턴 타일 박스", "TILES", "나뉜 숫자 신호 중 특정 위치를 꺼내는 타일 상자.",    "room-0-pattern-tiles","GRID", 18.5, 56.5, 1.7, "puzzle", `${OBJ}/room-0/pattern-tile-box.png`),
+  object("room-0-bookshelf-note","room-0","center", "책장 쪽지",      "NOTE",  "줄 단위 기록과 슬래시 구분자를 연습하는 짧은 쪽지.",  "room-0-bookshelf-note","NT",  95.8, 47.2, 1.1, "puzzle", `${OBJ}/room-0/bookshelf-note.png`),
+  object("room-0-door",         "room-0", "center", "출입문 키패드",  "DOOR",  "네 자리 코드를 기다리는 서재 문.",                    "door-room-0",         "KEY",  87.5, 50, 0.9, "door",   `${SHARED}/door-keypad.png`),
 
-  object("room-1-word-billboard","room-1","center",  "단어 전광판",    "WORDS", "다섯 글자 조각의 가운데 슬롯을 강조하는 전광판.",     "room-1-word-billboard","TXT", 30, 43, "puzzle", `${OBJ}/room-1/word-billboard.png`),
-  object("room-1-ox-monitor",   "room-1", "left",   "OX 모니터",      "OX",    "O와 X 신호 노이즈가 반복되는 모니터.",                "room-1-ox-monitor",   "OX",   35, 48, "puzzle", `${OBJ}/room-1/ox-monitor.png`),
-  object("room-1-number-panel", "room-1", "center", "숫자 패널",      "NUM",   "값들이 행 단위로 점멸하는 패널.",                     "room-1-number-panel", "04",   68, 37, "puzzle", `${OBJ}/room-1/number-panel.png`),
-  object("room-1-radio-signal", "room-1", "left",   "라디오 장치",    "RADIO", "숨겨진 선택 주파수를 기록하는 희미한 라디오.",         "room-1-radio-signal", "RF",   70, 62, "puzzle", `${OBJ}/room-1/radio-signal-device.png`),
-  object("room-1-name-card",    "room-1", "right",  "명함 보드",      "NAMES", "중복 항목이 포함된 명함 보드.",                       "room-1-name-card",    "ID",   34, 55, "puzzle", `${OBJ}/room-1/name-card-board.png`),
-  object("room-1-checksum-tablet","room-1","right", "노이즈 스트립",  "NOISE", "숫자 신호가 섞인 숨겨진 선택 스트립.",                "room-1-checksum-tablet","NS", 55, 64, "puzzle", `${OBJ}/room-1/noise-strip.png`),
-  object("room-1-door",         "room-1", "right",  "출입문 키패드",  "DOOR",  "네 자리 코드를 받는 신호실 출구.",                    "door-room-1",         "KEY",  74, 37, "door",   `${SHARED}/door-keypad.png`),
+  // Room 1
+  object("room-1-word-billboard","room-1","center",  "단어 전광판",    "WORDS", "다섯 글자 조각의 가운데 슬롯을 강조하는 전광판.",     "room-1-word-billboard","TXT", 50, 30, 1.5, "puzzle", `${OBJ}/room-1/word-billboard.png`),
+  object("room-1-ox-monitor",   "room-1", "left",   "OX 모니터",      "OX",    "O와 X 신호 노이즈가 반복되는 모니터.",                "room-1-ox-monitor",   "OX",   40, 58.3, 1.2, "puzzle", `${OBJ}/room-1/ox-monitor.png`),
+  object("room-1-number-panel", "room-1", "center", "숫자 패널",      "NUM",   "값들이 행 단위로 점멸하는 패널.",                     "room-1-number-panel", "04",   29.6, 50, 1.2, "puzzle", `${OBJ}/room-1/number-panel.png`),
+  object("room-1-radio-signal", "room-1", "bottom", "라디오 장치",    "RADIO", "숨겨진 선택 주파수를 기록하는 희미한 라디오.",         "room-1-radio-signal", "RF",   75, 69.4, 2.7, "puzzle", `${OBJ}/room-1/radio-signal-device.png`),
+  object("room-1-name-card",    "room-1", "left",   "명함 보드",      "NAMES", "중복 항목이 포함된 명함 보드.",                       "room-1-name-card",    "ID",   66.7, 38.4, 3.6, "puzzle", `${OBJ}/room-1/name-card-board.png`),
+  object("room-1-checksum-tablet","room-1","center","노이즈 스트립",  "NOISE", "숫자 신호가 섞인 숨겨진 선택 스트립.",                "room-1-checksum-tablet","NS", 0, 19, 1.9, "puzzle", `${OBJ}/room-1/noise-strip.png`),
+  object("door-room-1",         "room-1", "right",  "출입문 키패드",  "DOOR",  "네 자리 코드를 받는 신호실 출구.",                    "door-room-1",         "KEY",  83.8, 44.9, 1.0, "door",   `${SHARED}/door-keypad.png`),
 
-  object("room-2-file-cabinet", "room-2", "left",   "파일 캐비닛",    "FILES", "뒤섞인 파일 ID가 들어 있는 캐비닛.",                  "room-2-file-cabinet", "FILE", 35, 48, "puzzle", `${OBJ}/room-2/file-cabinet.png`),
-  object("room-2-broken-tags",  "room-2", "left",   "손상된 명찰",    "TAGS",  "정규화 후 중복 검사가 필요한 손상 명찰.",              "room-2-broken-tags",  "ID",   70, 58, "puzzle", `${OBJ}/room-2/broken-name-tags.png`),
-  object("room-2-score-board",  "room-2", "center", "점수 보드",      "SCORE", "의심스러운 합계가 포함된 점수 행 보드.",               "room-2-score-board",  "88",   69, 36, "puzzle", `${OBJ}/room-2/score-board.png`),
-  object("room-2-access-log",   "room-2", "center", "접근 로그",      "LOG",   "선택 단서로 남겨진 접근 기록.",                       "room-2-access-log",   "LOG",  30, 52, "puzzle", `${OBJ}/room-2/access-log-table.png`),
-  object("room-2-timeline",     "room-2", "right",  "타임라인 보드",  "TIME",  "순서가 뒤섞인 이벤트 타임라인 보드.",                 "room-2-timeline",     "T",    34, 56, "puzzle", `${OBJ}/room-2/timeline-board.png`),
-  object("room-2-checksum-ledger","room-2","right", "아카이브 쪽지",  "NOTE",  "기록 조각을 다시 확인하는 숨겨진 선택 쪽지.",          "room-2-checksum-ledger","NT", 54, 64, "puzzle", `${OBJ}/room-2/archive-note.png`),
-  object("room-2-door",         "room-2", "right",  "출입문 키패드",  "DOOR",  "기록실 문.",                                          "door-room-2",         "KEY",  72, 36, "door",   `${SHARED}/door-keypad.png`),
+  // Room 2
+  object("room-2-file-cabinet", "room-2", "left",   "파일 캐비닛",    "FILES", "뒤섞인 파일 ID가 들어 있는 캐비닛.",                  "room-2-file-cabinet", "FILE", 50, 59.3, 2.6, "puzzle", `${OBJ}/room-2/file-cabinet.png`, 0),
+  object("room-2-broken-tags",  "room-2", "bottom", "손상된 명찰",    "TAGS",  "정규화 후 중복 검사가 필요한 손상 명찰.",              "room-2-broken-tags",  "ID",   0, 76.9, 1.4, "puzzle", `${OBJ}/room-2/broken-name-tags.png`),
+  object("room-2-score-board",  "room-2", "center", "점수 보드",      "SCORE", "의심스러운 합계가 포함된 점수 행 보드.",               "room-2-score-board",  "88",   78.2, 47.2, 2.5, "puzzle", `${OBJ}/room-2/score-board.png`),
+  object("room-2-access-log",   "room-2", "left",   "접근 로그",      "LOG",   "선택 단서로 남겨진 접근 기록.",                       "room-2-access-log",   "LOG",  100, 47.7, 0.7, "puzzle", `${OBJ}/room-2/access-log-table.png`),
+  object("room-2-timeline",     "room-2", "right",  "타임라인 보드",  "TIME",  "순서가 뒤섞인 이벤트 타임라인 보드.",                 "room-2-timeline",     "T",    34.3, 48.6, 2.0, "puzzle", `${OBJ}/room-2/timeline-board.png`),
+  object("room-2-checksum-ledger","room-2","bottom","아카이브 쪽지",  "NOTE",  "기록 조각을 다시 확인하는 숨겨진 선택 쪽지.",          "room-2-checksum-ledger","NT", 10.2, 62, 1.2, "puzzle", `${OBJ}/room-2/archive-note.png`),
+  object("door-room-2",         "room-2", "right",  "출입문 키패드",  "DOOR",  "기록실 문.",                                          "door-room-2",         "KEY",  86.1, 52.8, 0.9, "door",   `${SHARED}/door-keypad.png`),
 
-  object("room-3-switch-panel", "room-3", "left",   "스위치 패널",    "SWITCH","규칙을 만족해야 하는 스위치 패널.",                   "room-3-switch-panel", "SW",   36, 48, "puzzle", `${OBJ}/room-3/switch-panel.png`),
-  object("room-3-logic-gate",   "room-3", "center", "논리 게이트 보드","LOGIC","참·거짓 신호를 조합하는 논리 보드.",                  "room-3-logic-gate",   "AND",  30, 42, "puzzle", `${OBJ}/room-3/logic-gate-board.png`),
-  object("room-3-candidate-codes","room-3","right", "후보 코드 보드", "CODES", "부분 제약 조건이 달린 후보 코드 보드.",               "room-3-candidate-codes","PIN",34, 56, "puzzle", `${OBJ}/room-3/candidate-codes-board.png`),
-  object("room-3-warning-lamp", "room-3", "left",   "경고 램프 보드", "LAMP",  "선택 단서로 남은 경고 램프 조건.",                    "room-3-warning-lamp", "WARN", 70, 62, "puzzle", `${OBJ}/room-3/warning-lamp-board.png`),
-  object("room-3-experiment",   "room-3", "center", "실험 콘솔",      "EXP",   "샘플 출력이 기록된 실험 콘솔.",                       "room-3-experiment",   "LAB",  69, 38, "puzzle", `${OBJ}/room-3/experiment-console.png`),
-  object("room-3-power-meter",  "room-3", "right",  "후보 다이얼",    "DIAL",  "후보 코드의 자릿수 합을 비교하는 선택 다이얼.",        "room-3-power-meter",  "DL",   55, 64, "puzzle", `${OBJ}/room-3/candidate-dial.png`),
-  object("room-3-door",         "room-3", "right",  "출입문 키패드",  "DOOR",  "제어실 문.",                                          "door-room-3",         "KEY",  72, 36, "door",   `${SHARED}/door-keypad.png`),
+  // Room 3
+  object("room-3-switch-panel", "room-3", "center", "스위치 패널",    "SWITCH","규칙을 만족해야 하는 스위치 패널.",                   "room-3-switch-panel", "SW",   30, 55, 1.0, "puzzle", `${OBJ}/room-3/switch-panel.png`),
+  object("room-3-logic-gate",   "room-3", "center", "논리 게이트 보드","LOGIC","참·거짓 신호를 조합하는 논리 보드.",                  "room-3-logic-gate",   "AND",  70, 40, 1.5, "puzzle", `${OBJ}/room-3/logic-gate-board.png`),
+  object("room-3-candidate-codes","room-3","left",  "후보 코드 보드", "CODES", "부분 제약 조건이 달린 후보 코드 보드.",               "room-3-candidate-codes","PIN",50, 50, 1.2, "puzzle", `${OBJ}/room-3/candidate-codes-board.png`),
+  object("room-3-warning-lamp", "room-3", "left",   "경고 램프 보드", "LAMP",  "선택 단서로 남은 경고 램프 조건.",                    "room-3-warning-lamp", "WARN", 50, 30, 0.8, "puzzle", `${OBJ}/room-3/warning-lamp-board.png`),
+  object("room-3-experiment",   "room-3", "center", "실험 콘솔",      "EXP",   "샘플 출력이 기록된 실험 콘솔.",                       "room-3-experiment",   "LAB",  50, 60, 1.1, "puzzle", `${OBJ}/room-3/experiment-console.png`),
+  object("room-3-power-meter",  "room-3", "center", "후보 다이얼",    "DIAL",  "후보 코드의 자릿수 합을 비교하는 선택 다이얼.",        "room-3-power-meter",  "DL",   30, 40, 0.7, "puzzle", `${OBJ}/room-3/candidate-dial.png`),
+  object("room-3-door",         "room-3", "right",  "출입문 키패드",  "DOOR",  "제어실 문.",                                          "door-room-3",         "KEY",  65, 50, 0.7, "door",   `${SHARED}/door-keypad.png`),
 
-  object("room-4-validator",    "room-4", "center", "Missed Clues Board",  "MISSED", "앞 방에서 놓친 선택 단서를 모아 둔 보드.",            "room-4-validator",    "MC",   29, 42),
-  object("room-4-test-log",     "room-4", "left",   "Solved Route Board",  "ROUTE",  "해결한 필수 퍼즐과 Door Code 조각을 되짚는 보드.",    "room-4-test-log",     "RT",   36, 48),
-  object("room-4-candidate-dial","room-4","center", "Play Style Summary",  "STYLE",  "사용한 Python 도구와 풀이 방식을 요약하는 콘솔.",     "room-4-candidate-dial","PS",  69, 39),
-  object("room-4-error-server", "room-4", "right",  "Saved Draft Archive", "DRAFT",  "작성했던 코드 draft를 다시 확인하는 기록 보관함.",    "room-4-error-server", "DR",   33, 57),
-  object("room-4-broken-crt",   "room-4", "left",   "Optional Signal Shelf","OPT",   "풀지 않은 선택 신호를 다시 꺼내 보는 선반.",          "room-4-broken-crt",   "OP",   70, 62),
-  object("room-4-sum-analyzer", "room-4", "center", "Final Review Console","REVIEW", "전체 풀이 흐름을 정리하는 마지막 콘솔.",              "room-4-sum-analyzer", "RV",   52, 62),
-  object("room-4-door",         "room-4", "right",  "Final Exit Door",     "EXIT",   "최종 탈출 연출을 여는 문.",                           "door-room-4",         "EX",   72, 36, "door"),
+  // Room 4 (No sprites yet)
+  object("room-4-validator",    "room-4", "center", "Missed Clues Board",  "MISSED", "앞 방에서 놓친 선택 단서를 모아 둔 보드.",            "room-4-validator",    "MC",   29, 42, 1.2),
+  object("room-4-test-log",     "room-4", "left",   "Solved Route Board",  "ROUTE",  "해결한 필수 퍼즐과 Door Code 조각을 되짚는 보드.",    "room-4-test-log",     "RT",   36, 48, 1.2),
+  object("room-4-candidate-dial","room-4","center", "Play Style Summary",  "STYLE",  "사용한 Python 도구와 풀이 방식을 요약하는 콘솔.",     "room-4-candidate-dial","PS",  69, 39, 1.2),
+  object("room-4-error-server", "room-4", "right",  "Saved Draft Archive", "DRAFT",  "작성했던 코드 draft를 다시 확인하는 기록 보관함.",    "room-4-error-server", "DR",   33, 57, 1.2),
+  object("room-4-broken-crt",   "room-4", "left",   "Optional Signal Shelf","OPT",   "풀지 않은 선택 신호를 다시 꺼내 보는 선반.",          "room-4-broken-crt",   "OP",   70, 62, 1.2),
+  object("room-4-sum-analyzer", "room-4", "center", "Final Review Console","REVIEW", "전체 풀이 흐름을 정리하는 마지막 콘솔.",              "room-4-sum-analyzer", "RV",   52, 62, 1.2),
+  object("room-4-door",         "room-4", "right",  "Final Exit Door",     "EXIT",   "최종 탈출 연출을 여는 문.",                           "door-room-4",         "EX",   72, 36, 1.2, "door"),
 ];
 
 export function getRoomObjects(roomId: string): RoomObject[] {
   return roomObjects.filter((roomObject) => roomObject.roomId === roomId);
 }
+

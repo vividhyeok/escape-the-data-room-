@@ -12,6 +12,5 @@ echo Starting Escape the Data Room - playtest mode...
 echo.
 echo This mode is for actual play testing.
 echo It starts from a fresh state and Python Lab opens empty unless the player writes code.
-echo Open http://127.0.0.1:5173/?mode=test after the server is ready.
 echo.
-call npm run dev -- --port 5173
+call npm run dev -- --port 5173 --open "/?mode=test"

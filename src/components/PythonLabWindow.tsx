@@ -4,6 +4,7 @@ import { indentOnInput } from "@codemirror/language";
 import { keymap } from "@codemirror/view";
 import { oneDark } from "@codemirror/theme-one-dark";
 import CodeMirror from "@uiw/react-codemirror";
+import { Play, RotateCcw, Loader2 } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import type { Puzzle } from "../data/types";
 import { pythonRunner } from "../lib/pythonRunner";
@@ -105,12 +106,12 @@ export function PythonLabWindow({ puzzle, onClose }: PythonLabWindowProps): Reac
           }}
         />
         <div className="lab-actions">
-          <button className="primary-button" disabled={isRunning} onClick={runCode} type="button">
-            {isRunning ? "Analyzing..." : "Run Analysis"}
+          <button className="primary-button sk-action-btn" disabled={isRunning} onClick={runCode} type="button" title="코드 실행 및 분석 (Run Analysis)">
+            {isRunning ? <Loader2 className="spinner" size={20} /> : <Play size={20} />}
           </button>
           {puzzle.starterCode ? (
-            <button className="ghost-button" onClick={loadExampleApproach} type="button">
-              Load Example
+            <button className="ghost-button sk-action-btn" onClick={loadExampleApproach} type="button" title="예제 코드 불러오기 (Load Example)">
+              <RotateCcw size={20} />
             </button>
           ) : null}
         </div>

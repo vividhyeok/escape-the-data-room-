@@ -13,6 +13,10 @@ type GameProgress = {
   doorAttempts: Record<string, string[]>;
   clearedRoomIds: string[];
   reviewRoomId?: string;
+  gameState: "TITLE" | "PLAYING" | "CREDITS";
+  currentDialogueId: string | null;
+  unlockedStories: string[];
+  textSpeed: "fast" | "normal" | "slow" | "instant";
 };
 
 type GameActions = {
@@ -25,6 +29,9 @@ type GameActions = {
   clearRoom: (roomId: string) => void;
   closeReview: () => void;
   resetProgress: () => void;
+  setGameState: (state: "TITLE" | "PLAYING" | "CREDITS") => void;
+  setDialogue: (dialogueId: string | null) => void;
+  setTextSpeed: (speed: "fast" | "normal" | "slow" | "instant") => void;
 };
 
 export type GameStore = GameProgress & GameActions;
@@ -39,6 +46,10 @@ const initialProgress: GameProgress = {
   doorAttempts: {},
   clearedRoomIds: [],
   reviewRoomId: undefined,
+  gameState: "TITLE",
+  currentDialogueId: null,
+  unlockedStories: [],
+  textSpeed: "normal",
 };
 
 function addUnique<T>(items: T[], item: T, predicate: (existing: T) => boolean): T[] {
@@ -93,6 +104,15 @@ export const useGameStore = create<GameStore>()(
         })),
       closeReview: () => set({ reviewRoomId: undefined }),
       resetProgress: () => set(initialProgress),
+      setGameState: (gameState) => set({ gameState }),
+      setDialogue: (id) =>
+        set((state) => {
+          if (!id) return { currentDialogueId: null };
+          const unlocked = new Set(state.unlockedStories);
+          unlocked.add(id);
+          return { currentDialogueId: id, unlockedStories: Array.from(unlocked) };
+        }),
+      setTextSpeed: (textSpeed) => set({ textSpeed }),
     }),
     {
       name: GAME_STORAGE_KEY,
@@ -108,6 +128,8 @@ export const useGameStore = create<GameStore>()(
         doorAttempts: state.doorAttempts,
         clearedRoomIds: state.clearedRoomIds,
         reviewRoomId: state.reviewRoomId,
+        gameState: state.gameState,
+        currentDialogueId: state.currentDialogueId,
       }),
     },
   ),

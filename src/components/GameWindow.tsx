@@ -16,16 +16,17 @@ type GameWindowProps = {
   title: string;
   onClose: () => void;
   children: React.ReactNode;
+  borderless?: boolean;
 };
 
 const STORAGE_PREFIX = "escape-the-data-room:window:";
 
 const DEFAULT_WINDOW_SIZES: Record<GameWindowType, Pick<WindowRect, "width" | "height">> = {
   inspect: { width: 760, height: 560 },
-  python: { width: 700, height: 520 },
-  reference: { width: 520, height: 420 },
+  python: { width: 560, height: 420 },
+  reference: { width: 420, height: 360 },
   keypad: { width: 420, height: 520 },
-  notebook: { width: 520, height: 560 },
+  notebook: { width: 440, height: 480 },
   review: { width: 720, height: 560 },
 };
 
@@ -74,6 +75,18 @@ function clampRect(rect: WindowRect): WindowRect {
 function defaultRect(type: GameWindowType, id: string): WindowRect {
   const size = DEFAULT_WINDOW_SIZES[type];
   const position = DEFAULT_WINDOW_POSITIONS[type];
+  const viewport = getViewportRect();
+  
+  if (type === "inspect") {
+    // Center the inspect windows on the screen by default
+    return clampRect({
+      x: Math.floor(viewport.width / 2) - 380, // rough center based on max size
+      y: Math.floor(viewport.height / 2) - 300,
+      width: size.width,
+      height: size.height,
+    });
+  }
+  
   const cascade = Math.abs(Array.from(id).reduce((total, char) => total + char.charCodeAt(0), 0)) % 5;
 
   return clampRect({
@@ -94,8 +107,15 @@ function loadRect(type: GameWindowType, id: string): WindowRect {
     if (!stored) {
       return defaultRect(type, id);
     }
+    
+    // Ignore stored values for inspect (borderless) so they always spawn in center when opened,
+    // or we can let them remember. Let's let them remember, but if they were tiny, fix it.
+    const rect = JSON.parse(stored) as WindowRect;
+    if (type === "inspect" && (rect.width < 100 || rect.height < 100)) {
+      return defaultRect(type, id);
+    }
 
-    return clampRect(JSON.parse(stored) as WindowRect);
+    return clampRect(rect);
   } catch {
     return defaultRect(type, id);
   }
@@ -136,7 +156,7 @@ export function setDemoLayout(): void {
   window.dispatchEvent(new CustomEvent("etdr:reload-windows"));
 }
 
-export function GameWindow({ id, type, eyebrow, title, onClose, children }: GameWindowProps): React.JSX.Element {
+export function GameWindow({ id, type, eyebrow, title, onClose, children, borderless }: GameWindowProps): React.JSX.Element {
   const initialRect = useMemo(() => loadRect(type, id), [id, type]);
   const [rect, setRect] = useState<WindowRect>(initialRect);
   const [zIndex, setZIndex] = useState(() => nextZIndex());
@@ -226,6 +246,12 @@ export function GameWindow({ id, type, eyebrow, title, onClose, children }: Game
     if (event.button !== 0) {
       return;
     }
+    
+    // Ignore drag if clicking on interactive elements
+    const target = event.target as HTMLElement;
+    if (target.closest('button, input, textarea, a, .no-drag')) {
+      return;
+    }
 
     focusWindow();
     dragRef.current = {
@@ -255,33 +281,43 @@ export function GameWindow({ id, type, eyebrow, title, onClose, children }: Game
   return (
     <section
       aria-label={`${eyebrow} ${title}`}
-      className={`game-window game-window-${type}`}
+      className={`game-window game-window-${type} ${borderless ? 'borderless' : ''}`}
       onPointerDown={focusWindow}
       style={{
         left: rect.x,
         top: rect.y,
-        width: rect.width,
-        height: rect.height,
+        width: borderless ? undefined : rect.width,
+        height: borderless ? undefined : rect.height,
         zIndex,
       }}
     >
-      <div className="game-window-titlebar" onPointerDown={startDrag}>
-        <div>
-          <span>{eyebrow}</span>
-          <strong>{title}</strong>
+      {!borderless && (
+        <div className="game-window-titlebar" onPointerDown={startDrag}>
+          <div>
+            <span>{eyebrow}</span>
+            <strong>{title}</strong>
+          </div>
+          <button
+            aria-label="Close Terminal"
+            className="window-close"
+            onClick={onClose}
+            onPointerDown={(e) => e.stopPropagation()}
+            type="button"
+          >
+            SYS.EXIT
+          </button>
         </div>
-        <button
-          aria-label="Close"
-          className="window-close"
-          onClick={onClose}
-          onPointerDown={(e) => e.stopPropagation()}
-          type="button"
-        >
-          ✕
-        </button>
-      </div>
-      <div className="game-window-body">{children}</div>
-      <div aria-hidden="true" className="resize-handle" onPointerDown={startResize} />
+      )}
+      
+      {borderless ? (
+        <div className="game-window-body borderless-body" onPointerDown={startDrag} style={{ height: '100%', cursor: 'grab' }}>
+          {children}
+        </div>
+      ) : (
+        <div className="game-window-body">{children}</div>
+      )}
+
+      {!borderless && <div aria-hidden="true" className="resize-handle" onPointerDown={startResize} />}
     </section>
   );
 }

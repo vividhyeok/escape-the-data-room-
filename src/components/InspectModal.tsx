@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { CheckCircle2, Copy, TerminalSquare, BookOpen, XCircle } from "lucide-react";
 import type { Puzzle, RoomObject } from "../data/types";
 import { useGameStore } from "../store/gameStore";
 import { GameWindow } from "./GameWindow";
@@ -671,17 +672,17 @@ export function InspectModal({
           </label>
           {copyStatus ? <p className="copy-status">{copyStatus}</p> : null}
           <div className="modal-actions">
-            <button className="primary-button" onClick={checkAnswer} type="button">
-              Check Code
+            <button className="primary-button sk-action-btn" onClick={checkAnswer} type="button" title="입력한 코드를 확인합니다 (Check Code)">
+              <CheckCircle2 size={24} />
             </button>
-            <button className="secondary-button" onClick={copyData} type="button">
-              Copy Data
+            <button className="secondary-button sk-action-btn" onClick={copyData} type="button" title="원시 데이터를 복사합니다 (Copy Data)">
+              <Copy size={24} />
             </button>
-            <button className="secondary-button" onClick={() => onOpenLab(puzzle)} type="button">
-              Open Python Lab
+            <button className="secondary-button sk-action-btn" onClick={() => onOpenLab(puzzle)} type="button" title="파이썬 실습실 열기 (Open Python Lab)">
+              <TerminalSquare size={24} />
             </button>
-            <button className="ghost-button" onClick={onOpenHelp} type="button">
-              ? Reference
+            <button className="ghost-button sk-action-btn" onClick={onOpenHelp} type="button" title="파이썬 도움말 보기 (Reference)">
+              <BookOpen size={24} />
             </button>
           </div>
         </div>
