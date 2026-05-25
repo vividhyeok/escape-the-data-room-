@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef, useCallback } from "react";
 import { CheckCircle2, Copy, TerminalSquare, BookOpen, XCircle } from "lucide-react";
 import type { Puzzle, RoomObject } from "../data/types";
 import { useGameStore } from "../store/gameStore";
@@ -27,6 +27,69 @@ function fallbackCopyText(text: string): void {
   textarea.select();
   document.execCommand("copy");
   document.body.removeChild(textarea);
+}
+
+/**
+ * Renders children at a fixed internal width, then scales the whole block
+ * to fit the container — like an image. Text never reflows.
+ */
+function ScaledSurface({ children, baseWidth = "auto" }: { children: React.ReactNode; baseWidth?: number | "auto" }) {
+  const containerRef = useRef<HTMLDivElement>(null);
+  const innerRef = useRef<HTMLDivElement>(null);
+  const [scale, setScale] = useState(1);
+  const [size, setSize] = useState({ w: typeof baseWidth === "number" ? baseWidth : 460, h: 0 });
+
+  const measure = useCallback(() => {
+    const container = containerRef.current;
+    const inner = innerRef.current;
+    if (!container || !inner) return;
+
+    const prevTransform = inner.style.transform;
+    inner.style.transform = "none";
+    const naturalWidth = inner.offsetWidth;
+    const naturalHeight = inner.offsetHeight;
+    
+    const iw = baseWidth === "auto" ? Math.max(460, naturalWidth) : baseWidth;
+    const ih = naturalHeight;
+    
+    inner.style.transform = prevTransform;
+
+    const cw = container.clientWidth;
+    const s = Math.min(cw / (iw || 1), 1);
+    
+    setScale(s);
+    setSize({ w: iw, h: ih });
+  }, [baseWidth]);
+
+  useEffect(() => {
+    measure();
+    const ro = new ResizeObserver(measure);
+    if (containerRef.current) ro.observe(containerRef.current);
+    if (innerRef.current) ro.observe(innerRef.current);
+    return () => ro.disconnect();
+  }, [measure]);
+
+  return (
+    <div ref={containerRef} className="scaled-surface-container" style={{ width: "100%", overflow: "hidden" }}>
+      <div style={{ height: size.h * scale, position: "relative" }}>
+        <div
+          ref={innerRef}
+          className="scaled-surface-inner"
+          style={{
+            width: baseWidth === "auto" ? "max-content" : baseWidth,
+            minWidth: baseWidth === "auto" ? 460 : undefined,
+            transformOrigin: "top left",
+            transform: `scale(${scale})`,
+            position: "absolute",
+            top: 0,
+            left: 0,
+          }}
+        >
+          {children}
+        </div>
+      </div>
+    </div>
+  );
 }
 
 function renderClueSurface(puzzle: Puzzle, object: RoomObject): React.JSX.Element {
@@ -655,7 +718,9 @@ export function InspectModal({
         </div>
 
         <div className="inspect-surface">
-          {renderClueSurface(puzzle, object)}
+          <ScaledSurface baseWidth="auto">
+            {renderClueSurface(puzzle, object)}
+          </ScaledSurface>
         </div>
 
         <div className="inspect-footer">

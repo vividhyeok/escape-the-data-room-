@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { Maximize, Minimize, Volume2, VolumeX } from "lucide-react";
 import { useGameStore } from "../store/gameStore";
 import { dialogues } from "../data/story";
 import { SoundEngine } from "../utils/SoundEngine";
@@ -17,11 +18,14 @@ export function TitleScreen(): React.JSX.Element {
   const setBgmVolume = useGameStore((state) => state.setBgmVolume);
   const sfxVolume = useGameStore((state) => state.sfxVolume);
   const setSfxVolume = useGameStore((state) => state.setSfxVolume);
+  const isMuted = useGameStore((state) => state.isMuted);
+  const setIsMuted = useGameStore((state) => state.setIsMuted);
 
   const [showSettings, setShowSettings] = useState(false);
   const [showCredits, setShowCredits] = useState(false);
   const [showStoryArchive, setShowStoryArchive] = useState(false);
   const [resetMsg, setResetMsg] = useState("");
+  const [isFullscreen, setIsFullscreen] = useState(!!document.fullscreenElement);
 
   useEffect(() => {
     const initAudio = () => {
@@ -30,6 +34,12 @@ export function TitleScreen(): React.JSX.Element {
     };
     window.addEventListener("click", initAudio, { once: true });
     return () => window.removeEventListener("click", initAudio);
+  }, []);
+
+  useEffect(() => {
+    const onFsChange = () => setIsFullscreen(!!document.fullscreenElement);
+    document.addEventListener("fullscreenchange", onFsChange);
+    return () => document.removeEventListener("fullscreenchange", onFsChange);
   }, []);
 
   const hasSaveData = clearedRoomIds.length > 0 || currentRoomId !== "room-0";
@@ -65,8 +75,23 @@ export function TitleScreen(): React.JSX.Element {
     }
   };
 
+  const toggleMute = () => {
+    SoundEngine.playClick();
+    const next = !isMuted;
+    setIsMuted(next);
+    SoundEngine.setMuted(next);
+  };
+
   return (
     <div className="title-screen crt-glitch">
+      <div className="title-quick-actions">
+        <button className="title-quick-btn" onClick={toggleFullscreen} title={isFullscreen ? "창 모드" : "전체화면"} type="button">
+          {isFullscreen ? <Minimize size={20} /> : <Maximize size={20} />}
+        </button>
+        <button className="title-quick-btn" onClick={toggleMute} title={isMuted ? "소리 켜기" : "소리 끄기"} type="button">
+          {isMuted ? <VolumeX size={20} /> : <Volume2 size={20} />}
+        </button>
+      </div>
       <div className="title-content">
         <h1 className="game-logo flicker">ESCAPE<br/>THE DATA ROOM</h1>
         <div className="title-menu">

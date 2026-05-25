@@ -139,6 +139,11 @@ class WebAudioEngine {
       // this.bgmAudio.currentTime = 0; 
     }
   }
+
+  public setMuted(muted: boolean) {
+    useGameStore.getState().setIsMuted(muted);
+    this.updateBGMVolume();
+  }
 }
 
 export const SoundEngine = new WebAudioEngine();
