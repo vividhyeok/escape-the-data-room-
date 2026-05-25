@@ -42,7 +42,7 @@ export function GameShell(): React.JSX.Element {
   const saveCodeDraft = useGameStore((state) => state.saveCodeDraft);
   const isMuted = useGameStore((state) => state.isMuted);
   const setIsMuted = useGameStore((state) => state.setIsMuted);
-  const activeDoorId = useGameStore((state) => state.activeDoorId);
+  const activeDoorId = selectedObject?.kind === "door" ? selectedObject.id : null;
 
   const room = roomsById[currentRoomId] ?? roomsById["room-1"];
   const objects = getRoomObjects(room.id);

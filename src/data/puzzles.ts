@@ -56,6 +56,7 @@ const room1RadioSignalData = `3:822 8:441 5:230 1:522 7:413
 
 const room1NoiseStripData = `A2X7Q4M8`;
 
+export const puzzles: Puzzle[] = [
   {
     id: "room-0-tv-sequence",
     roomId: "room-0",
