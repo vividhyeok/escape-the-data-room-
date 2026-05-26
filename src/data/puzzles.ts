@@ -62,7 +62,7 @@ export const puzzles: Puzzle[] = [
     roomId: "room-0",
     title: "CRT TV",
     objectId: "room-0-tv-sequence",
-    situationText: "낡은 TV에 센서 수치들이 쏟아진다. 이 중 가장 높은 값 하나를 건져내면—그게 코드의 첫 자리다.",
+    situationText: "낡은 TV에 센서 수치들이 쏟아진다. 이 중 가장 높은 값 하나를 건져낸 후—그 수를 4번 이어 적어라.",
     dataText: "[3, 2, 5, 1, 4, 6, 2, 5, 7, 1, 3, 2, 4, 6, 5, 1, 2, 4, 7, 3, 5, 2, 1, 6, 4, 3, 5, 2, 7, 1, 4, 6, 8, 2, 5, 3, 1, 4, 7, 2, 5, 6, 1, 3, 4, 2, 5, 1, 6, 3]",
     expectedAnswer: "8888",
     mockOutput: "8\n8888",
@@ -93,7 +93,7 @@ print(str(highest) * 4)
     roomId: "room-0",
     title: "OX 카드",
     objectId: "room-0-mini-ox-card",
-    situationText: "빛바랜 출입 카드. 수치들 중 30 이상만 유효 신호로 인정됐다는 메모가 보인다. 유효한 것의 개수—그게 코드 조각이다.",
+    situationText: "빛바랜 출입 카드. 수치들 중 30 이상만 유효 신호로 인정된다는 메모가 보인다. 유효한 것의 수를 세어—그 숫자를 4번 이어 적어라.",
     dataText: "[12, 15, 22, 18, 29, 14, 19, 21, 25, 28, 11, 17, 24, 26, 13, 20, 27, 23, 16, 29, 31, 12, 15, 22, 18, 35, 14, 19, 21, 42, 28, 11, 17, 50, 26, 13, 20, 65, 23, 16]",
     expectedAnswer: "5555",
     mockOutput: "5\n5555",
@@ -127,7 +127,7 @@ print(str(count) * 4)
     roomId: "room-0",
     title: "명찰 묶음",
     objectId: "room-0-name-tags",
-    situationText: "묶음 명찰 속에 'cat'이 몇 번이나 끼어 있다. 정확한 횟수를 세면—코드의 한 자리가 채워진다.",
+    situationText: "묶음 명찰들 속에 'cat'이 숨어 있다. 정확히 몇 번 등장하는지 세어—그 수를 4번 이어 적어라.",
     dataText: "['bat', 'rat', 'mat', 'pat', 'bat', 'rat', 'mat', 'pat', 'bat', 'cat', 'rat', 'mat', 'pat', 'bat', 'rat', 'mat', 'pat', 'bat', 'rat', 'mat', 'pat', 'bat', 'rat', 'cat', 'mat', 'pat', 'bat', 'rat', 'mat', 'pat', 'bat', 'rat', 'mat', 'pat']",
     expectedAnswer: "2222",
     mockOutput: "2\n2222",
@@ -163,7 +163,7 @@ print(str(counts["cat"]) * 4)
     roomId: "room-0",
     title: "패턴 타일 박스",
     objectId: "room-0-pattern-tiles",
-    situationText: "타일 뒷면에 긴 숫자 열. '38번째 값'이라는 메모가 흐릿하다. 그 위치의 숫자가 마지막 코드 자리다.",
+    situationText: "타일 뒷면에 긴 숫자 열이 빼곡하다. '38번째 값'이라는 메모가 흐릿하게 보인다. 그 위치의 숫자를 찾아—4번 이어 적어라.",
     dataText: "[4, 1, 3, 6, 9, 2, 5, 7, 1, 3, 2, 4, 6, 5, 1, 2, 4, 7, 3, 5, 2, 1, 6, 4, 3, 5, 2, 7, 1, 4, 6, 2, 5, 3, 1, 4, 7, 2, 8, 1, 3, 4, 2, 5, 1, 6, 3]",
     expectedAnswer: "8888",
     mockOutput: "8\n8888",
@@ -194,7 +194,7 @@ print(str(value) * 4)
     roomId: "room-0",
     title: "책장 쪽지",
     objectId: "room-0-bookshelf-note",
-    situationText: "책장 틈 쪽지—이름, 번호, 판정이 한 줄씩. PASS 상태의 번호를 읽으면 코드가 된다.",
+    situationText: "책장 틈에서 쪽지가 나왔다—이름, 번호, 판정이 한 줄씩. PASS 판정을 받은 항목의 번호를 그대로 입력하라.",
     dataText: `MIRA / 2301 / WAIT
 JONAS / 4410 / PASS
 AXEL / 1220 / WAIT`,
@@ -215,7 +215,7 @@ AXEL / 1220 / WAIT`,
     roomId: "room-1",
     title: "단어 전광판",
     objectId: "room-1-word-billboard",
-    situationText: "전광판을 가득 채운 단어들. 옆 표시기 다섯 칸에서 가운데만 깜빡인다. 다섯 글자 단어의 가운데 글자만 이으면—코드가 된다.",
+    situationText: "전광판을 가득 채운 단어들. 다섯 글자 단어의 가운데 글자만 이어 보면—의미 있는 무언가가 드러난다. 그걸 숫자로 해석해 입력하라.",
     dataText: room1WordBillboardData,
     expectedAnswer: "6719",
     mockOutput: "SIXSEVENONENINE",
@@ -251,7 +251,7 @@ print(result)
     roomId: "room-1",
     title: "OX 모니터",
     objectId: "room-1-ox-monitor",
-    situationText: "O와 X가 흐르는 모니터. 'X는 쌍으로 상쇄된다'—그 메모가 맞다면, 홀수 개가 남는 줄의 X 수를 위에서부터 이으면 코드가 된다.",
+    situationText: "O와 X가 흐르는 모니터. X가 홀수 개인 줄만 골라—그 X의 수를 위에서부터 차례로 이으면 코드가 된다.",
     dataText: room1OxMonitorData,
     expectedAnswer: "1937",
     mockOutput: "1937",
@@ -289,7 +289,7 @@ print(code)
     roomId: "room-1",
     title: "숫자 패널",
     objectId: "room-1-number-panel",
-    situationText: "패널의 숫자 대부분은 잡음이다. 50 미만이면서 4의 배수인 것만 골라 이으면—살아남은 신호들이 코드가 된다.",
+    situationText: "패널의 숫자 대부분은 잡음이다. 50 미만이면서 4의 배수인 것만 골라—순서대로 이어 붙이면 코드가 된다.",
     dataText: room1NumberPanelData,
     expectedAnswer: "4820",
     mockOutput: "4820",
@@ -444,7 +444,7 @@ print(code)
     roomId: "room-2",
     title: "파일 캐비닛",
     objectId: "room-2-file-cabinet",
-    situationText: "로그 묶음에 중복 기록이 섞여 있다. 완전히 같은 줄을 걷어내고 나면—실제로 다른 기록의 수가 코드 조각이 된다.",
+    situationText: "로그 묶음에 중복 기록이 섞여 있다. 완전히 같은 줄을 걷어내고 나면—실제로 다른 기록의 수를 4번 이어 적어라.",
     dataText: `A104 / login / success
 A117 / scan / fail
 A104 / login / success
@@ -491,7 +491,7 @@ print(str(count) * 4)
     roomId: "room-2",
     title: "손상된 명찰",
     objectId: "room-2-broken-tags",
-    situationText: "명찰들의 표기가 제각각이다—대소문자, 구분자 모두 다르다. 형식을 통일해 중복을 걷어내면 실제 인원 수가 코드 조각이 된다.",
+    situationText: "명찰들의 표기가 제각각이다—대소문자, 구분자 모두 다르다. 형식을 통일해 중복을 걷어내면 실제 인원 수가 나온다—그 수를 4번 이어 적어라.",
     dataText: `kim-minhyuk
 Kim Minhyuk
 KIM_MINHYUK
@@ -549,7 +549,7 @@ print(str(count) * 4)
     roomId: "room-2",
     title: "점수 보드",
     objectId: "room-2-score-board",
-    situationText: "이름 목록과 점수 목록이 따로 적혀 있다. ID로 연결하면 누가 최고 점수인지 알 수 있다—그 점수가 코드 조각이 된다.",
+    situationText: "이름 목록과 점수 목록이 따로 적혀 있다. ID로 연결해 최고 점수자를 찾으면—그 점수를 2번 이어 적어라.",
     dataText: `NAMES
 P01 / MIRA
 P02 / JONAS
@@ -618,7 +618,7 @@ print(str(best_score) * 2)
     roomId: "room-2",
     title: "접근 로그",
     objectId: "room-2-access-log",
-    situationText: "시스템 로그가 화면을 채운다. success 기록 중 가장 마지막 항목—그 타임스탬프의 숫자만 이으면 코드가 된다.",
+    situationText: "시스템 로그가 화면을 채운다. success 기록 중 가장 마지막 항목의 타임스탬프를 찾아—숫자만 이어 적어라.",
     dataText: `11:52 / CAMERA / noise
 12:01 / ADMIN / login / success
 12:03 / GUEST / access / fail
@@ -664,7 +664,7 @@ print(last_success.split("/")[0].strip().replace(":", ""))
     roomId: "room-2",
     title: "타임라인 보드",
     objectId: "room-2-timeline",
-    situationText: "사건들이 시간 순서 없이 뒤섞여 있다. 정렬해서 가장 마지막 것을 찾으면—그 시각이 코드가 된다.",
+    situationText: "사건들이 시간 순서 없이 뒤섞여 있다. 정렬해 가장 마지막 사건을 찾으면—그 시각의 숫자를 이어 적어라.",
     dataText: `12:05 / door opened
 11:58 / power off
 12:01 / admin login
@@ -707,7 +707,7 @@ print(last_time)
     roomId: "room-2",
     title: "아카이브 쪽지",
     objectId: "room-2-checksum-ledger",
-    situationText: "PASS와 FAIL이 적힌 코드 목록. PASS를 받은 코드의 각 자리를 더하면—그 합이 단서가 된다.",
+    situationText: "PASS와 FAIL이 적힌 코드 목록. PASS를 받은 코드의 각 자리를 더하면—그 합을 2번 이어 적어라.",
     dataText: `3547 / digit sum / PASS
 3546 / digit sum / FAIL
 2547 / digit sum / FAIL
@@ -745,7 +745,7 @@ for line in data.strip().splitlines():
     roomId: "room-3",
     title: "스위치 패널",
     objectId: "room-3-switch-panel",
-    situationText: "6개 스위치, 각각 켜거나 끈다. 적힌 조건을 모두 만족하는 조합이 몇 가지인지 세면—그 수가 코드 조각이다.",
+    situationText: "6개 스위치, 각각 켜거나 끈다. 적힌 조건을 모두 만족하는 조합이 몇 가지인지 세어—그 수를 4번 이어 적어라.",
     dataText: `S1 S2 S3 S4 S5 S6
 각 스위치는 0 또는 1
 켜진 스위치는 3개
@@ -929,7 +929,7 @@ for a, b, c in cases:
     roomId: "room-3",
     title: "실험 콘솔",
     objectId: "room-3-experiment",
-    situationText: "후보 코드들에 세 규칙을 적용한다. 모두 통과한 코드만 남기면—살아남은 것들이 코드 조각이 된다.",
+    situationText: "후보 코드들에 세 규칙을 적용한다. 모두 통과한 것들 중—처음으로 살아남은 코드를 입력하라.",
     dataText: `후보:
 4026 4726 4926 4028 4126 9026
 
@@ -970,7 +970,7 @@ for code in candidates:
     roomId: "room-3",
     title: "후보 다이얼",
     objectId: "room-3-power-meter",
-    situationText: "상태가 표시된 후보 코드들. stable인 코드의 자리 숫자를 모두 더하면—그 합이 단서가 된다.",
+    situationText: "상태가 표시된 후보 코드들. stable인 코드의 자리 숫자를 모두 더하면—그 합을 2번 이어 적어라.",
     dataText: `4026 stable
 4726 overload
 3026 low
@@ -1008,7 +1008,7 @@ for line in data.strip().splitlines():
     roomId: "room-4",
     title: "손상된 검증기",
     objectId: "room-4-validator",
-    situationText: "검증기가 각 코드에 PASS/FAIL을 찍어 뒀다. 세 규칙으로 직접 확인해 보면 잘못 판정된 것들이 보인다—그 수가 단서다.",
+    situationText: "검증기가 각 코드에 PASS/FAIL을 찍어 뒀다. 세 규칙으로 직접 확인해 잘못 판정된 것들을 찾아내면—그 수를 4번 이어 적어라.",
     dataText: `규칙:
 두 번째 자리는 5
 마지막 자리는 짝수
@@ -1056,7 +1056,7 @@ print(str(wrong) * 4)
     roomId: "room-4",
     title: "테스트 로그",
     objectId: "room-4-test-log",
-    situationText: "테스트 결과 목록. PASS를 받은 코드를 골라내면—그게 단서다.",
+    situationText: "테스트 결과 목록. PASS를 받은 코드를 골라내면—그게 잠금 해제 코드다.",
     dataText: `1484 FAIL
 1584 PASS
 1684 FAIL
@@ -1119,7 +1119,7 @@ while n < 10000:
     roomId: "room-4",
     title: "에러 로그 서버",
     objectId: "room-4-error-server",
-    situationText: "오류 코드 세 개와 원인 설명. 각 코드에 맞는 원인을 연결해 출력하면—시스템이 반응한다.",
+    situationText: "오류 코드 세 개와 원인 설명. 각 코드에 맞는 원인을 연결해 확인하고—오류의 총 수를 4번 이어 적어라.",
     dataText: `E01: 없는 위치 접근
 E02: 형식 불일치
 E03: 알 수 없는 이름`,
@@ -1149,7 +1149,7 @@ print(str(len(errors)) * 4)
     roomId: "room-4",
     title: "손상된 CRT",
     objectId: "room-4-broken-crt",
-    situationText: "입력, 기대 출력, 실제 출력이 나란히 있다. 기대와 실제가 왜 다른지 찾아내면—그게 코드로 이어진다.",
+    situationText: "입력, 기대 출력, 실제 출력이 나란히 있다. 기대와 실제가 다른 항목의 수를 세어—그 수를 4번 이어 적어라.",
     dataText: `입력 -> 기대 출력 / 실제 출력
 AB12 -> 12AB / AB12
 CD34 -> 34CD / CD34
@@ -1178,7 +1178,7 @@ print(str(count) * 4)
     roomId: "room-4",
     title: "합계 분석기",
     objectId: "room-4-sum-analyzer",
-    situationText: "PASS를 받은 코드의 각 자리를 모두 더하면—그 합이 단서가 된다.",
+    situationText: "PASS를 받은 코드의 각 자리를 모두 더하면—그 합을 2번 이어 적어라.",
     dataText: `1584 PASS
 1484 FAIL
 1594 FAIL
