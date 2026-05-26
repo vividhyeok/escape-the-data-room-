@@ -131,7 +131,7 @@ function matchesSearch(item: RefItem, query: string): boolean {
 
 export function HelpModal({ onClose }: HelpModalProps): React.JSX.Element {
   const [query, setQuery] = useState("");
-  const [openCategory, setOpenCategory] = useState<string>("string");
+  const [openCategory, setOpenCategory] = useState<string>("");
 
   const isFiltering = query.trim().length > 0;
 

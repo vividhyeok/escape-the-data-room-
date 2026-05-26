@@ -2153,6 +2153,8 @@ textarea {
 }
 
 .inspect-header {
+  position: relative;
+  min-height: 52px;
   width: 100%;
   padding: 12px 20px;
   display: flex;
@@ -2164,6 +2166,7 @@ textarea {
 
 .inspect-header .situation-text {
   margin: 0;
+  padding-right: 120px;
   color: rgba(255, 255, 255, 0.85);
   font-size: 0.95rem;
   line-height: 1.5;
@@ -2357,6 +2360,9 @@ textarea {
 }
 
 .solved-badge {
+  position: absolute;
+  top: 12px;
+  right: 20px;
   flex-shrink: 0;
   padding: 6px 14px;
   border-radius: 999px;
@@ -4559,7 +4565,7 @@ button, a, select, input[type="button"], input[type="submit"] { cursor: pointer;
   100% { transform: translate(0); text-shadow: 0 0 20px rgba(148,255,197,0.8); }
 }
 
-.title-btn:hover, .nav-chip:hover, .primary-button:hover, .ghost-button:hover {
+.title-btn:hover, .nav-chip:hover {
   animation: buttonGlitch 0.2s cubic-bezier(0.25, 0.46, 0.45, 0.94) both infinite;
 }
 
@@ -4879,4 +4885,20 @@ button, a, select, input[type="button"], input[type="submit"] { cursor: pointer;
 .hotspot.is-optional:not(.solved):not(.hidden-clue):not(.door) .hotspot-icon {
   color: #d194ff !important;
   text-shadow: 0 0 8px rgba(209, 148, 255, 0.5) !important;
+}
+
+@keyframes pulseGlowOptional {
+  0% { filter: drop-shadow(0 0 2px rgba(191, 122, 255, 0.3)); transform: scale(1); }
+  50% { filter: drop-shadow(0 0 15px rgba(191, 122, 255, 0.8)); transform: scale(1.02); }
+  100% { filter: drop-shadow(0 0 2px rgba(191, 122, 255, 0.3)); transform: scale(1); }
+}
+
+.hotspot-layer:not(.edit-mode) .hotspot.is-optional:not(.solved):not(.hidden-clue):not(.door) .hotspot-image {
+  animation: pulseGlowOptional 3s infinite ease-in-out !important;
+}
+
+.hotspot-layer:not(.edit-mode) .hotspot.is-optional:not(.solved):not(.hidden-clue):not(.door):hover .hotspot-image {
+  animation: none !important;
+  filter: drop-shadow(0 0 20px rgba(191, 122, 255, 1)) brightness(1.2) !important;
+  transform: scale(1.05) !important;
 }
