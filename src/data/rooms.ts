@@ -1,6 +1,6 @@
 import type { Room, RoomObject, ViewId } from "./types";
 
-export const roomOrder = ["room-0", "room-1", "room-2", "room-3", "room-4"] as const;
+export const roomOrder = ["room-0", "room-1", "room-2", "room-3"] as const;
 
 const BG = "/assets/images/backgrounds";
 
@@ -17,7 +17,7 @@ export const rooms: Room[] = [
     subtitle: "잠긴 서재",
     description: "Data Surface를 조사하고 Python Lab으로 정돈해 첫 Door Code를 완성하라.",
     views: defaultViews,
-    doorCode: "8528",
+    doorCode: "8522",
     panoramaImage: `${BG}/room-0/pano.png`,
   },
   {
@@ -41,15 +41,6 @@ export const rooms: Room[] = [
   {
     id: "room-3",
     title: "Room 3",
-    subtitle: "위험한 계단 아래",
-    description: "선택 도전 구간이다. 남은 조건 검증 단서를 풀어도 되고, 언제든 마무리해도 된다.",
-    views: defaultViews,
-    doorCode: "4026",
-    panoramaImage: `${BG}/room-3/pano.png`,
-  },
-  {
-    id: "room-4",
-    title: "Room 4",
     subtitle: "놓친 단서 보관실",
     description: "앞 방에서 지나친 선택 단서와 저장된 풀이 과정을 다시 확인하라.",
     views: defaultViews,
@@ -113,23 +104,14 @@ export const roomObjects: RoomObject[] = [
   object("room-2-checksum-ledger","room-2","bottom","아카이브 쪽지",  "NOTE",  "기록 조각을 다시 확인하는 숨겨진 선택 쪽지.",          "room-2-checksum-ledger","NT", 10.2, 62, 1.2, "puzzle", `${OBJ}/room-2/archive-note.png`),
   object("door-room-2",         "room-2", "right",  "출입문 키패드",  "DOOR",  "기록실 문.",                                          "door-room-2",         "KEY",  86.1, 52.8, 0.9, "door",   `${SHARED}/door-keypad.png`),
 
-  // Room 3
-  object("room-3-switch-panel", "room-3", "center", "스위치 패널",    "SWITCH","규칙을 만족해야 하는 스위치 패널.",                   "room-3-switch-panel", "SW",   30, 55, 1.0, "puzzle", `${OBJ}/room-3/switch-panel.png`),
-  object("room-3-logic-gate",   "room-3", "center", "논리 게이트 보드","LOGIC","참·거짓 신호를 조합하는 논리 보드.",                  "room-3-logic-gate",   "AND",  70, 40, 1.5, "puzzle", `${OBJ}/room-3/logic-gate-board.png`),
-  object("room-3-candidate-codes","room-3","left",  "후보 코드 보드", "CODES", "부분 제약 조건이 달린 후보 코드 보드.",               "room-3-candidate-codes","PIN",50, 50, 1.2, "puzzle", `${OBJ}/room-3/candidate-codes-board.png`),
-  object("room-3-warning-lamp", "room-3", "left",   "경고 램프 보드", "LAMP",  "선택 단서로 남은 경고 램프 조건.",                    "room-3-warning-lamp", "WARN", 50, 30, 0.8, "puzzle", `${OBJ}/room-3/warning-lamp-board.png`),
-  object("room-3-experiment",   "room-3", "center", "실험 콘솔",      "EXP",   "샘플 출력이 기록된 실험 콘솔.",                       "room-3-experiment",   "LAB",  50, 60, 1.1, "puzzle", `${OBJ}/room-3/experiment-console.png`),
-  object("room-3-power-meter",  "room-3", "center", "후보 다이얼",    "DIAL",  "후보 코드의 자릿수 합을 비교하는 선택 다이얼.",        "room-3-power-meter",  "DL",   30, 40, 0.7, "puzzle", `${OBJ}/room-3/candidate-dial.png`),
-  object("room-3-door",         "room-3", "right",  "출입문 키패드",  "DOOR",  "제어실 문.",                                          "door-room-3",         "KEY",  65, 50, 0.7, "door",   `${SHARED}/door-keypad.png`),
-
-  // Room 4 (No sprites yet)
-  object("room-4-validator",    "room-4", "center", "Missed Clues Board",  "MISSED", "앞 방에서 놓친 선택 단서를 모아 둔 보드.",            "room-4-validator",    "MC",   29, 42, 1.2),
-  object("room-4-test-log",     "room-4", "left",   "Solved Route Board",  "ROUTE",  "해결한 필수 퍼즐과 Door Code 조각을 되짚는 보드.",    "room-4-test-log",     "RT",   36, 48, 1.2),
-  object("room-4-candidate-dial","room-4","center", "Play Style Summary",  "STYLE",  "사용한 Python 도구와 풀이 방식을 요약하는 콘솔.",     "room-4-candidate-dial","PS",  69, 39, 1.2),
-  object("room-4-error-server", "room-4", "right",  "Saved Draft Archive", "DRAFT",  "작성했던 코드 draft를 다시 확인하는 기록 보관함.",    "room-4-error-server", "DR",   33, 57, 1.2),
-  object("room-4-broken-crt",   "room-4", "left",   "Optional Signal Shelf","OPT",   "풀지 않은 선택 신호를 다시 꺼내 보는 선반.",          "room-4-broken-crt",   "OP",   70, 62, 1.2),
-  object("room-4-sum-analyzer", "room-4", "center", "Final Review Console","REVIEW", "전체 풀이 흐름을 정리하는 마지막 콘솔.",              "room-4-sum-analyzer", "RV",   52, 62, 1.2),
-  object("room-4-door",         "room-4", "right",  "Final Exit Door",     "EXIT",   "최종 탈출 연출을 여는 문.",                           "door-room-4",         "EX",   72, 36, 1.2, "door"),
+  // Room 3 (Review Room)
+  object("room-3-validator",    "room-3", "center", "Missed Clues Board",  "MISSED", "앞 방에서 놓친 선택 단서를 모아 둔 보드.",            "room-3-validator",    "MC",   29, 42, 1.2),
+  object("room-3-test-log",     "room-3", "left",   "Solved Route Board",  "ROUTE",  "해결한 필수 퍼즐과 Door Code 조각을 되짚는 보드.",    "room-3-test-log",     "RT",   36, 48, 1.2),
+  object("room-3-candidate-dial","room-3","center", "Play Style Summary",  "STYLE",  "사용한 Python 도구와 풀이 방식을 요약하는 콘솔.",     "room-3-candidate-dial","PS",  69, 39, 1.2),
+  object("room-3-error-server", "room-3", "right",  "Saved Draft Archive", "DRAFT",  "작성했던 코드 draft를 다시 확인하는 기록 보관함.",    "room-3-error-server", "DR",   33, 57, 1.2),
+  object("room-3-broken-crt",   "room-3", "left",   "Optional Signal Shelf","OPT",   "풀지 않은 선택 신호를 다시 꺼내 보는 선반.",          "room-3-broken-crt",   "OP",   70, 62, 1.2),
+  object("room-3-sum-analyzer", "room-3", "center", "Final Review Console","REVIEW", "전체 풀이 흐름을 정리하는 마지막 콘솔.",              "room-3-sum-analyzer", "RV",   52, 62, 1.2),
+  object("room-3-door",         "room-3", "right",  "Final Exit Door",     "EXIT",   "최종 탈출 연출을 여는 문.",                           "door-room-3",         "EX",   72, 36, 1.2, "door"),
 ];
 
 export function getRoomObjects(roomId: string): RoomObject[] {

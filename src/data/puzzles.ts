@@ -189,24 +189,24 @@ print(str(counts["cat"]) * 4)
     objectId: "room-0-pattern-tiles",
     situationText: "타일 뒷면에 긴 숫자 열이 빼곡하다. '38번째 값'이라는 메모가 흐릿하게 보인다. 그 위치의 숫자를 찾아—4번 이어 적어라.",
     dataText: "[4, 1, 3, 6, 9, 2, 5, 7, 1, 3, 2, 4, 6, 5, 1, 2, 4, 7, 3, 5, 2, 1, 6, 4, 3, 5, 2, 7, 1, 4, 6, 2, 5, 3, 1, 4, 7, 2, 8, 1, 3, 4, 2, 5, 1, 6, 3]",
-    expectedAnswer: "8888",
-    mockOutput: "8\n8888",
+    expectedAnswer: "2222",
+    mockOutput: "2\n2222",
     referenceItems: [
       ref("list[index]", "리스트에서 특정 인덱스의 값 가져오기"),
       ref("list[0]", "첫 번째 항목 가져오기")
     ],
-    rewardHint: hint("room-0-hint-pattern-tiles", "room-0", "room-0-pattern-tiles", "넷째 자리는 8이다."),
+    rewardHint: hint("room-0-hint-pattern-tiles", "room-0", "room-0-pattern-tiles", "넷째 자리는 2다."),
     starterCode: `series = [4, 1, 3, 6, 9, 2, 5, 7, 1, 3, 2, 4, 6, 5, 1, 2, 4, 7, 3, 5, 2, 1, 6, 4, 3, 5, 2, 7, 1, 4, 6, 2, 5, 3, 1, 4, 7, 2, 8, 1, 3, 4, 2, 5, 1, 6, 3]
 
-# 인덱스 38번 값을 찾아 출력하세요
-value = series[38]
+# 38번째 값을 찾아 출력하세요
+value = series[37]
 
 print(value)
 print(str(value) * 4)
 `,
     isRequired: true,
     requiredForDoor: true,
-    doorCodePiece: "8",
+    doorCodePiece: "2",
     doorCodePosition: 4,
     targetConcepts: ["indexing", "list"],
     usefulConcepts: ["position_lookup"],
@@ -765,273 +765,10 @@ for line in data.strip().splitlines():
     expectedStrategyDescription: "상태가 표시된 기록에서 통과한 항목만 골라 요약 값을 계산한다.",
   },
   {
-    id: "room-3-switch-panel",
+    id: "room-3-validator",
     roomId: "room-3",
-    title: "스위치 패널",
-    objectId: "room-3-switch-panel",
-    situationText: "6개 스위치, 각각 켜거나 끈다. 적힌 조건을 모두 만족하는 조합이 몇 가지인지 세어—그 수를 4번 이어 적어라.",
-    dataText: `S1 S2 S3 S4 S5 S6
-각 스위치는 0 또는 1
-켜진 스위치는 3개
-S2는 켜져 있다
-S5는 꺼져 있다`,
-    expectedAnswer: "6666",
-    mockOutput: "6\n6666",
-    referenceItems: [
-      ref("for 중첩", "여러 스위치 조합을 모두 확인하기"),
-      ref("sum(switches)", "켜진 스위치 개수 세기"),
-      ref("continue", "조건에 맞지 않으면 건너뛰기"),
-      ref("list", "상태를 리스트로 표현하기"),
-    ],
-    rewardHint: hint("room-3-hint-switch-panel", "room-3", "room-3-switch-panel", "Door Code 4번째 조각: 6"),
-    starterCode: `count = 0
-valid = []
-
-for s1 in [0, 1]:
-    for s2 in [0, 1]:
-        for s3 in [0, 1]:
-            for s4 in [0, 1]:
-                for s5 in [0, 1]:
-                    for s6 in [0, 1]:
-                        switches = [s1, s2, s3, s4, s5, s6]
-
-                        if sum(switches) != 3:
-                            continue
-                        if s2 != 1:
-                            continue
-                        if s5 != 0:
-                            continue
-
-                        count += 1
-                        valid.append(switches)
-
-print(count)
-print(valid)
-print(str(count) * 4)
-`,
-    isRequired: true,
-    requiredForDoor: true,
-    doorCodePiece: "6",
-    doorCodePosition: 4,
-    targetConcepts: ["nested_loop", "sum", "continue"],
-    usefulConcepts: ["candidate_generation", "condition_filtering"],
-    puzzleType: "candidate_generation",
-    expectedStrategyDescription: "가능한 스위치 조합을 만들고 여러 조건을 만족하는 후보만 남긴다.",
-  },
-  {
-    id: "room-3-logic-gate",
-    roomId: "room-3",
-    title: "논리 게이트 보드",
-    objectId: "room-3-logic-gate",
-    situationText: "네 개의 입력 조합, 출력란은 비어 있다. 규칙대로 각 OUT을 채우고 위에서부터 이으면—코드가 된다.",
-    dataText: `A B C D | OUT
-0 0 0 1 | ?
-0 1 1 0 | ?
-1 0 1 1 | ?
-1 1 0 0 | ?
-
-규칙:
-G1 = A와 B 중 하나만 1이면 1, 아니면 0
-G2 = C와 D가 모두 1이면 1, 아니면 0
-OUT = G1 또는 G2 중 하나라도 1이면 1, 아니면 0`,
-    expectedAnswer: "0110",
-    mockOutput: "0\n1\n1\n0",
-    referenceItems: [ref("^", "둘 중 하나만 1일 때 1"), ref("&", "둘 다 1일 때 1"), ref("|", "하나 이상 1일 때 1"), ref("for", "여러 행에 같은 규칙 적용하기")],
-    rewardHint: hint("room-3-hint-logic-gate", "room-3", "room-3-logic-gate", "Door Code 1번째 조각: 4"),
-    starterCode: `cases = [
-    (0, 0, 0, 1),
-    (0, 1, 1, 0),
-    (1, 0, 1, 1),
-    (1, 1, 0, 0),
-]
-
-for a, b, c, d in cases:
-    g1 = a ^ b
-    g2 = c & d
-    out = g1 | g2
-    print(out)
-`,
-    isRequired: true,
-    requiredForDoor: true,
-    doorCodePiece: "4",
-    doorCodePosition: 1,
-    targetConcepts: ["boolean_logic", "bitwise_operators", "for"],
-    usefulConcepts: ["logic_evaluation"],
-    puzzleType: "logic",
-    expectedStrategyDescription: "각 행의 입력값에 논리 규칙을 적용해 출력값을 계산한다.",
-  },
-  {
-    id: "room-3-candidate-codes",
-    roomId: "room-3",
-    title: "후보 코드 보드",
-    objectId: "room-3-candidate-codes",
-    situationText: "후보 코드들이 나열되어 있다. 네 조건을 모두 통과하는 것은 하나뿐—그게 해제 코드다.",
-    dataText: `4026 4726 4926 4028 4126 9026
-4006 3026 4426 4016 4022 4024
-
-조건:
-두 번째 숫자는 0
-마지막 숫자는 6
-각 자리 합은 12
-첫 번째 숫자는 짝수`,
-    expectedAnswer: "4026",
-    mockOutput: "4026",
-    referenceItems: [
-      ref("code[1]", "문자열 인덱싱"),
-      ref("sum(digits)", "자리수 합"),
-      ref("continue", "조건 불일치 시 건너뛰기"),
-      ref("int()", "문자 숫자를 정수로 바꾸기"),
-    ],
-    rewardHint: hint("room-3-hint-candidate-codes", "room-3", "room-3-candidate-codes", "Door Code 2번째 조각: 0"),
-    starterCode: `data = """4026 4726 4926 4028 4126 9026
-4006 3026 4426 4016 4022 4024"""
-
-candidates = data.split()
-
-for code in candidates:
-    digits = [int(x) for x in code]
-
-    if code[1] != "0":
-        continue
-    if code[-1] != "6":
-        continue
-    if sum(digits) != 12:
-        continue
-    if int(code[0]) % 2 != 0:
-        continue
-
-    print(code)
-`,
-    isRequired: true,
-    requiredForDoor: true,
-    doorCodePiece: "0",
-    doorCodePosition: 2,
-    targetConcepts: ["string_indexing", "int", "sum", "filtering"],
-    usefulConcepts: ["candidate_filtering"],
-    puzzleType: "candidate_filtering",
-    expectedStrategyDescription: "후보 코드 목록에서 여러 조건을 모두 만족하는 코드만 남긴다.",
-  },
-  {
-    id: "room-3-warning-lamp",
-    roomId: "room-3",
-    title: "경고 램프 보드",
-    objectId: "room-3-warning-lamp",
-    situationText: "네 가지 상태와 조건식 하나. 각 상태에서 경고등이 켜지면 1, 꺼지면 0—위에서부터 이으면 코드가 된다.",
-    dataText: `A B C | LAMP
-1 0 1 | ?
-1 1 0 | ?
-0 1 1 | ?
-0 0 1 | ?
-
-조건 암시:
-A가 켜져 있고, B 또는 C 중 하나 이상이 켜져 있으면 경고등이 켜진다.`,
-    expectedAnswer: "1100",
-    mockOutput: "1\n1\n0\n0",
-    referenceItems: [ref("and", "그리고"), ref("or", "또는"), ref("( )", "괄호로 조건 묶기"), ref("int(lamp)", "bool 결과를 숫자로 바꾸기")],
-    rewardHint: hint("room-3-hint-warning-lamp", "room-3", "room-3-warning-lamp", "숨겨진 단서 확인: 경고 램프 조건식을 해석했다."),
-    starterCode: `cases = [
-    (1, 0, 1),
-    (1, 1, 0),
-    (0, 1, 1),
-    (0, 0, 1),
-]
-
-for a, b, c in cases:
-    lamp = a == 1 and (b == 1 or c == 1)
-    print(int(lamp))
-`,
-    isRequired: false,
-    isHidden: true,
-    requiredForDoor: false,
-    targetConcepts: ["and", "or", "boolean"],
-    usefulConcepts: ["condition_expression"],
-    puzzleType: "hidden_condition",
-    expectedStrategyDescription: "조건식을 읽고 각 경우에 경고등이 켜지는지 판단한다.",
-  },
-  {
-    id: "room-3-experiment",
-    roomId: "room-3",
-    title: "실험 콘솔",
-    objectId: "room-3-experiment",
-    situationText: "후보 코드들에 세 규칙을 적용한다. 모두 통과한 것들 중—처음으로 살아남은 코드를 입력하라.",
-    dataText: `후보:
-4026 4726 4926 4028 4126 9026
-
-규칙:
-길이는 4
-두 번째 숫자는 0
-마지막 숫자는 6`,
-    expectedAnswer: "4026",
-    mockOutput: "4026\n9026",
-    referenceItems: [ref("def", "함수 만들기"), ref("return", "결과 반환하기"), ref("if", "조건을 함수로 묶기"), ref("for", "여러 후보에 같은 규칙 적용하기")],
-    rewardHint: hint("room-3-hint-experiment", "room-3", "room-3-experiment", "Door Code 3번째 조각: 2"),
-    starterCode: `candidates = "4026 4726 4926 4028 4126 9026".split()
-
-def valid(code):
-    if len(code) != 4:
-        return False
-    if code[1] != "0":
-        return False
-    if code[-1] != "6":
-        return False
-    return True
-
-for code in candidates:
-    if valid(code):
-        print(code)
-`,
-    isRequired: true,
-    requiredForDoor: true,
-    doorCodePiece: "2",
-    doorCodePosition: 3,
-    targetConcepts: ["def", "return", "validation", "for"],
-    usefulConcepts: ["function_based_validation"],
-    puzzleType: "validation",
-    expectedStrategyDescription: "검증 함수를 만들어 후보 코드가 조건을 만족하는지 반복해서 확인한다.",
-  },
-  {
-    id: "room-3-power-meter",
-    roomId: "room-3",
-    title: "후보 다이얼",
-    objectId: "room-3-power-meter",
-    situationText: "상태가 표시된 후보 코드들. stable인 코드의 자리 숫자를 모두 더하면—그 합을 2번 이어 적어라.",
-    dataText: `4026 stable
-4726 overload
-3026 low
-9026 overload`,
-    expectedAnswer: "1212",
-    mockOutput: "12\n1212",
-    referenceItems: [
-      ref("code in line", "줄에서 코드 분리하기"),
-      ref("sum()", "합계 구하기"),
-      ref("int(digit)", "문자 숫자를 정수로 바꾸기"),
-    ],
-    rewardHint: hint("room-3-hint-power-meter", "room-3", "room-3-power-meter", "숨겨진 단서 확인: 후보의 자리 합을 비교했다."),
-    starterCode: `data = """4026 stable
-4726 overload
-3026 low
-9026 overload"""
-
-for line in data.strip().splitlines():
-    code, state = line.split()
-    if state == "stable":
-        total = sum(int(digit) for digit in code)
-        print(total)
-        print(str(total) * 2)
-`,
-    isRequired: false,
-    isHidden: true,
-    requiredForDoor: false,
-    targetConcepts: ["sum", "int", "string_iteration"],
-    usefulConcepts: ["numeric_summary"],
-    puzzleType: "hidden_candidate_check",
-    expectedStrategyDescription: "후보 코드의 각 자리 숫자를 합산해 상태와 비교한다.",
-  },
-  {
-    id: "room-4-validator",
-    roomId: "room-4",
     title: "손상된 검증기",
-    objectId: "room-4-validator",
+    objectId: "room-3-validator",
     situationText: "검증기가 각 코드에 PASS/FAIL을 찍어 뒀다. 세 규칙으로 직접 확인해 잘못 판정된 것들을 찾아내면—그 수를 4번 이어 적어라.",
     dataText: `규칙:
 두 번째 자리는 5
@@ -1052,7 +789,7 @@ for line in data.strip().splitlines():
       ref("sum(int(d) for d in code)", "자리 합 구하기"),
       ref("wrong += 1", "개수 세기"),
     ],
-    rewardHint: hint("room-4-hint-validator", "room-4", "room-4-validator", "두 번째 숫자는 5다."),
+    rewardHint: hint("room-3-hint-validator", "room-3", "room-3-validator", "두 번째 숫자는 5다."),
     starterCode: `data = """1584 PASS
 1594 PASS
 3564 PASS
@@ -1076,10 +813,10 @@ print(str(wrong) * 4)
 `,
   },
   {
-    id: "room-4-test-log",
-    roomId: "room-4",
+    id: "room-3-test-log",
+    roomId: "room-3",
     title: "테스트 로그",
-    objectId: "room-4-test-log",
+    objectId: "room-3-test-log",
     situationText: "테스트 결과 목록. PASS를 받은 코드를 골라내면—그게 잠금 해제 코드다.",
     dataText: `1484 FAIL
 1584 PASS
@@ -1089,7 +826,7 @@ print(str(wrong) * 4)
     expectedAnswer: "1584",
     mockOutput: "1584",
     referenceItems: [ref("splitlines()", "줄 단위 나누기"), ref("split()", "공백 기준 나누기"), ref('result == "PASS"', "조건 확인하기")],
-    rewardHint: hint("room-4-hint-test-log", "room-4", "room-4-test-log", "첫 번째 숫자는 1이다."),
+    rewardHint: hint("room-3-hint-test-log", "room-3", "room-3-test-log", "첫 번째 숫자는 1이다."),
     starterCode: `data = """1484 FAIL
 1584 PASS
 1684 FAIL
@@ -1103,10 +840,10 @@ for line in data.strip().splitlines():
 `,
   },
   {
-    id: "room-4-candidate-dial",
-    roomId: "room-4",
+    id: "room-3-candidate-dial",
+    roomId: "room-3",
     title: "후보 다이얼",
-    objectId: "room-4-candidate-dial",
+    objectId: "room-3-candidate-dial",
     situationText: "1000부터 하나씩 올라가며 세 조건을 동시에 만족하는 첫 번째 숫자를 찾아내면—그게 코드다.",
     dataText: `조건:
 두 번째 숫자는 5
@@ -1120,7 +857,7 @@ for line in data.strip().splitlines():
       ref("str(n)", "숫자를 문자열로 바꾸기"),
       ref("for digit in code", "자리수 합 계산하기"),
     ],
-    rewardHint: hint("room-4-hint-candidate-dial", "room-4", "room-4-candidate-dial", "마지막 숫자는 4다."),
+    rewardHint: hint("room-3-hint-candidate-dial", "room-3", "room-3-candidate-dial", "마지막 숫자는 4다."),
     starterCode: `n = 1000
 
 while n < 10000:
@@ -1139,10 +876,10 @@ while n < 10000:
 `,
   },
   {
-    id: "room-4-error-server",
-    roomId: "room-4",
+    id: "room-3-error-server",
+    roomId: "room-3",
     title: "에러 로그 서버",
-    objectId: "room-4-error-server",
+    objectId: "room-3-error-server",
     situationText: "오류 코드 세 개와 원인 설명. 각 코드에 맞는 원인을 연결해 확인하고—오류의 총 수를 4번 이어 적어라.",
     dataText: `E01: 없는 위치 접근
 E02: 형식 불일치
@@ -1154,7 +891,7 @@ E03: 알 수 없는 이름`,
       ref('error == "E01"', "코드가 같은지 비교하기"),
       ref("for error in errors", "오류 목록 반복하기"),
     ],
-    rewardHint: hint("room-4-hint-error-server", "room-4", "room-4-error-server", "세 번째 숫자는 8이다."),
+    rewardHint: hint("room-3-hint-error-server", "room-3", "room-3-error-server", "세 번째 숫자는 8이다."),
     starterCode: `errors = ["E01", "E02", "E03"]
 
 for error in errors:
@@ -1169,10 +906,10 @@ print(str(len(errors)) * 4)
 `,
   },
   {
-    id: "room-4-broken-crt",
-    roomId: "room-4",
+    id: "room-3-broken-crt",
+    roomId: "room-3",
     title: "손상된 CRT",
-    objectId: "room-4-broken-crt",
+    objectId: "room-3-broken-crt",
     situationText: "입력, 기대 출력, 실제 출력이 나란히 있다. 기대와 실제가 다른 항목의 수를 세어—그 수를 4번 이어 적어라.",
     dataText: `입력 -> 기대 출력 / 실제 출력
 AB12 -> 12AB / AB12
@@ -1181,7 +918,7 @@ EF56 -> 56EF / EF56`,
     expectedAnswer: "3333",
     mockOutput: "AB12 문자와 숫자의 위치를 바꾸지 않았다\nCD34 문자와 숫자의 위치를 바꾸지 않았다\nEF56 문자와 숫자의 위치를 바꾸지 않았다\n3333",
     referenceItems: [ref("a, b, c = item", "한 줄에 여러 값 받기"), ref("code[2:4]", "문자열 일부 잘라내기"), ref("expected != actual", "기대와 실제가 다른지 비교하기"), ref("!=", "서로 다름 확인하기")],
-    rewardHint: hint("room-4-hint-broken-crt", "room-4", "room-4-broken-crt", "코드는 4자리다."),
+    rewardHint: hint("room-3-hint-broken-crt", "room-3", "room-3-broken-crt", "코드는 4자리다."),
     starterCode: `pairs = [
     ("AB12", "12AB", "AB12"),
     ("CD34", "34CD", "CD34"),
@@ -1198,10 +935,10 @@ print(str(count) * 4)
 `,
   },
   {
-    id: "room-4-sum-analyzer",
-    roomId: "room-4",
+    id: "room-3-sum-analyzer",
+    roomId: "room-3",
     title: "합계 분석기",
-    objectId: "room-4-sum-analyzer",
+    objectId: "room-3-sum-analyzer",
     situationText: "PASS를 받은 코드의 각 자리를 모두 더하면—그 합을 2번 이어 적어라.",
     dataText: `1584 PASS
 1484 FAIL
@@ -1214,7 +951,7 @@ print(str(count) * 4)
       ref("sum(int(digit) for digit in code)", "자리수 합 계산하기"),
       ref('result == "PASS"', "통과한 코드만 확인하기"),
     ],
-    rewardHint: hint("room-4-hint-sum-analyzer", "room-4", "room-4-sum-analyzer", "각 자리 숫자의 합은 18이다."),
+    rewardHint: hint("room-3-hint-sum-analyzer", "room-3", "room-3-sum-analyzer", "각 자리 숫자의 합은 18이다."),
     starterCode: `data = """1584 PASS
 1484 FAIL
 1594 FAIL
