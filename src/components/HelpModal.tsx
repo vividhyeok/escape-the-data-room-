@@ -55,6 +55,9 @@ const REFERENCE: RefCategory[] = [
       item("len()", 'len("hello")  # 5', "글자가 총 몇 개인지 길이 재기", "len", "string"),
       item(".split()", '"a b c".split()  # ["a","b","c"]', "띄어쓰기 기준으로 글자 쪼개기 (단어 나누기)", "split", "string"),
       item(".replace()", '"hello".replace("l","r")  # "herro"', "특정 글자를 다른 글자로 바꾸기", "replace", "string"),
+      item(".strip()", '"  hello  ".strip()  # "hello"', "앞뒤 공백(띄어쓰기, 줄바꿈) 제거하기", "strip", "string", "whitespace"),
+      item(".splitlines()", '"a\\nb".splitlines()  # ["a", "b"]', "여러 줄로 된 문자열을 줄마다 쪼개기", "splitlines", "string", "lines"),
+      item(".join()", '",".join(["a","b"])  # "a,b"', "리스트의 글자들을 특정 기호로 이어 붙이기", "join", "string", "list"),
     ],
   },
   {
@@ -90,6 +93,7 @@ const REFERENCE: RefCategory[] = [
       item("비교 연산자", "x == y   # 같다\nx != y   # 다르다\nx >= y   # 크거나 같다", "두 데이터 비교하기", "comparison", "operator"),
       item("논리 연산자", "x > 0 and x < 10\nx < 0 or x > 10", "조건 2개를 동시에 따지기 (그리고, 또는)", "and", "or", "logical"),
       item("% 나머지 연산", "n % 2 == 0  # 짝수", "나눈 나머지 구하기 (짝수/홀수 판별에 유용)", "modulo", "percent"),
+      item("in / not in", "3 in [1, 2, 3]  # True", "데이터가 안에 포함되어 있는지 확인하기", "in", "contains"),
     ],
   },
   {
@@ -110,6 +114,8 @@ const REFERENCE: RefCategory[] = [
       item("sum()", "sum([1, 2, 3])  # 6", "데이터를 모두 더하기", "sum", "builtin"),
       item("max() / min()", "max([3, 1, 4])  # 4\nmin([3, 1, 4])  # 1", "가장 큰 값(Max) 또는 작은 값(Min) 찾기", "min", "max", "builtin"),
       item("sorted()", "sorted([3, 1, 2])  # [1, 2, 3]", "정렬된 새로운 리스트 만들기", "sorted", "builtin"),
+      item("enumerate()", "for i, v in enumerate(['a', 'b']):", "리스트를 반복할 때 순서(인덱스)도 함께 꺼내기", "enumerate", "loop"),
+      item("zip()", "for a, b in zip([1,2], [3,4]):", "두 개 이상의 리스트를 동시에 묶어서 반복하기", "zip", "loop"),
     ],
   }
 ];

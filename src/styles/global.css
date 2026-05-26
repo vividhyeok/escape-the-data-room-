@@ -995,13 +995,14 @@ textarea {
 }
 
 .o-cell {
-  color: rgba(201, 220, 228, 0.55);
-  background: rgba(201, 220, 228, 0.06);
+  color: rgba(201, 220, 228, 0.15);
+  background: rgba(201, 220, 228, 0.02);
 }
 
 .x-cell {
-  color: rgba(201, 220, 228, 0.55);
-  background: rgba(201, 220, 228, 0.06);
+  color: rgba(122, 243, 255, 0.9);
+  background: rgba(122, 243, 255, 0.15);
+  box-shadow: 0 0 8px rgba(122, 243, 255, 0.3);
 }
 
 .number-surface {
@@ -3912,6 +3913,7 @@ textarea {
   min-width: 256px;
   min-height: 256px;
   padding: 0;
+  opacity: 1 !important;
   background: transparent !important;
   border-color: transparent !important;
   box-shadow: none !important;
@@ -4877,12 +4879,12 @@ button, a, select, input[type="button"], input[type="submit"] { cursor: pointer;
   }
 }
 
-.hotspot.is-optional:not(.solved):not(.hidden-clue):not(.door) {
+.hotspot.is-optional:not(.solved):not(.door) {
   animation: hotspotPulseOptional 2.8s ease-in-out infinite !important;
   border-color: rgba(191, 122, 255, 0.4) !important;
 }
 
-.hotspot.is-optional:not(.solved):not(.hidden-clue):not(.door) .hotspot-icon {
+.hotspot.is-optional:not(.solved):not(.door) .hotspot-icon {
   color: #d194ff !important;
   text-shadow: 0 0 8px rgba(209, 148, 255, 0.5) !important;
 }
@@ -4893,12 +4895,12 @@ button, a, select, input[type="button"], input[type="submit"] { cursor: pointer;
   100% { filter: drop-shadow(0 0 2px rgba(191, 122, 255, 0.3)); transform: scale(1); }
 }
 
-.hotspot-layer:not(.edit-mode) .hotspot.is-optional:not(.solved):not(.hidden-clue):not(.door) .hotspot-image {
+.hotspot-layer:not(.edit-mode) .hotspot.is-optional:not(.solved):not(.door) .hotspot-image {
   animation: pulseGlowOptional 3s infinite ease-in-out !important;
 }
 
-.hotspot-layer:not(.edit-mode) .hotspot.is-optional:not(.solved):not(.hidden-clue):not(.door):hover .hotspot-image {
+.hotspot-layer:not(.edit-mode) .hotspot.is-optional:not(.solved):not(.door):hover .hotspot-image {
   animation: none !important;
-  filter: drop-shadow(0 0 20px rgba(191, 122, 255, 1)) brightness(1.2) !important;
+  filter: drop-shadow(0 0 20px rgba(191, 122, 255, 0.8)) brightness(1.2) !important;
   transform: scale(1.05) !important;
 }
