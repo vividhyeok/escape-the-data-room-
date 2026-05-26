@@ -750,10 +750,9 @@ for line in data.strip().splitlines():
 각 스위치는 0 또는 1
 켜진 스위치는 3개
 S2는 켜져 있다
-S5는 꺼져 있다
-S1과 S6은 다르다`,
-    expectedAnswer: "6060",
-    mockOutput: "6",
+S5는 꺼져 있다`,
+    expectedAnswer: "6666",
+    mockOutput: "6\n6666",
     referenceItems: [
       ref("for 중첩", "여러 스위치 조합을 모두 확인하기"),
       ref("sum(switches)", "켜진 스위치 개수 세기"),
@@ -778,14 +777,13 @@ for s1 in [0, 1]:
                             continue
                         if s5 != 0:
                             continue
-                        if s1 == s6:
-                            continue
 
                         count += 1
                         valid.append(switches)
 
 print(count)
 print(valid)
+print(str(count) * 4)
 `,
     isRequired: true,
     requiredForDoor: true,
@@ -812,7 +810,7 @@ print(valid)
 G1 = A와 B 중 하나만 1이면 1, 아니면 0
 G2 = C와 D가 모두 1이면 1, 아니면 0
 OUT = G1 또는 G2 중 하나라도 1이면 1, 아니면 0`,
-    expectedAnswer: "1101",
+    expectedAnswer: "0110",
     mockOutput: "0\n1\n1\n0",
     referenceItems: [ref("^", "둘 중 하나만 1일 때 1"), ref("&", "둘 다 1일 때 1"), ref("|", "하나 이상 1일 때 1"), ref("for", "여러 행에 같은 규칙 적용하기")],
     rewardHint: hint("room-3-hint-logic-gate", "room-3", "room-3-logic-gate", "Door Code 1번째 조각: 4"),
@@ -903,7 +901,7 @@ for code in candidates:
 
 조건 암시:
 A가 켜져 있고, B 또는 C 중 하나 이상이 켜져 있으면 경고등이 켜진다.`,
-    expectedAnswer: "2408",
+    expectedAnswer: "1100",
     mockOutput: "1\n1\n0\n0",
     referenceItems: [ref("and", "그리고"), ref("or", "또는"), ref("( )", "괄호로 조건 묶기"), ref("int(lamp)", "bool 결과를 숫자로 바꾸기")],
     rewardHint: hint("room-3-hint-warning-lamp", "room-3", "room-3-warning-lamp", "숨겨진 단서 확인: 경고 램프 조건식을 해석했다."),
@@ -939,7 +937,7 @@ for a, b, c in cases:
 길이는 4
 두 번째 숫자는 0
 마지막 숫자는 6`,
-    expectedAnswer: "7022",
+    expectedAnswer: "4026",
     mockOutput: "4026\n9026",
     referenceItems: [ref("def", "함수 만들기"), ref("return", "결과 반환하기"), ref("if", "조건을 함수로 묶기"), ref("for", "여러 후보에 같은 규칙 적용하기")],
     rewardHint: hint("room-3-hint-experiment", "room-3", "room-3-experiment", "Door Code 3번째 조각: 2"),
@@ -977,8 +975,8 @@ for code in candidates:
 4726 overload
 3026 low
 9026 overload`,
-    expectedAnswer: "5188",
-    mockOutput: "12",
+    expectedAnswer: "1212",
+    mockOutput: "12\n1212",
     referenceItems: [
       ref("code in line", "줄에서 코드 분리하기"),
       ref("sum()", "합계 구하기"),
@@ -993,7 +991,9 @@ for code in candidates:
 for line in data.strip().splitlines():
     code, state = line.split()
     if state == "stable":
-        print(sum(int(digit) for digit in code))
+        total = sum(int(digit) for digit in code)
+        print(total)
+        print(str(total) * 2)
 `,
     isRequired: false,
     isHidden: true,
@@ -1020,8 +1020,8 @@ for line in data.strip().splitlines():
 3564 PASS
 2584 PASS
 9540 PASS`,
-    expectedAnswer: "2062",
-    mockOutput: "Wrong conditions: 2",
+    expectedAnswer: "2222",
+    mockOutput: "Wrong conditions: 2\n2222",
     referenceItems: [
       ref("code[1]", "두 번째 자리 확인하기"),
       ref("int(code[-1]) % 2 == 0", "짝수 확인하기"),
@@ -1048,6 +1048,7 @@ for line in data.strip().splitlines():
         wrong += 1
 
 print("Wrong conditions:", wrong)
+print(str(wrong) * 4)
 `,
   },
   {
@@ -1061,7 +1062,7 @@ print("Wrong conditions:", wrong)
 1684 FAIL
 1594 FAIL
 2584 FAIL`,
-    expectedAnswer: "1111",
+    expectedAnswer: "1584",
     mockOutput: "1584",
     referenceItems: [ref("splitlines()", "줄 단위 나누기"), ref("split()", "공백 기준 나누기"), ref('result == "PASS"', "조건 확인하기")],
     rewardHint: hint("room-4-hint-test-log", "room-4", "room-4-test-log", "첫 번째 숫자는 1이다."),
@@ -1087,8 +1088,8 @@ for line in data.strip().splitlines():
 두 번째 숫자는 5
 마지막 숫자는 짝수
 각 자리 합은 18`,
-    expectedAnswer: "9500",
-    mockOutput: "1584",
+    expectedAnswer: "1548",
+    mockOutput: "1548",
     referenceItems: [
       ref("while", "조건이 참인 동안 반복하기"),
       ref("break", "반복 종료하기"),
@@ -1122,8 +1123,8 @@ while n < 10000:
     dataText: `E01: 없는 위치 접근
 E02: 형식 불일치
 E03: 알 수 없는 이름`,
-    expectedAnswer: "3840",
-    mockOutput: "E01 -> 없는 위치 접근\nE02 -> 형식 불일치\nE03 -> 알 수 없는 이름",
+    expectedAnswer: "3333",
+    mockOutput: "E01 -> 없는 위치 접근\nE02 -> 형식 불일치\nE03 -> 알 수 없는 이름\n3333",
     referenceItems: [
       ref("if / elif", "여러 조건 차례로 확인하기"),
       ref('error == "E01"', "코드가 같은지 비교하기"),
@@ -1139,6 +1140,8 @@ for error in errors:
         print(error, "-> 형식 불일치")
     elif error == "E03":
         print(error, "-> 알 수 없는 이름")
+
+print(str(len(errors)) * 4)
 `,
   },
   {
@@ -1151,8 +1154,8 @@ for error in errors:
 AB12 -> 12AB / AB12
 CD34 -> 34CD / CD34
 EF56 -> 56EF / EF56`,
-    expectedAnswer: "6408",
-    mockOutput: "문자와 숫자의 위치를 바꾸지 않았다",
+    expectedAnswer: "3333",
+    mockOutput: "AB12 문자와 숫자의 위치를 바꾸지 않았다\nCD34 문자와 숫자의 위치를 바꾸지 않았다\nEF56 문자와 숫자의 위치를 바꾸지 않았다\n3333",
     referenceItems: [ref("a, b, c = item", "한 줄에 여러 값 받기"), ref("code[2:4]", "문자열 일부 잘라내기"), ref("expected != actual", "기대와 실제가 다른지 비교하기"), ref("!=", "서로 다름 확인하기")],
     rewardHint: hint("room-4-hint-broken-crt", "room-4", "room-4-broken-crt", "코드는 4자리다."),
     starterCode: `pairs = [
@@ -1161,9 +1164,13 @@ EF56 -> 56EF / EF56`,
     ("EF56", "56EF", "EF56"),
 ]
 
+count = 0
 for original, expected, actual in pairs:
     if expected != actual:
         print(original, "문자와 숫자의 위치를 바꾸지 않았다")
+        count += 1
+
+print(str(count) * 4)
 `,
   },
   {
@@ -1176,8 +1183,8 @@ for original, expected, actual in pairs:
 1484 FAIL
 1594 FAIL
 2584 FAIL`,
-    expectedAnswer: "7302",
-    mockOutput: "18",
+    expectedAnswer: "1818",
+    mockOutput: "18\n1818",
     referenceItems: [
       ref("splitlines()", "줄 단위로 나누기"),
       ref("sum(int(digit) for digit in code)", "자리수 합 계산하기"),
@@ -1192,7 +1199,9 @@ for original, expected, actual in pairs:
 for line in data.strip().splitlines():
     code, result = line.split()
     if result == "PASS":
-        print(sum(int(digit) for digit in code))
+        total = sum(int(digit) for digit in code)
+        print(total)
+        print(str(total) * 2)
 `,
   },
 ];
