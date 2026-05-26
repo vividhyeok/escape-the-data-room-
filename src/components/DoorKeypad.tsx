@@ -32,7 +32,7 @@ export function DoorKeypad({ room, onClose }: DoorKeypadProps): React.JSX.Elemen
   const hasRequiredDoorGate = requiredDoorPuzzles.length > 0;
   const requiredDoorReady = !hasRequiredDoorGate || solvedRequiredDoorPuzzles.length === requiredDoorPuzzles.length;
 
-  if (room.id === "room-4") {
+  if (room.id === "room-3") {
     return (
       <GameWindow id={`keypad-${room.id}`} type="keypad" eyebrow="Final Exit" title={room.subtitle} onClose={onClose}>
         <div className="door-modal">

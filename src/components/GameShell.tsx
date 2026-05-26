@@ -17,6 +17,8 @@ import { CreditsScreen } from "./CreditsScreen";
 import { DialogueOverlay } from "./DialogueOverlay";
 import { SoundEngine } from "../utils/SoundEngine";
 
+const GAME_BGM_URL = "/assets/audio/black-circuit.mp3";
+
 export function GameShell(): React.JSX.Element {
   const bootModeApplied = useRef(false);
   const [selectedObject, setSelectedObject] = useState<RoomObject | null>(null);
@@ -42,6 +44,8 @@ export function GameShell(): React.JSX.Element {
   const saveCodeDraft = useGameStore((state) => state.saveCodeDraft);
   const isMuted = useGameStore((state) => state.isMuted);
   const setIsMuted = useGameStore((state) => state.setIsMuted);
+  const bgmVolume = useGameStore((state) => state.bgmVolume);
+  const setBgmVolume = useGameStore((state) => state.setBgmVolume);
   const activeDoorId = selectedObject?.kind === "door" ? selectedObject.id : null;
 
   const room = roomsById[currentRoomId] ?? roomsById["room-1"];
@@ -135,6 +139,12 @@ export function GameShell(): React.JSX.Element {
 
   useEffect(() => {
     if (gameState !== "PLAYING") return;
+    SoundEngine.init();
+    SoundEngine.playBGM(GAME_BGM_URL);
+  }, [gameState]);
+
+  useEffect(() => {
+    if (gameState !== "PLAYING") return;
     const handleKeyDown = (e: KeyboardEvent) => {
       const active = document.activeElement;
       if (active && (active.tagName === "INPUT" || active.tagName === "TEXTAREA" || (active as HTMLElement).isContentEditable)) {
@@ -170,6 +180,7 @@ export function GameShell(): React.JSX.Element {
 
   const handleReturnToTitle = () => {
     setIsPaused(false);
+    SoundEngine.playBGM('/assets/audio/main-banner.mp3');
     useGameStore.getState().setGameState("TITLE");
   };
 
@@ -179,7 +190,7 @@ export function GameShell(): React.JSX.Element {
       return;
     }
 
-    if (roomObject.roomId === "room-4") {
+    if (roomObject.roomId === "room-3") {
       setReviewRoomObject(roomObject);
       return;
     }
@@ -225,6 +236,7 @@ export function GameShell(): React.JSX.Element {
     const wordObject = getRoomObjects("room-1").find((roomObject) => roomObject.puzzleId === wordPuzzle.id) ?? null;
 
     resetProgress();
+    useGameStore.getState().setDemoMode(true);
     setCurrentRoom("room-1");
     saveCodeDraft(wordPuzzle.id, wordPuzzle.starterCode ?? "");
     setSelectedObject(wordObject);
@@ -362,6 +374,24 @@ export function GameShell(): React.JSX.Element {
               <button className="cyber-modal-close" onClick={() => setIsPaused(false)} type="button">✕</button>
             </div>
             <div className="cyber-modal-content" style={{ display: "flex", flexDirection: "column", gap: "20px" }}>
+              <div style={{ display: "flex", flexDirection: "column", gap: "10px", textAlign: "left" }}>
+                <label htmlFor="pause-bgm-volume" style={{ fontSize: "1.1rem", fontWeight: "bold" }}>
+                  BGM VOLUME: {Math.round(bgmVolume * 100)}%
+                </label>
+                <input
+                  id="pause-bgm-volume"
+                  type="range"
+                  min="0"
+                  max="1"
+                  step="0.05"
+                  value={bgmVolume}
+                  onChange={(e) => {
+                    setBgmVolume(Number(e.currentTarget.value));
+                    SoundEngine.updateBGMVolume();
+                  }}
+                  className="cyber-slider"
+                />
+              </div>
               <button className="cyber-switch-btn" onClick={() => setIsPaused(false)} type="button">RESUME</button>
               <button className="cyber-switch-btn" onClick={handleReturnToTitle} type="button">RETURN TO TITLE</button>
             </div>

@@ -7,7 +7,7 @@ type EndingWindowProps = {
   onClose: () => void;
 };
 
-const countedRooms = roomOrder.filter((roomId) => roomId !== "room-0" && roomId !== "room-4");
+const countedRooms = roomOrder.filter((roomId) => roomId !== "room-0" && roomId !== "room-3");
 
 export function EndingWindow({ onClose }: EndingWindowProps): React.JSX.Element {
   const solvedPuzzleIds = useGameStore((state) => state.solvedPuzzleIds);

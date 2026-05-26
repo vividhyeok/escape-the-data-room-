@@ -84,6 +84,14 @@ export function TitleScreen(): React.JSX.Element {
     SoundEngine.setMuted(next);
   };
 
+  const launchDemoMode = () => {
+    SoundEngine.playClick();
+    setDemoMode(true);
+    const params = new URLSearchParams(window.location.search);
+    params.set("mode", "demo");
+    window.location.assign(`${window.location.pathname}?${params.toString()}${window.location.hash}`);
+  };
+
   return (
     <div className="title-screen crt-glitch">
       <div className="title-quick-actions">
@@ -183,10 +191,22 @@ export function TitleScreen(): React.JSX.Element {
             <div className="cyber-modal-content">
               <p style={{ margin: "20px 0", fontSize: "1.2rem", lineHeight: "1.6" }}>
                 2026-1 캡스톤 프로젝트<br /><br />
-                김민혁, 공원<span
-                  onClick={() => setDemoMode(!isDemoMode)}
-                  style={{ color: isDemoMode ? "#00ff88" : "inherit", cursor: "default", userSelect: "none" }}
-                >호</span> 제작
+                김민혁, 공원<button
+                  onClick={launchDemoMode}
+                  title="시연 모드"
+                  type="button"
+                  style={{
+                    margin: 0,
+                    padding: 0,
+                    border: 0,
+                    background: "transparent",
+                    color: isDemoMode ? "#00ff88" : "inherit",
+                    cursor: "pointer",
+                    font: "inherit",
+                    lineHeight: "inherit",
+                    userSelect: "none",
+                  }}
+                >호</button> 제작
               </p>
             </div>
           </div>

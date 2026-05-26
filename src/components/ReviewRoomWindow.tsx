@@ -10,7 +10,7 @@ type ReviewRoomWindowProps = {
   onRevisitPuzzle: (object: RoomObject) => void;
 };
 
-const mainRoomIds = roomOrder.filter((roomId) => roomId !== "room-0" && roomId !== "room-4");
+const mainRoomIds = roomOrder.filter((roomId) => roomId !== "room-0" && roomId !== "room-3");
 
 function getMainPuzzles(): Puzzle[] {
   return mainRoomIds.flatMap((roomId) => getPuzzlesForRoom(roomId));
@@ -147,16 +147,16 @@ export function ReviewRoomWindow({ object, onClose, onRevisitPuzzle }: ReviewRoo
 
   function renderContent(): React.JSX.Element {
     switch (object.id) {
-      case "room-4-validator":
-      case "room-4-broken-crt":
+      case "room-3-validator":
+      case "room-3-broken-crt":
         return renderMissedClues();
-      case "room-4-test-log":
+      case "room-3-test-log":
         return renderSolvedRoute();
-      case "room-4-candidate-dial":
+      case "room-3-candidate-dial":
         return renderStyleSummary();
-      case "room-4-error-server":
+      case "room-3-error-server":
         return renderDraftArchive();
-      case "room-4-sum-analyzer":
+      case "room-3-sum-analyzer":
       default:
         return renderFinalReview();
     }
