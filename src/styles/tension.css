@@ -1,0 +1,147 @@
+/* Tension Mechanics & Game UI Enhancements */
+
+/* Tension state wrapper */
+.tension-active {
+  animation: tensionPulse 2s infinite alternate ease-in-out;
+  position: relative;
+}
+
+/* Vignette overlay when tense */
+.tension-active::after {
+  content: "";
+  position: absolute;
+  top: 0; left: 0; right: 0; bottom: 0;
+  box-shadow: inset 0 0 100px rgba(255, 0, 0, 0.4);
+  pointer-events: none;
+  z-index: 9999;
+  animation: vignetteFlicker 0.1s infinite;
+}
+
+/* Glitch effect on text inside tension active elements */
+.tension-active .situation-text {
+  text-shadow: 2px 0 0 red, -2px 0 0 blue;
+  animation: textGlitch 0.5s infinite linear;
+}
+
+/* Shake effect for errors */
+.shake {
+  animation: shake 0.36s cubic-bezier(0.36, 0.07, 0.19, 0.97) both;
+}
+
+@keyframes tensionPulse {
+  0% { transform: scale(1); filter: contrast(1); }
+  100% { transform: scale(1.02); filter: contrast(1.2) brightness(0.9); }
+}
+
+@keyframes vignetteFlicker {
+  0% { opacity: 0.8; }
+  50% { opacity: 1; }
+  100% { opacity: 0.9; }
+}
+
+@keyframes textGlitch {
+  0% { transform: translate(0) }
+  20% { transform: translate(-2px, 1px) }
+  40% { transform: translate(-1px, -1px) }
+  60% { transform: translate(2px, 1px) }
+  80% { transform: translate(1px, -1px) }
+  100% { transform: translate(0) }
+}
+
+@keyframes shake {
+  10%, 90% { transform: translate3d(-1px, 0, 0); }
+  20%, 80% { transform: translate3d(2px, 0, 0); }
+  30%, 50%, 70% { transform: translate3d(-4px, 0, 0); }
+  40%, 60% { transform: translate3d(4px, 0, 0); }
+}
+
+/* Game-like UI Overrides */
+.sk-action-btn {
+  text-transform: uppercase;
+  font-weight: 800;
+  letter-spacing: 1px;
+  border-radius: 4px;
+  transition: all 0.2s ease;
+}
+
+.sk-action-btn:hover:not(:disabled) {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 15px rgba(122, 243, 255, 0.4);
+}
+
+.lab-window {
+  border: 1px solid rgba(122, 243, 255, 0.3);
+  border-radius: 8px;
+  overflow: hidden;
+  box-shadow: inset 0 0 20px rgba(0,0,0,0.8);
+}
+
+.inspect-modal {
+  background: rgba(10, 15, 20, 0.95);
+  border: 1px solid #334;
+  border-radius: 8px;
+  box-shadow: 0 20px 50px rgba(0,0,0,0.8);
+}
+
+/* Drag to look hint animation */
+@keyframes dragHintPulse {
+  0% { opacity: 0.5; transform: scale(1) translateX(-50%); }
+  50% { opacity: 1; transform: scale(1.1) translateX(-45%); }
+  100% { opacity: 0.5; transform: scale(1) translateX(-50%); }
+}
+
+.drag-hint-overlay {
+  position: absolute;
+  bottom: 15%;
+  left: 50%;
+  transform: translateX(-50%);
+  color: rgba(255, 255, 255, 0.7);
+  font-size: 1.2rem;
+  font-weight: bold;
+  letter-spacing: 2px;
+  pointer-events: none;
+  animation: dragHintPulse 2s infinite ease-in-out;
+  text-transform: uppercase;
+  background: rgba(0,0,0,0.5);
+  padding: 8px 16px;
+  border-radius: 20px;
+  border: 1px solid rgba(255,255,255,0.2);
+  z-index: 10;
+}
+
+/* Success Animation */
+@keyframes successFlash {
+  0% { box-shadow: inset 0 0 0 rgba(122, 243, 255, 0); }
+  50% { box-shadow: inset 0 0 100px rgba(122, 243, 255, 0.8); }
+  100% { box-shadow: inset 0 0 0 rgba(122, 243, 255, 0); }
+}
+
+@keyframes textPop {
+  0% { transform: scale(0.5); opacity: 0; }
+  50% { transform: scale(1.2); opacity: 1; }
+  100% { transform: scale(1); opacity: 1; }
+}
+
+.success-anim {
+  animation: successFlash 1.5s ease-out;
+}
+
+.success-overlay {
+  position: absolute;
+  top: 0; left: 0; right: 0; bottom: 0;
+  background: rgba(0, 50, 50, 0.7);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+  backdrop-filter: blur(4px);
+}
+
+.success-overlay h1 {
+  color: #7af3ff;
+  font-size: 4rem;
+  text-transform: uppercase;
+  letter-spacing: 10px;
+  text-shadow: 0 0 20px #7af3ff, 0 0 40px #7af3ff;
+  animation: textPop 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+}

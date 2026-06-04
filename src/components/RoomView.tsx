@@ -1,4 +1,4 @@
-import { Canvas } from "@react-three/fiber";
+import { Canvas, useFrame } from "@react-three/fiber";
 import { OrbitControls, useTexture, Html } from "@react-three/drei";
 import { Suspense, useMemo, useState, useEffect } from "react";
 import * as THREE from "three";
@@ -12,6 +12,16 @@ type RoomViewProps = {
   objects: RoomObject[];
   onObjectAction: (object: RoomObject) => void;
 };
+
+function CameraWobble() {
+  useFrame(({ clock, camera }) => {
+    const t = clock.getElapsedTime();
+    // Simulate anxious human breathing/wobble
+    camera.rotation.z = Math.sin(t * 0.8) * 0.002;
+    camera.position.y = Math.sin(t * 1.5) * 0.005;
+  });
+  return null;
+}
 
 function RoomCylinder({ panoramaImage, objects, onObjectAction, isEditMode }: { panoramaImage: string, objects: RoomObject[], onObjectAction: (o: RoomObject) => void, isEditMode: boolean }) {
   const texture = useTexture(panoramaImage);
@@ -65,6 +75,7 @@ export function RoomView({ room, objects, onObjectAction }: RoomViewProps): Reac
   const [isEditMode, setIsEditMode] = useState(false);
   const [localObjects, setLocalObjects] = useState(objects);
   const [selectedObjId, setSelectedObjId] = useState<string | null>(null);
+  const [hasDragged, setHasDragged] = useState(false);
 
   useEffect(() => {
     setLocalObjects(objects);
@@ -98,6 +109,7 @@ export function RoomView({ room, objects, onObjectAction }: RoomViewProps): Reac
         {room.panoramaImage ? (
           <Canvas camera={{ position: [0, 0, 0.1], fov: 75 }} gl={{ antialias: true }}>
             <color attach="background" args={["#000"]} />
+            <CameraWobble />
             <Suspense fallback={null}>
               <RoomCylinder panoramaImage={room.panoramaImage} objects={localObjects} onObjectAction={isEditMode ? (o) => setSelectedObjId(o.id) : onObjectAction} isEditMode={isEditMode} />
             </Suspense>
@@ -111,8 +123,14 @@ export function RoomView({ room, objects, onObjectAction }: RoomViewProps): Reac
               maxPolarAngle={Math.PI / 2 + 0.3}
               minAzimuthAngle={-Math.PI / 1.6}
               maxAzimuthAngle={Math.PI / 1.6}
+              onChange={() => { if (!hasDragged) setHasDragged(true); }}
             />
           </Canvas>
+          {!hasDragged && room.id === "room-0" && (
+            <div className="drag-hint-overlay">
+              마우스로 드래그하여 주변을 둘러보세요
+            </div>
+          )}
         ) : (
           <div className="room-backdrop" aria-hidden="true">
             <div className="backdrop-grid" />

@@ -113,6 +113,40 @@ class WebAudioEngine {
     this.playOscillator("sawtooth", 150, 0.4, 0.1, 100);
   }
 
+  // 7. Heartbeat: Synthesized low frequency double-thump
+  public playHeartbeat() {
+    if (!this.ctx) return;
+    const mult = this.sfxMultiplier;
+    if (mult === 0) return;
+    this.resume();
+
+    const t = this.ctx.currentTime;
+    
+    // Helper for a single thump
+    const thump = (startTime: number, freqStart: number, freqEnd: number, duration: number, peakVol: number) => {
+      const osc = this.ctx!.createOscillator();
+      const gain = this.ctx!.createGain();
+      
+      osc.type = "sine";
+      osc.frequency.setValueAtTime(freqStart, startTime);
+      osc.frequency.exponentialRampToValueAtTime(freqEnd, startTime + duration);
+      
+      gain.gain.setValueAtTime(0, startTime);
+      gain.gain.linearRampToValueAtTime(peakVol * mult, startTime + duration * 0.2);
+      gain.gain.exponentialRampToValueAtTime(0.01, startTime + duration);
+      
+      osc.connect(gain);
+      gain.connect(this.ctx!.destination);
+      
+      osc.start(startTime);
+      osc.stop(startTime + duration);
+    };
+
+    // Double thump (lub-dub)
+    thump(t, 60, 30, 0.2, 1.2);
+    thump(t + 0.25, 55, 25, 0.3, 0.9);
+  }
+
   public playBGM(url: string) {
     if (!this.bgmAudio) {
       this.bgmAudio = new Audio(url);

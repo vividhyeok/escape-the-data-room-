@@ -14,7 +14,7 @@ import { ReviewRoomWindow } from "./ReviewRoomWindow";
 import { RoomView } from "./RoomView";
 import { TitleScreen } from "./TitleScreen";
 import { CreditsScreen } from "./CreditsScreen";
-import { DialogueOverlay } from "./DialogueOverlay";
+import { SoundEngine } from "../utils/SoundEngine";
 import { SoundEngine } from "../utils/SoundEngine";
 
 const GAME_BGM_URL = "/assets/audio/black-circuit.mp3";
@@ -37,7 +37,6 @@ export function GameShell(): React.JSX.Element {
   const setCurrentRoom = useGameStore((state) => state.setCurrentRoom);
   const gameState = useGameStore((state) => state.gameState);
   const setGameState = useGameStore((state) => state.setGameState);
-  const currentDialogueId = useGameStore((state) => state.currentDialogueId);
   const clearedRoomIds = useGameStore((state) => state.clearedRoomIds);
   const reviewRoomId = useGameStore((state) => state.reviewRoomId);
   const resetProgress = useGameStore((state) => state.resetProgress);
@@ -92,50 +91,15 @@ export function GameShell(): React.JSX.Element {
     }
   }, []);
 
-  const prevDialogueIdRef = useRef<string | null>(null);
-
   useEffect(() => {
-    if (gameState === "PLAYING" && currentRoomId === "room-0" && currentDialogueId === "intro") {
-      setIntroStage("closed");
+    // Simple intro animation without dialogue
+    if (gameState === "PLAYING" && currentRoomId === "room-0") {
+      setIntroStage("opening");
+      setTimeout(() => {
+        setIntroStage("done");
+      }, 2500);
     }
-  }, [gameState, currentRoomId, currentDialogueId]);
-
-  useEffect(() => {
-    if (currentDialogueId) {
-      prevDialogueIdRef.current = currentDialogueId;
-    } else if (prevDialogueIdRef.current) {
-      const finishedId = prevDialogueIdRef.current;
-      prevDialogueIdRef.current = null;
-      
-      if (finishedId === "intro") {
-        setIntroStage("opening");
-        setTimeout(() => {
-          setIntroStage("done");
-          useGameStore.getState().setDialogue("tutorial-1");
-        }, 2500);
-      } else if (finishedId === "escape-success" || finishedId === "true-ending") {
-        setGameState("CREDITS");
-      }
-    }
-  }, [currentDialogueId, setGameState]);
-
-  useEffect(() => {
-    if (currentRoomId !== "room-0") return;
-    const unlocked = useGameStore.getState().unlockedStories;
-
-    // Trigger tutorial-2 when Help (Reference) is opened
-    if (helpOpen && !unlocked.includes("tutorial-2")) {
-      useGameStore.getState().setDialogue("tutorial-2");
-    }
-    // Trigger tutorial-3 when Door keypad is clicked
-    if (activeDoorId === "door-room-0" && !unlocked.includes("tutorial-3")) {
-      useGameStore.getState().setDialogue("tutorial-3");
-    }
-    // Trigger tutorial-4 when Python Lab is opened
-    if (activeLabPuzzle && !unlocked.includes("tutorial-4")) {
-      useGameStore.getState().setDialogue("tutorial-4");
-    }
-  }, [helpOpen, activeDoorId, activeLabPuzzle, currentRoomId]);
+  }, [gameState, currentRoomId]);
 
   useEffect(() => {
     if (gameState !== "PLAYING") return;
@@ -362,7 +326,7 @@ export function GameShell(): React.JSX.Element {
           onRevisitPuzzle={revisitPuzzle}
         />
       ) : null}
-      <DialogueOverlay />
+      ) : null}
       {toast ? <div className="game-toast">{toast}</div> : null}
       {transitioning ? <div className="room-transition-flash" aria-hidden="true" /> : null}
 

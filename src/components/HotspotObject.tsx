@@ -64,6 +64,23 @@ export function HotspotObject({ object, onSelect }: HotspotObjectProps): React.J
           {object.title}
         </div>
       )}
+      
+      {object.id === "room-0-var-math" && !isSolved && (
+        <div className="tutorial-click-hint" style={{
+          position: "absolute",
+          top: "-60px",
+          left: "50%",
+          transform: "translateX(-50%)",
+          color: "var(--neon-cyan)",
+          fontWeight: "bold",
+          fontSize: "1.2rem",
+          textShadow: "0 0 10px var(--neon-cyan)",
+          pointerEvents: "none",
+          animation: "bounce 2s infinite"
+        }}>
+          ▼ CLICK HERE
+        </div>
+      )}
     </button>
   );
 }
