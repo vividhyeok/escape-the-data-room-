@@ -54,20 +54,23 @@ export const dialogues: Record<string, StorySequence> = {
     ]
   },
   "enter-room-1": {
-    title: "제2장: 실전 데이터",
+    title: "제2장: 신호실",
     lines: [
-      { speaker: "SYSTEM", text: "튜토리얼은 끝났어. 이제부터 진짜 실전 데이터들이 쏟아질 거야." },
-      { speaker: "나", text: "방금 그 파이썬 문제들... 학교에서 배운 거랑 비슷하긴 한데." },
-      { speaker: "SYSTEM", text: "학교에서 배우는 뻔한 예제랑은 차원이 다를걸? 방심하면 영영 갇히게 될 테니 집중해." },
+      { speaker: "나", text: "문이... 열렸어. 이쪽엔 라디오랑 모니터들이 잔뜩 있네." },
+      { speaker: "SYSTEM", text: "잘 버텼군. 하지만 여기서부터는 레벨이 올라간다." },
+      { speaker: "SYSTEM", text: "이 방은 '신호실'이야. 데이터가 그냥 숫자가 아닌 텍스트 형태로 들어온다." },
+      { speaker: "나", text: "문자열... 학교에서 배웠던 메서드들이 여기서 나오는 건가?" },
+      { speaker: "SYSTEM", text: "정확해. upper, replace, split — 이 세 가지를 못 다루면 신호를 해독할 수 없어. 집중해." },
     ]
   },
   "enter-room-2": {
-    title: "제3장: 버려진 아카이브",
+    title: "제3장: 데이터 기록실",
     lines: [
-      { speaker: "나", text: "캐비닛에 먼지가 가득해... 여긴 대체 뭐야?" },
-      { speaker: "SYSTEM", text: "제법인데? 하지만 이번 방은 온갖 찌꺼기 데이터가 굴러다니는 '아카이브'야." },
-      { speaker: "SYSTEM", text: "아무리 코드를 잘 짜도, 데이터가 쓰레기면 결과도 쓰레기지(GIGO)." },
-      { speaker: "SYSTEM", text: "더러운 데이터를 정제(Cleaning)하지 못하면 문은 절대 열리지 않아." },
+      { speaker: "나", text: "캐비닛들이 벽면을 가득 채우고 있어. 데이터가 수도 없이 쌓여 있는 것 같은데..." },
+      { speaker: "SYSTEM", text: "여기는 '기록실'이야. 수천 개의 데이터 레코드가 처리되지 않은 채 쌓여 있지." },
+      { speaker: "SYSTEM", text: "반복문 없이는 데이터 하나하나를 직접 건드려야 해 — 그건 불가능에 가깝지." },
+      { speaker: "나", text: "for, while... 이번엔 루프를 제대로 써야 하는 거네." },
+      { speaker: "SYSTEM", text: "그것만이 아니야. 딕셔너리로 구조화된 데이터도 다뤄야 해. 이번 방이 진짜 관문이다." },
     ]
   },
   "escape-success": {

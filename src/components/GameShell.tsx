@@ -325,9 +325,9 @@ export function GameShell(): React.JSX.Element {
       "room-1-checksum-tablet": "answer = data > 0 and data < 10\n",
       "room-2-file-cabinet":    "total = 0\nfor x in data:\n    total = total + x\nanswer = total\n",
       "room-2-broken-tags":     "result = []\nfor x in data:\n    if x > 0:\n        result.append(x)\nanswer = result\n",
-      "room-2-score-board":     "answer = data['score']\n",
+      "room-2-score-board":     "best = 0\nfor item in data:\n    if item['score'] > best:\n        best = item['score']\nanswer = best\n",
       "room-2-timeline":        "result = []\nn = data\nwhile n > 0:\n    result.append(n)\n    n = n - 1\nanswer = result\n",
-      "room-2-access-log":      "answer = [x * 2 for x in data]\n",
+      "room-2-access-log":      "answer = [x * 2 for x in data if x > 0]\n",
       "room-2-checksum-ledger": "result = ''\nfor char in data:\n    if char not in 'aeiou':\n        result = result + char\nanswer = result\n",
       "room-3-validator":       "answer = data[::-1]\n",
     };

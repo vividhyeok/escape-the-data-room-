@@ -15,7 +15,7 @@ export function CreditsScreen(): React.JSX.Element {
   useEffect(() => {
     SoundEngine.playBGM('/assets/audio/successor.mp3');
     // Show prompt to continue after 12 seconds
-    const timer = setTimeout(() => setShowPrompt(true), 12000);
+    const timer = setTimeout(() => setShowPrompt(true), 30000);
     return () => clearTimeout(timer);
   }, []);
 
@@ -42,7 +42,7 @@ export function CreditsScreen(): React.JSX.Element {
         <button className="credits-skip" onClick={handleSkip} type="button" style={{ position: "absolute", top: 20, right: 20, zIndex: 10 }}>SKIP</button>
       )}
       <div className={`cyber-credits-scroll ${showPrompt ? "paused" : ""}`}>
-        <h1>[ ESCAPE THE DATA ROOM ]</h1>
+        <h1>[ THE CODE ROOM ]</h1>
         <p>Directed by</p>
         <p>2026-1 캡스톤 프로젝트</p>
         <p>김민혁, 공원호</p>

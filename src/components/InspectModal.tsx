@@ -8,6 +8,7 @@ import { python } from "@codemirror/lang-python";
 import { keymap, EditorView } from "@codemirror/view";
 import { indentWithTab } from "@codemirror/commands";
 import { oneDark } from "@codemirror/theme-one-dark";
+import { autocompletion, completionKeymap } from "@codemirror/autocomplete";
 import { pythonRunner } from "../lib/pythonRunner";
 import { SoundEngine } from "../utils/SoundEngine";
 
@@ -743,7 +744,9 @@ export function InspectModal({
             <span className="inspect-kicker">OBJ ID: {object.shortLabel}</span>
             <div className="inspect-header" style={{ border: "none", padding: 0, margin: 0 }}>
               <p className="situation-text">{puzzle.situationText}</p>
-              {isSolved ? <span className="solved-badge">✓ ACCESSED</span> : null}
+              <span className={`solved-badge ${isSolved ? "badge-solved" : "badge-locked"}`}>
+                {isSolved ? "✓ ACCESSED" : "○ LOCKED"}
+              </span>
             </div>
 
             {/* Display Restrictions if any */}
@@ -781,7 +784,7 @@ export function InspectModal({
                   setCode(val);
                   saveCodeDraft(puzzle.id, val);
                 }}
-                extensions={[python(), keymap.of([indentWithTab])]}
+                extensions={[python(), keymap.of([indentWithTab, ...completionKeymap]), autocompletion({ activateOnTyping: true })]}
                 theme={oneDark}
                 basicSetup={{
                   lineNumbers: true,

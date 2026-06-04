@@ -156,13 +156,14 @@ export const puzzles: Puzzle[] = [
       ref("len('ABC') == 3", "3글자이므로 3을 반환합니다."),
     ],
     rewardHint: hint("room-0-hint-names", "room-0", "room-0-name-tags",
-      "[보너스 단서] len()으로 길이를 셀 수 있다. 글자 수 = 힘이다."),
+      "[검증 단서] 네 자리 코드 합계 힌트 — 8+5+2+2 = 17"),
     starterCode:
       "# len() 함수로 data의 글자 수를 구하세요.\n" +
       "\n" +
       "answer = len(___)  # 괄호 안에 무엇을 넣어야 할까요?\n",
     imageUrl: "/assets/images/objects/room-0/name-tags-bundle.png",
-    isRequired: false, requiredForDoor: false, isHidden: true, puzzleType: "code",
+    isRequired: true, requiredForDoor: true,
+    doorCodePosition: 5, doorCodePiece: "✓", puzzleType: "code",
   },
 
   {
@@ -185,13 +186,14 @@ export const puzzles: Puzzle[] = [
       ref("'Ha' * 3 == 'HaHaHa'", "문자열에 * 연산자를 사용합니다."),
     ],
     rewardHint: hint("room-0-hint-note", "room-0", "room-0-bookshelf-note",
-      "[보너스 단서] 반복은 곱셈이다. 문자열에도 * 를 쓸 수 있다."),
+      "[검증 단서] 세 번째와 네 번째 자리는 같은 숫자"),
     starterCode:
       "# data 문자열을 3번 반복한 결과를 answer에 저장하세요.\n" +
       "\n" +
       "answer = data * ___  # 몇 번 반복할까요?\n",
     imageUrl: "/assets/images/objects/room-0/bookshelf-note.png",
-    isRequired: false, requiredForDoor: false, isHidden: true, puzzleType: "code",
+    isRequired: true, requiredForDoor: true,
+    doorCodePosition: 6, doorCodePiece: "✓", puzzleType: "code",
   },
 
 
@@ -346,7 +348,7 @@ export const puzzles: Puzzle[] = [
       ref("% 연산자", "나머지를 구합니다. 예: 7 % 2 == 1"),
     ],
     rewardHint: hint("room-1-hint-name", "room-1", "room-1-name-card",
-      "[보너스 단서] 나머지 연산 % 로 짝수를 판별했다."),
+      "[검증 단서] 첫 번째 자리 = 세 번째 자리 (같은 숫자)"),
     starterCode:
       "# data가 짝수면 True, 홀수면 False를 저장하세요.\n" +
       "# 힌트: 짝수는 2로 나눈 나머지가 0입니다.\n" +
@@ -356,7 +358,8 @@ export const puzzles: Puzzle[] = [
       "else:\n" +
       "    answer = False\n",
     imageUrl: "/assets/images/objects/room-1/name-card-board.png",
-    isRequired: false, requiredForDoor: false, isHidden: true, puzzleType: "code",
+    isRequired: true, requiredForDoor: true,
+    doorCodePosition: 5, doorCodePiece: "✓", puzzleType: "code",
   },
 
   {
@@ -379,14 +382,15 @@ export const puzzles: Puzzle[] = [
       ref("0 < data < 10", "파이썬은 이런 연속 비교도 허용합니다."),
     ],
     rewardHint: hint("room-1-hint-noise", "room-1", "room-1-checksum-tablet",
-      "[보너스 단서] and 로 두 조건을 동시에 검사했다."),
+      "[검증 단서] 네 자리 합계 = 27"),
     starterCode:
       "# 두 조건을 and 로 연결하세요.\n" +
       "# 조건1: data가 0보다 크다  조건2: data가 10보다 작다\n" +
       "\n" +
       "answer = data > ___ and data < ___\n",
     imageUrl: "/assets/images/objects/room-1/noise-strip.png",
-    isRequired: false, requiredForDoor: false, isHidden: true, puzzleType: "code",
+    isRequired: true, requiredForDoor: true,
+    doorCodePosition: 6, doorCodePiece: "✓", puzzleType: "code",
   },
 
 
@@ -471,30 +475,35 @@ export const puzzles: Puzzle[] = [
   {
     id: "room-2-score-board",
     roomId: "room-2", objectId: "room-2-score-board",
-    title: "딕셔너리 접근",
+    title: "최고 점수 탐색",
     situationText:
-      "보안 데이터베이스에 사용자 정보가 딕셔너리 형태로 저장되어 있다.\n" +
-      "딕셔너리는 '키: 값' 쌍으로 이루어진 자료구조다.\n" +
-      "data['score'] 처럼 키를 사용해 원하는 값을 꺼내어 answer에 저장하라.",
+      "보안 데이터베이스에 여러 에이전트의 정보가 딕셔너리 리스트로 저장되어 있다.\n" +
+      "for문으로 리스트를 순회하며, 각 항목의 'score' 키로 값에 접근하라.\n" +
+      "if문으로 더 높은 점수를 찾아 누적하여 가장 높은 점수를 answer에 저장하라.",
     dataText: "SECURITY DB\nA001/에이전트 알파\nA002/에이전트 베타\nA003/에이전트 감마\nA004/에이전트 델타\nA005/에이전트 엡실론\n\nA001/88\nA002/72\nA003/95\nA004/61\nA005/87",
     testCases: [
-      { inputCode: "data = {'score': 88}",  expectedOutput: 88  },
-      { inputCode: "data = {'score': 42}",  expectedOutput: 42  },
-      { inputCode: "data = {'score': 100}", expectedOutput: 100 },
+      { inputCode: "data = [{'name': 'A', 'score': 60}, {'name': 'B', 'score': 90}]", expectedOutput: 90 },
+      { inputCode: "data = [{'name': 'X', 'score': 45}, {'name': 'Y', 'score': 80}, {'name': 'Z', 'score': 60}]", expectedOutput: 80 },
+      { inputCode: "data = [{'name': 'P', 'score': 100}]", expectedOutput: 100 },
     ],
-    requiredSyntax: ["Subscript"], bannedSyntax: [],
+    requiredSyntax: ["For", "Subscript", "If"], bannedSyntax: ["max"],
     referenceItems: [
-      ref("data['score']", "'score' 키에 해당하는 값을 가져옵니다."),
-      ref("dict['키']", "딕셔너리에서 특정 키의 값을 꺼냅니다."),
-      ref("data.get('score')", "키가 없을 때도 안전하게 가져오는 방법입니다."),
+      ref("for item in data:", "리스트를 한 항목씩 순회합니다."),
+      ref("item['score']", "딕셔너리 항목에서 'score' 키의 값을 꺼냅니다."),
+      ref("if item['score'] > best:", "현재 값이 저장된 최댓값보다 크면 업데이트합니다."),
     ],
     rewardHint: hint("room-2-hint-score", "room-2", "room-2-score-board",
-      "[코드 조각 획득] 데이터베이스를 해독했다. 세 번째 열쇠 파편: 4"),
+      "[코드 조각 획득] 최고 점수를 찾아냈다. 세 번째 열쇠 파편: 4"),
     starterCode:
-      "# 딕셔너리에서 'score' 키의 값을 꺼내세요.\n" +
-      "# data = {'name': '...', 'score': 숫자} 형태입니다.\n" +
+      "# 리스트 속 딕셔너리에서 가장 높은 score를 찾으세요.\n" +
+      "# max() 함수는 사용 금지입니다!\n" +
       "\n" +
-      "answer = data[___]  # 어떤 키의 값이 필요한가요?\n",
+      "best = 0              # 현재 최댓값 저장 변수\n" +
+      "for item in data:\n" +
+      "    if item[___] > best:   # 어떤 키의 값을 비교?\n" +
+      "        best = item[___]\n" +
+      "\n" +
+      "answer = best\n",
     imageUrl: "/assets/images/objects/room-2/score-board.png",
     isRequired: true, requiredForDoor: true,
     doorCodePosition: 3, doorCodePiece: "4", puzzleType: "code",
@@ -539,15 +548,15 @@ export const puzzles: Puzzle[] = [
   {
     id: "room-2-access-log",
     roomId: "room-2", objectId: "room-2-access-log",
-    title: "리스트 컴프리헨션",
+    title: "조건부 리스트 컴프리헨션",
     situationText:
-      "접근 기록의 처리 시간 데이터를 모두 2배로 스케일링해야 한다.\n" +
-      "리스트 컴프리헨션은 for문을 한 줄로 압축해 새 리스트를 만드는 방법이다.\n" +
-      "[x * 2 for x in data] 형태로 작성하라.",
+      "접근 로그에서 양수(0 초과)인 처리 시간만 두 배로 스케일링해야 한다.\n" +
+      "리스트 컴프리헨션에 if 조건을 추가하면 필터링과 변환을 한 줄에 처리할 수 있다.\n" +
+      "[표현식 for 변수 in 리스트 if 조건] 형태로 작성하라.",
     dataText: "09:12 / AGENT_A / success\n09:15 / AGENT_B / fail\n09:18 / AGENT_C / success\n09:22 / AGENT_D / fail",
     testCases: [
-      { inputCode: "data = [1, 2, 3]", expectedOutput: [2, 4, 6]  },
-      { inputCode: "data = [5, 10]",   expectedOutput: [10, 20]   },
+      { inputCode: "data = [1, -2, 3, 0, 4]", expectedOutput: [2, 6, 8] },
+      { inputCode: "data = [-5, 2, 7]",        expectedOutput: [4, 14]  },
     ],
     requiredSyntax: ["ListComp"], bannedSyntax: [],
     referenceItems: [
@@ -555,14 +564,15 @@ export const puzzles: Puzzle[] = [
       ref("[표현식 for 변수 in 리스트]", "리스트 컴프리헨션 기본 형태."),
     ],
     rewardHint: hint("room-2-hint-log", "room-2", "room-2-access-log",
-      "[보너스 단서] 컴프리헨션으로 한 줄에 처리했다."),
+      "[검증 단서] 짝수 번째 자리(2번·4번) 합 = 12"),
     starterCode:
-      "# 리스트 컴프리헨션으로 data의 모든 원소를 2배로 만드세요.\n" +
-      "# 형태: [표현식 for 변수 in 리스트]\n" +
+      "# 양수인 원소만 2배로 만든 리스트를 구하세요.\n" +
+      "# 형태: [표현식 for 변수 in 리스트 if 조건]\n" +
       "\n" +
-      "answer = [x * ___ for x in data]  # 2배는 * 얼마?\n",
+      "answer = [x * 2 for x in data if x > ___]  # 조건: 0보다 크면\n",
     imageUrl: "/assets/images/objects/room-2/access-log-table.png",
-    isRequired: false, requiredForDoor: false, isHidden: true, puzzleType: "code",
+    isRequired: true, requiredForDoor: true,
+    doorCodePosition: 5, doorCodePiece: "✓", puzzleType: "code",
   },
 
   {
@@ -586,7 +596,7 @@ export const puzzles: Puzzle[] = [
       ref("in 연산자", "'a' in 'aeiou' → True (포함 여부 확인)."),
     ],
     rewardHint: hint("room-2-hint-checksum", "room-2", "room-2-checksum-ledger",
-      "[보너스 단서] not in 으로 제외 조건을 만들었다."),
+      "[검증 단서] 네 자리 중 가장 작은 값은 첫 번째 자리 (3)"),
     starterCode:
       "# 모음이 아닌 글자만 모아 새 문자열을 만드세요.\n" +
       "\n" +
@@ -597,7 +607,8 @@ export const puzzles: Puzzle[] = [
       "\n" +
       "answer = result\n",
     imageUrl: "/assets/images/objects/room-2/archive-note.png",
-    isRequired: false, requiredForDoor: false, isHidden: true, puzzleType: "code",
+    isRequired: true, requiredForDoor: true,
+    doorCodePosition: 6, doorCodePiece: "✓", puzzleType: "code",
   },
 
 
