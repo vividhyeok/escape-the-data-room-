@@ -262,6 +262,7 @@ export function GameShell(): React.JSX.Element {
 
   function changeRoom(roomId: string): void {
     if (roomId === currentRoomId) return;
+    SoundEngine.playDoorOpen();
     setTransitioning(true);
     window.setTimeout(() => {
       setCurrentRoom(roomId);

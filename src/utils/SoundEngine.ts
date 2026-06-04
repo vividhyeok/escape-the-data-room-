@@ -113,6 +113,15 @@ class WebAudioEngine {
     this.playOscillator("sawtooth", 150, 0.4, 0.1, 100);
   }
 
+  // 6.5. Door Open: Play door opening sound
+  public playDoorOpen() {
+    const mult = this.sfxMultiplier;
+    if (mult === 0) return;
+    const audio = new Audio("/assets/audio/sfx/door_open.ogg");
+    audio.volume = Math.min(mult * 0.7, 1);
+    audio.play().catch(() => {});
+  }
+
   // 7. Heartbeat: Synthesized low frequency double-thump
   public playHeartbeat() {
     if (!this.ctx) return;
