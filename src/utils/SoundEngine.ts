@@ -133,7 +133,7 @@ class WebAudioEngine {
     const mult = this.sfxMultiplier;
     if (mult === 0) return;
     const audio = new Audio("/assets/audio/sfx/esc.mp3");
-    audio.volume = Math.min(mult * 0.8, 1);
+    audio.volume = Math.min(mult * 0.4, 1);
     audio.play().catch(() => {});
   }
 

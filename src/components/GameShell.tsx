@@ -257,6 +257,7 @@ export function GameShell(): React.JSX.Element {
 
   const handleReturnToTitle = () => {
     setIsPaused(false);
+    SoundEngine.stopBreathing();
     SoundEngine.playBGM('/assets/audio/main-banner.mp3');
     useGameStore.getState().setGameState("TITLE");
   };
