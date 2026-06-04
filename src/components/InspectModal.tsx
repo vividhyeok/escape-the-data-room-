@@ -749,7 +749,7 @@ export function InspectModal({
           {/* Console / Action Area */}
           <div className="inspect-side-column" style={{ display: "flex", flexDirection: "column" }}>
             <span className="inspect-kicker">/ TERMINAL</span>
-            <div className="editor-container" style={{ flex: 1, minHeight: "200px", border: "1px solid var(--neon-cyan)", background: "#1e1e1e", overflow: "hidden", display: "flex", flexDirection: "column" }}>
+            <div className="editor-container" style={{ flex: 1, minHeight: "280px", border: "1px solid var(--neon-cyan)", background: "#1e1e1e", overflow: "hidden", display: "flex", flexDirection: "column" }}>
               <CodeMirror
                 value={code}
                 onChange={(val) => {
@@ -763,32 +763,48 @@ export function InspectModal({
                   foldGutter: false,
                   dropCursor: false,
                   allowMultipleSelections: false,
-                  indentOnInput: false,
+                  indentOnInput: true,
+                  bracketMatching: true,
+                  closeBrackets: true,
                 }}
                 style={{ flex: 1, fontSize: "14px", overflowY: "auto" }}
               />
             </div>
 
             {errorMsg && (
-              <div style={{ marginTop: "8px", padding: "8px", background: "rgba(255, 0, 0, 0.1)", borderLeft: "3px solid #ff6b6b", color: "#ff6b6b", fontSize: "0.85rem", whiteSpace: "pre-wrap" }}>
-                {errorMsg}
+              <div className="inspect-error-panel">
+                <span className="inspect-error-label">⚠ 오류</span>
+                <pre className="inspect-error-body">{errorMsg}</pre>
               </div>
             )}
 
             <div className="action-grid modal-actions" style={{ display: "flex", flexDirection: "column", marginTop: "10px" }}>
-              <button 
-                className="primary-button sk-action-btn check-btn" 
-                onClick={handleVerify} 
-                type="button" 
+              <button
+                className="primary-button sk-action-btn check-btn"
+                onClick={handleVerify}
+                type="button"
                 disabled={isChecking}
-                title="Verify Code"
+                title="코드 실행 및 정답 확인 (Ctrl+Enter)"
               >
                 {isChecking ? <Loader2 size={18} className="spin" /> : <CheckCircle2 size={18} />}
               </button>
-              
+
               <div style={{ display: "flex", gap: "8px", marginTop: "8px" }}>
-                <button className="ghost-button sk-action-btn" onClick={onOpenHelp} type="button" title="Python Reference" style={{ flex: 1 }}>
-                  <BookOpen size={16} /> REFERENCE
+                <button className="ghost-button sk-action-btn" onClick={onOpenHelp} type="button" title="파이썬 레퍼런스 보기" style={{ flex: 1 }}>
+                  <BookOpen size={16} />
+                </button>
+                <button
+                  className="ghost-button sk-action-btn"
+                  onClick={() => {
+                    const starter = puzzle.starterCode ?? "";
+                    setCode(starter);
+                    saveCodeDraft(puzzle.id, starter);
+                  }}
+                  type="button"
+                  title="스타터 코드로 초기화"
+                  style={{ flex: 1 }}
+                >
+                  <TerminalSquare size={16} />
                 </button>
               </div>
             </div>

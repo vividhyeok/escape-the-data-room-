@@ -45,8 +45,11 @@ def evaluate_puzzle(user_code, required_syntax_json, banned_syntax_json, test_ca
             self.funcs = []
         def generic_visit(self, node):
             self.nodes.append(type(node).__name__)
-            if isinstance(node, ast.Call) and isinstance(node.func, ast.Name):
-                self.funcs.append(node.func.id)
+            if isinstance(node, ast.Call):
+                if isinstance(node.func, ast.Name):
+                    self.funcs.append(node.func.id)
+                elif isinstance(node.func, ast.Attribute):
+                    self.funcs.append(node.func.attr)
             super().generic_visit(node)
             
     visitor = NodeVisitor()

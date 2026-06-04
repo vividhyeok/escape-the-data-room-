@@ -39,11 +39,36 @@ if (!OPENAI_KEY) {
 
 // ── CLI flags ──────────────────────────────────────────────────────
 const args = process.argv.slice(2);
-const FORCE     = args.includes("--force");
-const DRY_RUN   = args.includes("--dry-run");
-const ONLY_BG   = args.some((a) => a === "--only=bg");
-const ONLY_OBJ  = args.some((a) => a === "--only=obj");
+const FORCE       = args.includes("--force");
+const DRY_RUN     = args.includes("--dry-run");
+const DO_BACKUP   = args.includes("--backup");
+const ONLY_BG     = args.some((a) => a === "--only=bg");
+const ONLY_OBJ    = args.some((a) => a === "--only=obj");
 const ROOM_FILTER = (args.find((a) => a.startsWith("--room=")) ?? "").replace("--room=", "");
+
+// ── backup existing images ─────────────────────────────────────────
+if (DO_BACKUP) {
+  const imgRoot = path.join(ROOT, "public/assets/images");
+  const backupRoot = path.join(ROOT, "public/assets/images/_backup");
+  if (!fs.existsSync(backupRoot)) fs.mkdirSync(backupRoot, { recursive: true });
+  let backed = 0;
+  function backupDir(dir) {
+    for (const entry of fs.readdirSync(dir, { withFileTypes: true })) {
+      const full = path.join(dir, entry.name);
+      if (entry.isDirectory() && entry.name !== "_backup") {
+        backupDir(full);
+      } else if (entry.isFile() && /\.(png|jpg|jpeg|webp)$/i.test(entry.name)) {
+        const rel = path.relative(imgRoot, full);
+        const dest = path.join(backupRoot, rel);
+        fs.mkdirSync(path.dirname(dest), { recursive: true });
+        fs.copyFileSync(full, dest);
+        backed++;
+      }
+    }
+  }
+  backupDir(imgRoot);
+  console.log(`🗂  Backed up ${backed} existing images → public/assets/images/_backup/`);
+}
 
 // ── common style fragments ─────────────────────────────────────────
 // Segment images are 1536×1024 each; three are stitched into a 4608×1024 panorama.

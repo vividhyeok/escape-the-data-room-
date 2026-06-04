@@ -22,12 +22,12 @@ type GameWindowProps = {
 const STORAGE_PREFIX = "escape-the-data-room:window:";
 
 const DEFAULT_WINDOW_SIZES: Record<GameWindowType, Pick<WindowRect, "width" | "height">> = {
-  inspect: { width: 840, height: 580 },
-  python: { width: 640, height: 500 },
-  reference: { width: 420, height: 500 },
-  keypad: { width: 400, height: 500 },
-  notebook: { width: 400, height: 550 },
-  review: { width: 700, height: 600 },
+  inspect:   { width: 980, height: 640 },
+  python:    { width: 720, height: 580 },
+  reference: { width: 440, height: 540 },
+  keypad:    { width: 420, height: 520 },
+  notebook:  { width: 420, height: 580 },
+  review:    { width: 720, height: 620 },
 };
 
 const DEFAULT_WINDOW_POSITIONS: Record<GameWindowType, Pick<WindowRect, "x" | "y">> = {
@@ -40,8 +40,8 @@ const DEFAULT_WINDOW_POSITIONS: Record<GameWindowType, Pick<WindowRect, "x" | "y
 };
 
 const MIN_WINDOW_SIZE = {
-  width: 360,
-  height: 280,
+  width: 500,
+  height: 400,
 };
 
 let topWindowZ = 100;
@@ -78,10 +78,9 @@ function defaultRect(type: GameWindowType, id: string): WindowRect {
   const viewport = getViewportRect();
   
   if (type === "inspect") {
-    // Center the inspect windows on the screen by default
     return clampRect({
-      x: Math.floor(viewport.width / 2) - 380, // rough center based on max size
-      y: Math.floor(viewport.height / 2) - 300,
+      x: Math.floor(viewport.width / 2) - Math.floor(size.width / 2),
+      y: Math.max(60, Math.floor(viewport.height / 2) - Math.floor(size.height / 2)),
       width: size.width,
       height: size.height,
     });
