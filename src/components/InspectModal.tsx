@@ -46,17 +46,23 @@ export function InspectModal({
   const [lastActive, setLastActive] = useState(Date.now());
   const [isTense, setIsTense] = useState(false);
   
-  // Heartbeat loop for idle tension
+  // Breathing + heartbeat for idle tension
   useEffect(() => {
     let heartbeatInterval: number | undefined;
     if (isTense) {
-      // Play immediately when it becomes tense, then every 1.2 seconds
+      // Start looping breathing sound + heartbeat thumps
+      SoundEngine.playBreathing(true);
       SoundEngine.playHeartbeat();
       heartbeatInterval = window.setInterval(() => {
         SoundEngine.playHeartbeat();
       }, 1200);
+    } else {
+      SoundEngine.stopBreathing();
     }
-    return () => clearInterval(heartbeatInterval);
+    return () => {
+      clearInterval(heartbeatInterval);
+      SoundEngine.stopBreathing();
+    };
   }, [isTense]);
 
   // Idle checker
@@ -128,6 +134,7 @@ export function InspectModal({
       return;
     }
 
+    SoundEngine.playBreathing(false);
     SoundEngine.playHeartbeat();
     setIsTense(true);
     onHintAcquired?.("Code mismatch — 다시 확인하세요.");

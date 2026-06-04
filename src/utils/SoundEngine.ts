@@ -147,6 +147,29 @@ class WebAudioEngine {
     thump(t + 0.25, 55, 25, 0.3, 0.9);
   }
 
+  // 8. Breathing: Play actual breathing sound file
+  private breathingAudio: HTMLAudioElement | null = null;
+
+  public playBreathing(loop: boolean = false) {
+    const mult = this.sfxMultiplier;
+    if (mult === 0) return;
+
+    if (!this.breathingAudio) {
+      this.breathingAudio = new Audio("/assets/audio/sfx/breathing.wav");
+    }
+    this.breathingAudio.loop = loop;
+    this.breathingAudio.volume = Math.min(mult * 0.6, 1);
+    this.breathingAudio.currentTime = 0;
+    this.breathingAudio.play().catch(() => {});
+  }
+
+  public stopBreathing() {
+    if (this.breathingAudio) {
+      this.breathingAudio.pause();
+      this.breathingAudio.currentTime = 0;
+    }
+  }
+
   public playBGM(url: string) {
     if (!this.bgmAudio) {
       this.bgmAudio = new Audio(url);
