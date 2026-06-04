@@ -58,15 +58,12 @@ export type Puzzle = {
   title: string;
   objectId: string;
   situationText: string;
-  scenarioImageUrl?: string;
   dataText: string;
   expectedAnswer: string;
   mockOutput?: string;
   referenceItems: ReferenceItem[];
   rewardHint: RoomHint;
   starterCode?: string;
-  requiredSyntax?: string[];
-  timeoutHint?: string;
   isRequired?: boolean;
   isHidden?: boolean;
   requiredForDoor?: boolean;

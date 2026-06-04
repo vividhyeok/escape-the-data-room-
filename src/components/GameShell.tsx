@@ -14,6 +14,7 @@ import { ReviewRoomWindow } from "./ReviewRoomWindow";
 import { RoomView } from "./RoomView";
 import { TitleScreen } from "./TitleScreen";
 import { CreditsScreen } from "./CreditsScreen";
+import { DialogueOverlay } from "./DialogueOverlay";
 import { SoundEngine } from "../utils/SoundEngine";
 
 const GAME_BGM_URL = "/assets/audio/black-circuit.mp3";
@@ -36,6 +37,7 @@ export function GameShell(): React.JSX.Element {
   const setCurrentRoom = useGameStore((state) => state.setCurrentRoom);
   const gameState = useGameStore((state) => state.gameState);
   const setGameState = useGameStore((state) => state.setGameState);
+  const currentDialogueId = useGameStore((state) => state.currentDialogueId);
   const clearedRoomIds = useGameStore((state) => state.clearedRoomIds);
   const reviewRoomId = useGameStore((state) => state.reviewRoomId);
   const resetProgress = useGameStore((state) => state.resetProgress);
@@ -51,6 +53,60 @@ export function GameShell(): React.JSX.Element {
   const selectedPuzzle = selectedObject?.kind === "puzzle" ? puzzlesById[selectedObject.puzzleId] : undefined;
   const activeLabPuzzle = labPuzzleId ? puzzlesById[labPuzzleId] : undefined;
   const collectedHints = useGameStore((state) => state.collectedHints);
+
+  // Full-screen tension mechanics
+  const [lastActiveTime, setLastActiveTime] = useState(Date.now());
+  const [isTense, setIsTense] = useState(false);
+
+  // Idle detection — 15 seconds without interaction triggers tension
+  useEffect(() => {
+    if (gameState !== "PLAYING") return;
+    const interval = setInterval(() => {
+      const idle = Date.now() - lastActiveTime > 15000;
+      setIsTense(idle);
+    }, 1000);
+    return () => clearInterval(interval);
+  }, [lastActiveTime, gameState]);
+
+  // Breathing + heartbeat audio when tense
+  useEffect(() => {
+    let heartbeatInterval: number | undefined;
+    if (isTense) {
+      SoundEngine.playBreathing(true);
+      SoundEngine.playHeartbeat();
+      heartbeatInterval = window.setInterval(() => {
+        SoundEngine.playHeartbeat();
+      }, 1200);
+    } else {
+      SoundEngine.stopBreathing();
+    }
+    return () => {
+      clearInterval(heartbeatInterval);
+      SoundEngine.stopBreathing();
+    };
+  }, [isTense]);
+
+  // Reset idle timer on any user interaction
+  useEffect(() => {
+    if (gameState !== "PLAYING") return;
+    const reset = () => setLastActiveTime(Date.now());
+    window.addEventListener("mousemove", reset);
+    window.addEventListener("keydown", reset);
+    window.addEventListener("mousedown", reset);
+    return () => {
+      window.removeEventListener("mousemove", reset);
+      window.removeEventListener("keydown", reset);
+      window.removeEventListener("mousedown", reset);
+    };
+  }, [gameState]);
+
+  // Trigger tension burst on wrong answer
+  function triggerTensionBurst() {
+    SoundEngine.playBreathing(false);
+    SoundEngine.playHeartbeat();
+    setIsTense(true);
+    setTimeout(() => setIsTense(false), 3000);
+  }
 
   useEffect(() => {
     if (bootModeApplied.current) {
@@ -90,15 +146,50 @@ export function GameShell(): React.JSX.Element {
     }
   }, []);
 
+  const prevDialogueIdRef = useRef<string | null>(null);
+
   useEffect(() => {
-    // Simple intro animation without dialogue
-    if (gameState === "PLAYING" && currentRoomId === "room-0") {
-      setIntroStage("opening");
-      setTimeout(() => {
-        setIntroStage("done");
-      }, 2500);
+    if (gameState === "PLAYING" && currentRoomId === "room-0" && currentDialogueId === "intro") {
+      setIntroStage("closed");
     }
-  }, [gameState, currentRoomId]);
+  }, [gameState, currentRoomId, currentDialogueId]);
+
+  useEffect(() => {
+    if (currentDialogueId) {
+      prevDialogueIdRef.current = currentDialogueId;
+    } else if (prevDialogueIdRef.current) {
+      const finishedId = prevDialogueIdRef.current;
+      prevDialogueIdRef.current = null;
+      
+      if (finishedId === "intro") {
+        setIntroStage("opening");
+        setTimeout(() => {
+          setIntroStage("done");
+          useGameStore.getState().setDialogue("tutorial-1");
+        }, 2500);
+      } else if (finishedId === "escape-success" || finishedId === "true-ending") {
+        setGameState("CREDITS");
+      }
+    }
+  }, [currentDialogueId, setGameState]);
+
+  useEffect(() => {
+    if (currentRoomId !== "room-0") return;
+    const unlocked = useGameStore.getState().unlockedStories;
+
+    // Trigger tutorial-2 when Help (Reference) is opened
+    if (helpOpen && !unlocked.includes("tutorial-2")) {
+      useGameStore.getState().setDialogue("tutorial-2");
+    }
+    // Trigger tutorial-3 when Door keypad is clicked
+    if (activeDoorId === "door-room-0" && !unlocked.includes("tutorial-3")) {
+      useGameStore.getState().setDialogue("tutorial-3");
+    }
+    // Trigger tutorial-4 when Python Lab is opened
+    if (activeLabPuzzle && !unlocked.includes("tutorial-4")) {
+      useGameStore.getState().setDialogue("tutorial-4");
+    }
+  }, [helpOpen, activeDoorId, activeLabPuzzle, currentRoomId]);
 
   useEffect(() => {
     if (gameState !== "PLAYING") return;
@@ -234,7 +325,7 @@ export function GameShell(): React.JSX.Element {
   if (gameState === "CREDITS") return <CreditsScreen />;
 
   return (
-    <div className="game-shell">
+    <div className={`game-shell ${isTense ? "tension-active" : ""}`}>
       <div className="vignette-flicker" aria-hidden="true" />
       <div className="scanlines" aria-hidden="true" />
       
@@ -308,6 +399,7 @@ export function GameShell(): React.JSX.Element {
           object={selectedObject}
           onClose={() => setSelectedObject(null)}
           onOpenHelp={openHelp}
+          onOpenLab={openLab}
           onHintAcquired={showToast}
           puzzle={selectedPuzzle}
         />
@@ -324,6 +416,7 @@ export function GameShell(): React.JSX.Element {
           onRevisitPuzzle={revisitPuzzle}
         />
       ) : null}
+      <DialogueOverlay />
       {toast ? <div className="game-toast">{toast}</div> : null}
       {transitioning ? <div className="room-transition-flash" aria-hidden="true" /> : null}
 
