@@ -38,12 +38,15 @@ export function HotspotObject({ object, onSelect }: HotspotObjectProps): React.J
         <img
           alt=""
           className="hotspot-image"
+          draggable={false}
           src={object.assetImage}
           onLoad={() => setSpriteReady(true)}
           onError={() => setSpriteReady(false)}
           style={{
             display: spriteReady ? "block" : "none",
-            transform: object.rotation ? `rotate(${object.rotation}deg)` : undefined
+            transform: object.rotation ? `rotate(${object.rotation}deg)` : undefined,
+            userSelect: "none",
+            pointerEvents: "none"
           }}
         />
       )}

@@ -5,7 +5,7 @@ import { useGameStore } from "../store/gameStore";
 import { GameWindow } from "./GameWindow";
 import CodeMirror from "@uiw/react-codemirror";
 import { python } from "@codemirror/lang-python";
-import { keymap } from "@codemirror/view";
+import { keymap, EditorView } from "@codemirror/view";
 import { indentWithTab } from "@codemirror/commands";
 import { oneDark } from "@codemirror/theme-one-dark";
 import { pythonRunner } from "../lib/pythonRunner";
@@ -667,7 +667,6 @@ export function InspectModal({
   const saveCodeDraft = useGameStore((state) => state.saveCodeDraft);
   
   const [code, setCode] = useState(() => codeDrafts[puzzle.id] ?? puzzle.starterCode ?? "");
-  const [copyStatus, setCopyStatus] = useState("");
   const [isShaking, setIsShaking] = useState(false);
   const [isChecking, setIsChecking] = useState(false);
   const [errorMsg, setErrorMsg] = useState("");
@@ -678,29 +677,11 @@ export function InspectModal({
 
   useEffect(() => {
     setCode(codeDrafts[puzzle.id] ?? puzzle.starterCode ?? "");
-    setCopyStatus("");
+    
     setErrorMsg("");
   }, [puzzle.id, codeDrafts, puzzle.starterCode]);
 
-  async function copyData(): Promise<void> {
-    try {
-      if (navigator.clipboard?.writeText) {
-        await navigator.clipboard.writeText(puzzle.dataText);
-      } else {
-        fallbackCopyText(puzzle.dataText);
-      }
-      setCopyStatus("복사 완료.");
-      window.setTimeout(() => setCopyStatus(""), 2000);
-    } catch {
-      try {
-        fallbackCopyText(puzzle.dataText);
-        setCopyStatus("복사 완료.");
-        window.setTimeout(() => setCopyStatus(""), 2000);
-      } catch {
-        setCopyStatus("복사 실패.");
-      }
-    }
-  }
+
 
   async function handleVerify(): Promise<void> {
     if (isChecking) return;
@@ -806,14 +787,10 @@ export function InspectModal({
               </button>
               
               <div style={{ display: "flex", gap: "8px", marginTop: "8px" }}>
-                <button className="secondary-button sk-action-btn" onClick={copyData} type="button" title="Extract Data" style={{ flex: 1 }}>
-                  <Copy size={16} />
-                </button>
                 <button className="ghost-button sk-action-btn" onClick={onOpenHelp} type="button" title="Python Reference" style={{ flex: 1 }}>
-                  <BookOpen size={16} />
+                  <BookOpen size={16} /> REFERENCE
                 </button>
               </div>
-              {copyStatus && <p style={{ textAlign: "center", marginTop: "4px", fontSize: "0.8rem", color: "#78ffb7" }}>{copyStatus}</p>}
             </div>
           </div>
         </div>

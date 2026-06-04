@@ -67,6 +67,7 @@ export type Puzzle = {
   referenceItems: ReferenceItem[];
   rewardHint: RoomHint;
   starterCode?: string;
+  imageUrl?: string;
   isRequired?: boolean;
   isHidden?: boolean;
   requiredForDoor?: boolean;

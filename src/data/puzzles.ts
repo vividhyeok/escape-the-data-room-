@@ -25,6 +25,7 @@ export const puzzles: Puzzle[] = [
     referenceItems: [ref("answer = ...", "answer 변수에 값을 할당합니다.")],
     rewardHint: hint("room-0-hint-tiles", "room-0", "room-0-pattern-tiles", "할당은 파이썬의 기본이다."),
     starterCode: "# data 변수가 시스템에 의해 이미 주어져 있습니다.\n# data의 값을 그대로 answer에 할당하세요.\n",
+    imageUrl: "/assets/puzzles/room-0-pattern-tiles.png",
     isRequired: true, requiredForDoor: true, doorCodePosition: 1, doorCodePiece: "8", puzzleType: "code"
   },
   {
@@ -40,6 +41,7 @@ export const puzzles: Puzzle[] = [
     referenceItems: [ref("+ 연산자", "두 숫자를 더합니다.")],
     rewardHint: hint("room-0-hint-crt-tv", "room-0", "room-0-tv-sequence", "문이 열릴지도 모른다..."),
     starterCode: "# data 변수가 시스템에 의해 주어집니다. (숫자)\n# data에 10을 더한 값을 answer에 저장하세요.\n",
+    imageUrl: "/assets/puzzles/room-0-tv-sequence.png",
     isRequired: true, requiredForDoor: true, doorCodePosition: 2, doorCodePiece: "5", puzzleType: "code"
   },
   {
@@ -55,6 +57,7 @@ export const puzzles: Puzzle[] = [
     referenceItems: [ref("문자열[0]", "첫 번째 글자를 가져옵니다.")],
     rewardHint: hint("room-0-hint-terminal", "room-0", "room-0-desk-terminal", "데이터의 시작은 늘 0이다."),
     starterCode: "# data 변수(문자열)의 첫 번째 글자를 answer에 저장하세요.\n",
+    imageUrl: "/assets/puzzles/room-0-desk-terminal.png",
     isRequired: true, requiredForDoor: true, doorCodePosition: 3, doorCodePiece: "2", puzzleType: "code"
   },
   {
@@ -70,6 +73,7 @@ export const puzzles: Puzzle[] = [
     referenceItems: [ref("문자열[0:3]", "앞에서 3글자를 자릅니다.")],
     rewardHint: hint("room-0-hint-ox", "room-0", "room-0-mini-ox-card", "슬라이싱 [시작:끝]"),
     starterCode: "# data 변수의 앞에서 3글자를 잘라 answer에 저장하세요.\n",
+    imageUrl: "/assets/puzzles/room-0-mini-ox-card.png",
     isRequired: true, requiredForDoor: true, doorCodePosition: 4, doorCodePiece: "2", puzzleType: "code"
   },
   {
@@ -84,6 +88,7 @@ export const puzzles: Puzzle[] = [
     requiredSyntax: ["len"], bannedSyntax: [], referenceItems: [],
     rewardHint: hint("room-0-hint-names", "room-0", "room-0-name-tags", "len() 함수"),
     starterCode: "# data 변수의 길이를 구해 answer에 저장하세요.\n",
+    imageUrl: "/assets/puzzles/room-0-name-tags.png",
     isRequired: false, requiredForDoor: false, isHidden: true, puzzleType: "code"
   },
   {
@@ -97,6 +102,7 @@ export const puzzles: Puzzle[] = [
     requiredSyntax: ["BinOp"], bannedSyntax: [], referenceItems: [],
     rewardHint: hint("room-0-hint-note", "room-0", "room-0-bookshelf-note", "문자열 곱셈"),
     starterCode: "# data 변수를 3번 반복한 문자열을 answer에 저장하세요.\n",
+    imageUrl: "/assets/puzzles/room-0-bookshelf-note.png",
     isRequired: false, requiredForDoor: false, isHidden: true, puzzleType: "code"
   },
 
@@ -116,6 +122,7 @@ export const puzzles: Puzzle[] = [
     referenceItems: [ref("문자열.upper()", "대문자로 변환")],
     rewardHint: hint("room-1-hint-word", "room-1", "room-1-word-billboard", "upper()"),
     starterCode: "# data 변수의 문자열을 대문자로 바꾸어 answer에 저장하세요.\n",
+    imageUrl: "/assets/puzzles/room-1-word-billboard.png",
     isRequired: true, requiredForDoor: true, doorCodePosition: 1, doorCodePiece: "7", puzzleType: "code"
   },
   {
@@ -131,6 +138,7 @@ export const puzzles: Puzzle[] = [
     referenceItems: [ref("문자열.replace('A','B')", "A를 B로 교체")],
     rewardHint: hint("room-1-hint-ox", "room-1", "room-1-ox-monitor", "replace()"),
     starterCode: "# data 문자열의 'X'를 'O'로 바꾼 결과를 answer에 저장하세요.\n",
+    imageUrl: "/assets/puzzles/room-1-ox-monitor.png",
     isRequired: true, requiredForDoor: true, doorCodePosition: 2, doorCodePiece: "4", puzzleType: "code"
   },
   {
@@ -145,6 +153,7 @@ export const puzzles: Puzzle[] = [
     referenceItems: [ref("문자열.split()", "공백 기준으로 리스트 분리")],
     rewardHint: hint("room-1-hint-num", "room-1", "room-1-number-panel", "split()"),
     starterCode: "# data 문자열을 공백으로 쪼개서 리스트 형태로 answer에 저장하세요.\n",
+    imageUrl: "/assets/puzzles/room-1-number-panel.png",
     isRequired: true, requiredForDoor: true, doorCodePosition: 3, doorCodePiece: "7", puzzleType: "code"
   },
   {
@@ -160,6 +169,7 @@ export const puzzles: Puzzle[] = [
     referenceItems: [ref("if 조건:", "조건문")],
     rewardHint: hint("room-1-hint-radio", "room-1", "room-1-radio-signal", "if ~ else ~"),
     starterCode: "# data가 100 이상이면 answer = 'PASS', 아니면 answer = 'FAIL'이 되도록 하세요.\n",
+    imageUrl: "/assets/puzzles/room-1-radio-signal.png",
     isRequired: true, requiredForDoor: true, doorCodePosition: 4, doorCodePiece: "9", puzzleType: "code"
   },
   {
@@ -174,6 +184,7 @@ export const puzzles: Puzzle[] = [
     requiredSyntax: [], bannedSyntax: [], referenceItems: [],
     rewardHint: hint("room-1-hint-name", "room-1", "room-1-name-card", "나머지 연산자 %"),
     starterCode: "# data가 짝수면 answer = True, 홀수면 False를 저장하세요.\n",
+    imageUrl: "/assets/puzzles/room-1-name-card.png",
     isRequired: false, requiredForDoor: false, isHidden: true, puzzleType: "code"
   },
   {
@@ -188,6 +199,7 @@ export const puzzles: Puzzle[] = [
     requiredSyntax: [], bannedSyntax: [], referenceItems: [],
     rewardHint: hint("room-1-hint-noise", "room-1", "room-1-checksum-tablet", "and 연산자"),
     starterCode: "# data가 0보다 크고 10보다 작으면 answer = True, 아니면 False를 저장하세요.\n",
+    imageUrl: "/assets/puzzles/room-1-checksum-tablet.png",
     isRequired: false, requiredForDoor: false, isHidden: true, puzzleType: "code"
   },
 
@@ -207,6 +219,7 @@ export const puzzles: Puzzle[] = [
     referenceItems: [ref("for x in list:", "반복문")],
     rewardHint: hint("room-2-hint-file", "room-2", "room-2-file-cabinet", "누적 변수 활용"),
     starterCode: "# for문을 이용해 data 리스트의 모든 숫자를 더한 값을 answer에 저장하세요.\n",
+    imageUrl: "/assets/puzzles/room-2-file-cabinet.png",
     isRequired: true, requiredForDoor: true, doorCodePosition: 1, doorCodePiece: "3", puzzleType: "code"
   },
   {
@@ -222,6 +235,7 @@ export const puzzles: Puzzle[] = [
     referenceItems: [ref("list.append(x)", "리스트에 원소 추가")],
     rewardHint: hint("room-2-hint-tags", "room-2", "room-2-broken-tags", "append() 메서드"),
     starterCode: "# for문과 if문을 사용하여 data 리스트 중 양수만 담긴 새 리스트를 answer에 저장하세요.\n",
+    imageUrl: "/assets/puzzles/room-2-broken-tags.png",
     isRequired: true, requiredForDoor: true, doorCodePosition: 2, doorCodePiece: "5", puzzleType: "code"
   },
   {
@@ -236,6 +250,7 @@ export const puzzles: Puzzle[] = [
     referenceItems: [ref("dict['key']", "딕셔너리 값 접근")],
     rewardHint: hint("room-2-hint-score", "room-2", "room-2-score-board", "딕셔너리 기초"),
     starterCode: "# data 딕셔너리에서 'score' 키에 해당하는 값을 answer에 저장하세요.\n",
+    imageUrl: "/assets/puzzles/room-2-score-board.png",
     isRequired: true, requiredForDoor: true, doorCodePosition: 3, doorCodePiece: "4", puzzleType: "code"
   },
   {
@@ -250,6 +265,7 @@ export const puzzles: Puzzle[] = [
     referenceItems: [ref("[x*2 for x in list]", "리스트 컴프리헨션")],
     rewardHint: hint("room-2-hint-log", "room-2", "room-2-access-log", "List Comprehension"),
     starterCode: "# 리스트 컴프리헨션을 사용하여 data 안의 숫자들을 2배로 만든 리스트를 answer에 저장하세요.\n",
+    imageUrl: "/assets/puzzles/room-2-access-log.png",
     isRequired: false, requiredForDoor: false, isHidden: true, puzzleType: "code"
   },
   {
@@ -265,6 +281,7 @@ export const puzzles: Puzzle[] = [
     referenceItems: [ref("while 조건:", "조건이 참일 동안 반복")],
     rewardHint: hint("room-2-hint-time", "room-2", "room-2-timeline", "while 반복"),
     starterCode: "# while문을 사용해 data, data-1 ... 1 까지의 숫자를 담은 리스트를 answer에 저장하세요.\n",
+    imageUrl: "/assets/puzzles/room-2-timeline.png",
     isRequired: true, requiredForDoor: true, doorCodePosition: 4, doorCodePiece: "7", puzzleType: "code"
   },
   {
@@ -278,6 +295,7 @@ export const puzzles: Puzzle[] = [
     requiredSyntax: ["For"], bannedSyntax: [],
     referenceItems: [], rewardHint: hint("room-2-hint-checksum", "room-2", "room-2-checksum-ledger", "in 문자열"),
     starterCode: "# 반복문을 이용해 모음을 제외한 글자들만 합친 문자열을 answer에 저장하세요.\n",
+    imageUrl: "/assets/puzzles/room-2-checksum-ledger.png",
     isRequired: false, requiredForDoor: false, isHidden: true, puzzleType: "code"
   },
 
@@ -295,6 +313,7 @@ export const puzzles: Puzzle[] = [
     requiredSyntax: ["Slice"], bannedSyntax: [],
     referenceItems: [], rewardHint: hint("room-3-hint-1", "room-3", "room-3-validator", "[::-1]"),
     starterCode: "# 슬라이싱을 이용해 data 문자열을 뒤집어서 answer에 저장하세요.\n",
+    imageUrl: "/assets/puzzles/room-3-validator.png",
     isRequired: false, requiredForDoor: false, isHidden: true, puzzleType: "code"
   },
   // 다른 Room 3 객체들은 puzzleType이 code가 아님 (리뷰용)
