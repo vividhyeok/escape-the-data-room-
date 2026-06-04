@@ -15,7 +15,6 @@ import { RoomView } from "./RoomView";
 import { TitleScreen } from "./TitleScreen";
 import { CreditsScreen } from "./CreditsScreen";
 import { SoundEngine } from "../utils/SoundEngine";
-import { SoundEngine } from "../utils/SoundEngine";
 
 const GAME_BGM_URL = "/assets/audio/black-circuit.mp3";
 
@@ -309,7 +308,6 @@ export function GameShell(): React.JSX.Element {
           object={selectedObject}
           onClose={() => setSelectedObject(null)}
           onOpenHelp={openHelp}
-          onOpenLab={openLab}
           onHintAcquired={showToast}
           puzzle={selectedPuzzle}
         />
@@ -325,7 +323,6 @@ export function GameShell(): React.JSX.Element {
           onClose={() => setReviewRoomObject(null)}
           onRevisitPuzzle={revisitPuzzle}
         />
-      ) : null}
       ) : null}
       {toast ? <div className="game-toast">{toast}</div> : null}
       {transitioning ? <div className="room-transition-flash" aria-hidden="true" /> : null}

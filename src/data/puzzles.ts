@@ -131,3 +131,12 @@ export const puzzles: Puzzle[] = [
     puzzleType: "syntax_dictionary"
   }
 ];
+
+export const puzzlesById: Record<string, Puzzle> = puzzles.reduce((acc, puzzle) => {
+  acc[puzzle.id] = puzzle;
+  return acc;
+}, {} as Record<string, Puzzle>);
+
+export function getPuzzlesForRoom(roomId: string): Puzzle[] {
+  return puzzles.filter(p => p.roomId === roomId);
+}

@@ -107,30 +107,32 @@ export function RoomView({ room, objects, onObjectAction }: RoomViewProps): Reac
     <section className="room-area game-scene-layer" aria-label={`${room.title} 인터랙티브 룸`} style={{ background: '#000' }}>
       <div className={`room-stage tone-${currentView.placeholderTone}`} style={{ width: '100%', height: '100%', background: '#000' }}>
         {room.panoramaImage ? (
-          <Canvas camera={{ position: [0, 0, 0.1], fov: 75 }} gl={{ antialias: true }}>
-            <color attach="background" args={["#000"]} />
-            <CameraWobble />
-            <Suspense fallback={null}>
-              <RoomCylinder panoramaImage={room.panoramaImage} objects={localObjects} onObjectAction={isEditMode ? (o) => setSelectedObjId(o.id) : onObjectAction} isEditMode={isEditMode} />
-            </Suspense>
-            <OrbitControls 
-              enableZoom={false} 
-              enablePan={false} 
-              enableDamping 
-              dampingFactor={0.02}
-              rotateSpeed={-0.15} 
-              minPolarAngle={Math.PI / 2 - 0.25}
-              maxPolarAngle={Math.PI / 2 + 0.3}
-              minAzimuthAngle={-Math.PI / 1.6}
-              maxAzimuthAngle={Math.PI / 1.6}
-              onChange={() => { if (!hasDragged) setHasDragged(true); }}
-            />
-          </Canvas>
-          {!hasDragged && room.id === "room-0" && (
-            <div className="drag-hint-overlay">
-              마우스로 드래그하여 주변을 둘러보세요
-            </div>
-          )}
+          <>
+            <Canvas camera={{ position: [0, 0, 0.1], fov: 75 }} gl={{ antialias: true }}>
+              <color attach="background" args={["#000"]} />
+              <CameraWobble />
+              <Suspense fallback={null}>
+                <RoomCylinder panoramaImage={room.panoramaImage} objects={localObjects} onObjectAction={isEditMode ? (o) => setSelectedObjId(o.id) : onObjectAction} isEditMode={isEditMode} />
+              </Suspense>
+              <OrbitControls 
+                enableZoom={false} 
+                enablePan={false} 
+                enableDamping 
+                dampingFactor={0.02}
+                rotateSpeed={-0.15} 
+                minPolarAngle={Math.PI / 2 - 0.25}
+                maxPolarAngle={Math.PI / 2 + 0.3}
+                minAzimuthAngle={-Math.PI / 1.6}
+                maxAzimuthAngle={Math.PI / 1.6}
+                onChange={() => { if (!hasDragged) setHasDragged(true); }}
+              />
+            </Canvas>
+            {!hasDragged && room.id === "room-0" && (
+              <div className="drag-hint-overlay">
+                마우스로 드래그하여 주변을 둘러보세요
+              </div>
+            )}
+          </>
         ) : (
           <div className="room-backdrop" aria-hidden="true">
             <div className="backdrop-grid" />
