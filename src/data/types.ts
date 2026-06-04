@@ -59,7 +59,10 @@ export type Puzzle = {
   objectId: string;
   situationText: string;
   dataText: string;
-  expectedAnswer: string;
+  expectedAnswer?: string; // Optional now, since code evaluation takes over
+  testCases?: { inputCode: string; expectedOutput: any }[];
+  requiredSyntax?: string[]; // e.g., ["For", "If"] (AST node names or general hints)
+  bannedSyntax?: string[]; // e.g., ["sum", "split"] (Function names or AST node names)
   mockOutput?: string;
   referenceItems: ReferenceItem[];
   rewardHint: RoomHint;
@@ -71,6 +74,6 @@ export type Puzzle = {
   doorCodePosition?: number;
   targetConcepts?: string[];
   usefulConcepts?: string[];
-  puzzleType?: string;
+  puzzleType?: "code" | "manual";
   expectedStrategyDescription?: string;
 };

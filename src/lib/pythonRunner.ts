@@ -38,7 +38,7 @@ class PyodideRunner implements PythonRunner {
     return this.worker;
   }
 
-  run(code: string): Promise<PythonExecutionResult> {
+  run(code: string, context?: Record<string, unknown>): Promise<PythonExecutionResult> {
     if (!code.trim()) {
       return Promise.resolve({ stdout: "", stderr: "코드를 입력해 주세요.", success: false });
     }
@@ -46,7 +46,7 @@ class PyodideRunner implements PythonRunner {
     return new Promise((resolve) => {
       const id = this.nextId++;
       this.pending.set(id, resolve);
-      this.getWorker().postMessage({ id, code });
+      this.getWorker().postMessage({ id, code, context });
     });
   }
 }

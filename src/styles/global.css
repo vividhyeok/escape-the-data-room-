@@ -5015,3 +5015,101 @@ button, a, select, input[type="button"], input[type="submit"] { cursor: pointer;
 .game-window {
   animation: windowOpen 0.3s cubic-bezier(0.16, 1, 0.3, 1) both;
 }
+/* =========================================
+   Global VFX: Glitch, Distortion, Success
+   ========================================= */
+
+/* Title Screen CRT & Glitch */
+.title-screen.glitch-active {
+  animation: crtFlicker 0.15s infinite alternate;
+}
+
+.title-logo-glitch {
+  position: relative;
+  display: inline-block;
+}
+
+.title-logo-glitch::before,
+.title-logo-glitch::after {
+  content: attr(data-text);
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  opacity: 0.8;
+}
+
+.title-logo-glitch::before {
+  left: 2px;
+  text-shadow: -2px 0 red;
+  clip: rect(24px, 550px, 90px, 0);
+  animation: glitch-anim 3s infinite linear alternate-reverse;
+}
+
+.title-logo-glitch::after {
+  left: -2px;
+  text-shadow: -2px 0 blue;
+  clip: rect(85px, 550px, 140px, 0);
+  animation: glitch-anim 2.5s infinite linear alternate-reverse;
+}
+
+@keyframes glitch-anim {
+  0% { clip: rect(10px, 9999px, 80px, 0); }
+  20% { clip: rect(60px, 9999px, 10px, 0); }
+  40% { clip: rect(20px, 9999px, 40px, 0); }
+  60% { clip: rect(80px, 9999px, 20px, 0); }
+  80% { clip: rect(40px, 9999px, 90px, 0); }
+  100% { clip: rect(90px, 9999px, 50px, 0); }
+}
+
+@keyframes crtFlicker {
+  0% { opacity: 0.95; filter: contrast(1.1) brightness(1.1); }
+  100% { opacity: 1; filter: contrast(1) brightness(1); }
+}
+
+/* ESC Pause Menu Distortion */
+.pause-overlay {
+  animation: pauseDistortion 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94) both;
+}
+
+@keyframes pauseDistortion {
+  0% { 
+    backdrop-filter: blur(0px) grayscale(0%);
+    transform: scale(1.05);
+    opacity: 0;
+  }
+  50% {
+    backdrop-filter: blur(8px) grayscale(50%);
+    transform: scale(0.98);
+    opacity: 1;
+    box-shadow: inset 0 0 100px rgba(255, 0, 0, 0.2);
+  }
+  100% {
+    backdrop-filter: blur(4px) grayscale(100%);
+    transform: scale(1);
+    opacity: 1;
+    box-shadow: inset 0 0 50px rgba(0, 0, 0, 0.8);
+  }
+}
+
+/* Global Puzzle Solved Green Glitch */
+.game-shell.puzzle-solved-fx::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background: rgba(0, 255, 128, 0.1);
+  box-shadow: inset 0 0 150px rgba(0, 255, 128, 0.4);
+  mix-blend-mode: overlay;
+  z-index: 9999;
+  animation: accessGrantedFlash 1.5s ease-out forwards;
+}
+
+@keyframes accessGrantedFlash {
+  0% { opacity: 0; filter: hue-rotate(90deg); }
+  10% { opacity: 1; filter: hue-rotate(0deg); }
+  20% { opacity: 0.2; transform: scale(1.02); }
+  30% { opacity: 0.8; transform: scale(0.98); }
+  100% { opacity: 0; transform: scale(1); }
+}

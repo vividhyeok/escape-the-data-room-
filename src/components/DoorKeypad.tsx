@@ -34,7 +34,7 @@ export function DoorKeypad({ room, onClose }: DoorKeypadProps): React.JSX.Elemen
 
   if (room.id === "room-3") {
     return (
-      <GameWindow id={`keypad-${room.id}`} type="keypad" eyebrow="Final Exit" title={room.subtitle} onClose={onClose}>
+      <GameWindow id={`keypad-${room.id}`} type="keypad" eyebrow="//SYS.EXIT" title={room.subtitle} onClose={onClose}>
         <div className="door-modal">
           <div className="final-exit-panel">
             <strong>Review complete</strong>
@@ -57,7 +57,7 @@ export function DoorKeypad({ room, onClose }: DoorKeypadProps): React.JSX.Elemen
 
   if (room.id === "room-3") {
     return (
-      <GameWindow id={`keypad-${room.id}`} type="keypad" eyebrow="Dangerous Stairs" title={room.subtitle} onClose={onClose}>
+      <GameWindow id={`keypad-${room.id}`} type="keypad" eyebrow="//SYS.EXIT" title={room.subtitle} onClose={onClose}>
         <div className="door-modal">
           <div className="optional-exit-panel">
             <strong>여기서는 풀 만큼만 풀어도 된다.</strong>
@@ -124,7 +124,7 @@ export function DoorKeypad({ room, onClose }: DoorKeypadProps): React.JSX.Elemen
   }
 
   return (
-    <GameWindow id={`keypad-${room.id}`} type="keypad" eyebrow="출입문" title={room.subtitle} onClose={onClose}>
+    <GameWindow id={`keypad-${room.id}`} type="keypad" eyebrow="//SYS.DOOR" title={room.subtitle} onClose={onClose}>
       <div className={`door-modal ${unlocked ? "door-unlocked" : ""} ${rejected ? "door-rejected" : ""}`}>
         {unlocked && (
           <div className="door-access-granted" aria-live="assertive">

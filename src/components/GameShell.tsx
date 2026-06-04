@@ -197,6 +197,18 @@ export function GameShell(): React.JSX.Element {
     SoundEngine.playBGM(GAME_BGM_URL);
   }, [gameState]);
 
+  // Puzzle Solved Global FX
+  const [puzzleSolvedFX, setPuzzleSolvedFX] = useState(false);
+  useEffect(() => {
+    const handlePuzzleSolved = () => {
+      setPuzzleSolvedFX(true);
+      setTimeout(() => setPuzzleSolvedFX(false), 1500);
+    };
+    window.addEventListener("puzzle-solved-vfx", handlePuzzleSolved);
+    return () => window.removeEventListener("puzzle-solved-vfx", handlePuzzleSolved);
+  }, []);
+
+  // Keyboard controls
   useEffect(() => {
     if (gameState !== "PLAYING") return;
     const handleKeyDown = (e: KeyboardEvent) => {
@@ -205,8 +217,19 @@ export function GameShell(): React.JSX.Element {
         return; // Ignore shortcuts when typing
       }
       if (e.key === "Escape") {
-        SoundEngine.playClick();
-        setIsPaused((prev) => !prev);
+        if (!selectedObject && !doorOpen && !helpOpen && introStage === "done") {
+          setIsPaused((p) => {
+            const next = !p;
+            if (next) SoundEngine.playEsc(); // Use the newly added playEsc method
+            else SoundEngine.playClick();
+            return next;
+          });
+        } else {
+          setSelectedObject(null);
+          setDoorOpen(false);
+          setHelpOpen(false);
+          SoundEngine.playClick();
+        }
       }
       if (e.key.toLowerCase() === "i") {
         e.preventDefault();
@@ -216,7 +239,7 @@ export function GameShell(): React.JSX.Element {
     };
     window.addEventListener("keydown", handleKeyDown);
     return () => window.removeEventListener("keydown", handleKeyDown);
-  }, [gameState]);
+  }, [gameState, selectedObject, doorOpen, helpOpen, introStage]);
 
   const clearedRoomsCount = clearedRoomIds.length;
   const collectedHintsCount = collectedHints.length;
@@ -326,7 +349,7 @@ export function GameShell(): React.JSX.Element {
   if (gameState === "CREDITS") return <CreditsScreen />;
 
   return (
-    <div className={`game-shell ${isTense ? "tension-active" : ""}`}>
+    <div className={`game-shell ${isTense ? "tension-active" : ""} ${puzzleSolvedFX ? "puzzle-solved-fx" : ""}`}>
       <div className="vignette-flicker" aria-hidden="true" />
       <div className="scanlines" aria-hidden="true" />
       
@@ -422,7 +445,7 @@ export function GameShell(): React.JSX.Element {
       {transitioning ? <div className="room-transition-flash" aria-hidden="true" /> : null}
 
       {isPaused && (
-        <div className="cyber-modal-overlay">
+        <div className="cyber-modal-overlay pause-overlay">
           <div className="cyber-modal" style={{ maxWidth: "400px" }}>
             <div className="cyber-modal-header">
               <span>SYSTEM.PAUSED</span>

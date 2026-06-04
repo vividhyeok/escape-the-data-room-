@@ -3,6 +3,7 @@ import { roomObjects, roomOrder, roomsById } from "../data/rooms";
 import type { Puzzle, RoomObject } from "../data/types";
 import { useGameStore } from "../store/gameStore";
 import { GameWindow } from "./GameWindow";
+import { RotateCcw } from "lucide-react";
 
 type ReviewRoomWindowProps = {
   object: RoomObject;
@@ -49,8 +50,8 @@ export function ReviewRoomWindow({ object, onClose, onRevisitPuzzle }: ReviewRoo
                     <span>{room.title} · {puzzle.expectedStrategyDescription}</span>
                   </div>
                   {targetObject ? (
-                    <button className="secondary-button" onClick={() => onRevisitPuzzle(targetObject)} type="button">
-                      다시 풀기
+                    <button className="secondary-button" onClick={() => onRevisitPuzzle(targetObject)} type="button" title="Revisit">
+                      <RotateCcw size={16} />
                     </button>
                   ) : null}
                 </li>
@@ -58,7 +59,7 @@ export function ReviewRoomWindow({ object, onClose, onRevisitPuzzle }: ReviewRoo
             })}
           </ul>
         ) : (
-          <p>놓친 숨겨진 단서가 없습니다.</p>
+          <p>NO MISSED DATA.</p>
         )}
       </section>
     );
@@ -78,7 +79,7 @@ export function ReviewRoomWindow({ object, onClose, onRevisitPuzzle }: ReviewRoo
             </li>
           ))}
         </ul>
-        {!solvedRequiredPuzzles.length ? <p>아직 해결한 필수 퍼즐이 없습니다.</p> : null}
+        {!solvedRequiredPuzzles.length ? <p>NO REQUIRED DATA ACCESSED.</p> : null}
       </section>
     );
   }
@@ -93,7 +94,7 @@ export function ReviewRoomWindow({ object, onClose, onRevisitPuzzle }: ReviewRoo
           <span>사용한 Python 도구 <strong>{uniqueConcepts.length}</strong></span>
         </div>
         <div className="concept-chip-list">
-          {uniqueConcepts.length ? uniqueConcepts.map((concept) => <span key={concept}>{concept}</span>) : <p>아직 기록된 도구가 없습니다.</p>}
+          {uniqueConcepts.length ? uniqueConcepts.map((concept) => <span key={concept}>{concept}</span>) : <p>NO TOOL RECORDS.</p>}
         </div>
       </section>
     );
@@ -114,7 +115,7 @@ export function ReviewRoomWindow({ object, onClose, onRevisitPuzzle }: ReviewRoo
             ))}
           </div>
         ) : (
-          <p>저장된 코드 draft가 없습니다.</p>
+          <p>NO SAVED DRAFTS.</p>
         )}
       </section>
     );
@@ -163,7 +164,7 @@ export function ReviewRoomWindow({ object, onClose, onRevisitPuzzle }: ReviewRoo
   }
 
   return (
-    <GameWindow id={`review-room-${object.id}`} type="review" eyebrow="Review" title={object.title} onClose={onClose}>
+    <GameWindow id={`review-room-${object.id}`} type="review" eyebrow="//SYS.REVIEW" title={object.title} onClose={onClose}>
       <div className="review-room-window">{renderContent()}</div>
     </GameWindow>
   );

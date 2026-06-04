@@ -1,8 +1,15 @@
 import { useEffect, useState, useRef, useCallback } from "react";
-import { CheckCircle2, Copy, TerminalSquare, BookOpen, XCircle } from "lucide-react";
+import { CheckCircle2, Copy, TerminalSquare, BookOpen, XCircle, Loader2 } from "lucide-react";
 import type { Puzzle, RoomObject } from "../data/types";
 import { useGameStore } from "../store/gameStore";
 import { GameWindow } from "./GameWindow";
+import CodeMirror from "@uiw/react-codemirror";
+import { python } from "@codemirror/lang-python";
+import { keymap } from "@codemirror/view";
+import { indentWithTab } from "@codemirror/commands";
+import { oneDark } from "@codemirror/theme-one-dark";
+import { pythonRunner } from "../lib/pythonRunner";
+import { SoundEngine } from "../utils/SoundEngine";
 
 type InspectModalProps = {
   object: RoomObject;
@@ -656,17 +663,24 @@ export function InspectModal({
   onOpenHelp,
   onHintAcquired,
 }: InspectModalProps): React.JSX.Element {
-  const [answer, setAnswer] = useState("");
+  const codeDrafts = useGameStore((state) => state.codeDrafts);
+  const saveCodeDraft = useGameStore((state) => state.saveCodeDraft);
+  
+  const [code, setCode] = useState(() => codeDrafts[puzzle.id] ?? puzzle.starterCode ?? "");
   const [copyStatus, setCopyStatus] = useState("");
   const [isShaking, setIsShaking] = useState(false);
+  const [isChecking, setIsChecking] = useState(false);
+  const [errorMsg, setErrorMsg] = useState("");
+
   const solvePuzzle = useGameStore((state) => state.solvePuzzle);
   const solvedPuzzleIds = useGameStore((state) => state.solvedPuzzleIds);
   const isSolved = solvedPuzzleIds.includes(puzzle.id);
 
   useEffect(() => {
-    setAnswer("");
+    setCode(codeDrafts[puzzle.id] ?? puzzle.starterCode ?? "");
     setCopyStatus("");
-  }, [puzzle.id]);
+    setErrorMsg("");
+  }, [puzzle.id, codeDrafts, puzzle.starterCode]);
 
   async function copyData(): Promise<void> {
     try {
@@ -675,7 +689,6 @@ export function InspectModal({
       } else {
         fallbackCopyText(puzzle.dataText);
       }
-
       setCopyStatus("복사 완료.");
       window.setTimeout(() => setCopyStatus(""), 2000);
     } catch {
@@ -689,37 +702,61 @@ export function InspectModal({
     }
   }
 
-  function checkAnswer(): void {
-    const normalized = normalizeAnswer(answer);
-    if (normalized.length < 3) {
-      onHintAcquired?.("3~4자리(숫자/영문) Unlock Code를 입력하세요.");
+  async function handleVerify(): Promise<void> {
+    if (isChecking) return;
+    setIsChecking(true);
+    setErrorMsg("");
+    SoundEngine.playProcessing();
+
+    // 1.5초간 연산 딜레이를 주어 PROCESSING 사운드가 충분히 재생되도록 함
+    await new Promise((r) => setTimeout(r, 1500));
+
+    const result = await pythonRunner.run(code, {
+      testCases: puzzle.testCases,
+      requiredSyntax: puzzle.requiredSyntax,
+      bannedSyntax: puzzle.bannedSyntax,
+    });
+
+    setIsChecking(false);
+
+    if (result.success) {
+      SoundEngine.playSuccess();
+      solvePuzzle(puzzle);
+      window.dispatchEvent(new CustomEvent("puzzle-solved-vfx"));
+      onHintAcquired?.(puzzle.requiredForDoor ? "Door Code piece acquired!" : "Puzzle solved! Access Granted.");
+    } else {
+      SoundEngine.playError();
+      setErrorMsg(result.stderr || "실패: 조건을 만족하지 못했습니다.");
       setIsShaking(true);
       window.setTimeout(() => setIsShaking(false), 360);
-      return;
+      onHintAcquired?.("코드 검증 실패.");
     }
-
-    if (normalized === normalizeAnswer(puzzle.expectedAnswer)) {
-      solvePuzzle(puzzle);
-      onHintAcquired?.(puzzle.requiredForDoor ? "Door Code piece acquired!" : "Hidden clue recorded.");
-      return;
-    }
-
-    onHintAcquired?.("Code mismatch — 다시 확인하세요.");
-    setIsShaking(true);
-    window.setTimeout(() => setIsShaking(false), 360);
   }
 
   return (
-    <GameWindow id={`inspect-${puzzle.id}`} type="inspect" eyebrow="조사" title={object.title} onClose={onClose}>
+    <GameWindow id={`inspect-${puzzle.id}`} type="inspect" eyebrow="//SYS.INSPECT" title={object.title} onClose={onClose}>
       <div className={`inspect-modal ${isShaking ? "shake" : ""}`}>
         <div className="inspect-layout">
           {/* Main Visual/Data Area */}
           <div className="inspect-main-column">
-            <span className="inspect-kicker">SUBJECT: {object.shortLabel}</span>
+            <span className="inspect-kicker">OBJ ID: {object.shortLabel}</span>
             <div className="inspect-header" style={{ border: "none", padding: 0, margin: 0 }}>
               <p className="situation-text">{puzzle.situationText}</p>
               {isSolved ? <span className="solved-badge">✓ ACCESSED</span> : null}
             </div>
+
+            {/* Display Restrictions if any */}
+            {(puzzle.requiredSyntax?.length || puzzle.bannedSyntax?.length) ? (
+              <div style={{ marginTop: "10px", padding: "10px", background: "rgba(0,0,0,0.4)", border: "1px dashed var(--neon-cyan)", fontSize: "0.85rem" }}>
+                <strong style={{ color: "var(--neon-cyan)" }}>! CONST</strong>
+                {puzzle.requiredSyntax && puzzle.requiredSyntax.length > 0 && (
+                  <div style={{ marginTop: "4px" }}>+ {puzzle.requiredSyntax.join(", ")}</div>
+                )}
+                {puzzle.bannedSyntax && puzzle.bannedSyntax.length > 0 && (
+                  <div style={{ marginTop: "4px", color: "#ff6b6b" }}>- {puzzle.bannedSyntax.join(", ")}</div>
+                )}
+              </div>
+            ) : null}
 
             <div className="inspect-surface" style={{ flex: 1, marginTop: "8px" }}>
               <ScaledSurface baseWidth="auto">
@@ -729,37 +766,54 @@ export function InspectModal({
           </div>
 
           {/* Console / Action Area */}
-          <div className="inspect-side-column">
-            <span className="inspect-kicker">TERMINAL OVERRIDE</span>
-            <div className="console-panel">
-              <label className="answer-row">
-                <span style={{ fontSize: "0.8rem", color: "#a8c7d3" }}>ENTER UNLOCK CODE</span>
-                <input
-                  className="unlock-input"
-                  onChange={(event) => setAnswer(event.target.value.toUpperCase().replace(/[^A-Z0-9]/g, "").slice(0, 4))}
-                  onKeyDown={(event) => { if (event.key === "Enter") checkAnswer(); }}
-                  placeholder="CODE"
-                  type="text"
-                  value={answer}
-                />
-              </label>
-              <button className="primary-button sk-action-btn check-btn" onClick={checkAnswer} type="button" title="입력한 코드를 확인합니다 (Verify Code)">
-                <CheckCircle2 size={18} /> VERIFY
-              </button>
-              {copyStatus ? <p className="copy-status" style={{ textAlign: "center", marginTop: "8px", fontSize: "0.8rem", color: "#78ffb7" }}>{copyStatus}</p> : null}
+          <div className="inspect-side-column" style={{ display: "flex", flexDirection: "column" }}>
+            <span className="inspect-kicker">/ TERMINAL</span>
+            <div className="editor-container" style={{ flex: 1, minHeight: "200px", border: "1px solid var(--neon-cyan)", background: "#1e1e1e", overflow: "hidden", display: "flex", flexDirection: "column" }}>
+              <CodeMirror
+                value={code}
+                onChange={(val) => {
+                  setCode(val);
+                  saveCodeDraft(puzzle.id, val);
+                }}
+                extensions={[python(), keymap.of([indentWithTab])]}
+                theme={oneDark}
+                basicSetup={{
+                  lineNumbers: true,
+                  foldGutter: false,
+                  dropCursor: false,
+                  allowMultipleSelections: false,
+                  indentOnInput: false,
+                }}
+                style={{ flex: 1, fontSize: "14px", overflowY: "auto" }}
+              />
             </div>
 
-            <span className="inspect-kicker" style={{ marginTop: "8px" }}>DATA TOOLS</span>
-            <div className="action-grid modal-actions" style={{ display: "flex", flexDirection: "column" }}>
-              <button className="secondary-button sk-action-btn" onClick={copyData} type="button" title="원시 데이터를 복사합니다 (Extract Data)">
-                <Copy size={16} /> EXTRACT DATA
+            {errorMsg && (
+              <div style={{ marginTop: "8px", padding: "8px", background: "rgba(255, 0, 0, 0.1)", borderLeft: "3px solid #ff6b6b", color: "#ff6b6b", fontSize: "0.85rem", whiteSpace: "pre-wrap" }}>
+                {errorMsg}
+              </div>
+            )}
+
+            <div className="action-grid modal-actions" style={{ display: "flex", flexDirection: "column", marginTop: "10px" }}>
+              <button 
+                className="primary-button sk-action-btn check-btn" 
+                onClick={handleVerify} 
+                type="button" 
+                disabled={isChecking}
+                title="Verify Code"
+              >
+                {isChecking ? <Loader2 size={18} className="spin" /> : <CheckCircle2 size={18} />}
               </button>
-              <button className="secondary-button sk-action-btn" onClick={() => onOpenLab(puzzle)} type="button" title="파이썬 실습실 열기 (Open Terminal)">
-                <TerminalSquare size={16} /> SYSTEM TERMINAL
-              </button>
-              <button className="ghost-button sk-action-btn" onClick={onOpenHelp} type="button" title="파이썬 도움말 보기 (Reference Manual)">
-                <BookOpen size={16} /> REFERENCE
-              </button>
+              
+              <div style={{ display: "flex", gap: "8px", marginTop: "8px" }}>
+                <button className="secondary-button sk-action-btn" onClick={copyData} type="button" title="Extract Data" style={{ flex: 1 }}>
+                  <Copy size={16} />
+                </button>
+                <button className="ghost-button sk-action-btn" onClick={onOpenHelp} type="button" title="Python Reference" style={{ flex: 1 }}>
+                  <BookOpen size={16} />
+                </button>
+              </div>
+              {copyStatus && <p style={{ textAlign: "center", marginTop: "4px", fontSize: "0.8rem", color: "#78ffb7" }}>{copyStatus}</p>}
             </div>
           </div>
         </div>

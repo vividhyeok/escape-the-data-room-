@@ -101,16 +101,40 @@ class WebAudioEngine {
     noiseSource.start();
   }
 
-  // 5. Success: Happy chord arpeggio
+  // 5. Success: Play success.wav
   public playSuccess() {
-    this.playOscillator("sine", 523.25, 0.3, 0.1); // C5
-    setTimeout(() => this.playOscillator("sine", 659.25, 0.3, 0.1), 100); // E5
-    setTimeout(() => this.playOscillator("sine", 783.99, 0.4, 0.1), 200); // G5
+    const mult = this.sfxMultiplier;
+    if (mult === 0) return;
+    const audio = new Audio("/assets/audio/sfx/success.wav");
+    audio.volume = Math.min(mult * 0.8, 1);
+    audio.play().catch(() => {});
   }
 
-  // 6. Error: Low harsh buzz
+  // 6. Error: Play wrong_answer.wav
   public playError() {
-    this.playOscillator("sawtooth", 150, 0.4, 0.1, 100);
+    const mult = this.sfxMultiplier;
+    if (mult === 0) return;
+    const audio = new Audio("/assets/audio/sfx/wrong_answer.wav");
+    audio.volume = Math.min(mult * 0.8, 1);
+    audio.play().catch(() => {});
+  }
+
+  // VFX/SFX Polish
+  public playProcessing() {
+    const mult = this.sfxMultiplier;
+    if (mult === 0) return;
+    const audio = new Audio("/assets/audio/sfx/calculating.wav");
+    audio.volume = Math.min(mult * 0.8, 1);
+    audio.play().catch(() => {});
+  }
+
+  // ESC Menu / Pause Toggle
+  public playEsc() {
+    const mult = this.sfxMultiplier;
+    if (mult === 0) return;
+    const audio = new Audio("/assets/audio/sfx/esc.mp3");
+    audio.volume = Math.min(mult * 0.8, 1);
+    audio.play().catch(() => {});
   }
 
   // 6.5. Door Open: Play door opening sound

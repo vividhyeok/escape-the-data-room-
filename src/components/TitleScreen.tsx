@@ -84,16 +84,18 @@ export function TitleScreen(): React.JSX.Element {
     SoundEngine.setMuted(next);
   };
 
-  const launchDemoMode = () => {
-    SoundEngine.playClick();
-    setDemoMode(true);
+  const toggleDemoMode = () => {
+    SoundEngine.playGlitch();
+    const nextMode = !isDemoMode;
+    setDemoMode(nextMode);
     const params = new URLSearchParams(window.location.search);
-    params.set("mode", "demo");
+    if (nextMode) params.set("mode", "demo");
+    else params.delete("mode");
     window.location.assign(`${window.location.pathname}?${params.toString()}${window.location.hash}`);
   };
 
   return (
-    <div className="title-screen crt-glitch">
+    <div className={`title-screen crt-glitch ${isDemoMode ? "glitch-active" : ""}`}>
       <div className="title-quick-actions">
         <button className="title-quick-btn" onClick={toggleFullscreen} title={isFullscreen ? "창 모드" : "전체화면"} type="button">
           {isFullscreen ? <Minimize size={20} /> : <Maximize size={20} />}
@@ -103,7 +105,7 @@ export function TitleScreen(): React.JSX.Element {
         </button>
       </div>
       <div className="title-content">
-        <h1 className="game-logo flicker">ESCAPE<br/>THE DATA ROOM</h1>
+        <h1 className="game-logo flicker title-logo-glitch" data-text="ESCAPE THE DATA ROOM">ESCAPE<br/>THE DATA ROOM</h1>
         <div className="title-menu">
           {hasSaveData ? (
             <>
@@ -192,8 +194,8 @@ export function TitleScreen(): React.JSX.Element {
               <p style={{ margin: "20px 0", fontSize: "1.2rem", lineHeight: "1.6" }}>
                 2026-1 캡스톤 프로젝트<br /><br />
                 김민혁, 공원<button
-                  onClick={launchDemoMode}
-                  title="시연 모드"
+                  onClick={toggleDemoMode}
+                  title="시연 모드 토글"
                   type="button"
                   style={{
                     margin: 0,

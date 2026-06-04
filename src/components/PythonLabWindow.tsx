@@ -115,7 +115,7 @@ export function PythonLabWindow({ puzzle, onClose }: PythonLabWindowProps): Reac
   }
 
   return (
-    <GameWindow id={`python-${puzzle.id}`} type="python" eyebrow="Python" title={puzzle.title} onClose={onClose}>
+    <GameWindow id={`python-${puzzle.id}`} type="python" eyebrow="//SYS.PYTHON" title={puzzle.title} onClose={onClose}>
       <div className="lab-window">
         <CodeMirror
           aria-label="Python 코드"
