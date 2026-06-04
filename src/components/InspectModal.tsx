@@ -712,43 +712,55 @@ export function InspectModal({
   return (
     <GameWindow id={`inspect-${puzzle.id}`} type="inspect" eyebrow="조사" title={object.title} onClose={onClose}>
       <div className={`inspect-modal ${isShaking ? "shake" : ""}`}>
-        <div className="inspect-header">
-          <p className="situation-text">{puzzle.situationText}</p>
-          {isSolved ? <span className="solved-badge">✓ 해제됨</span> : null}
-        </div>
+        <div className="inspect-layout">
+          {/* Main Visual/Data Area */}
+          <div className="inspect-main-column">
+            <span className="inspect-kicker">SUBJECT: {object.shortLabel}</span>
+            <div className="inspect-header" style={{ border: "none", padding: 0, margin: 0 }}>
+              <p className="situation-text">{puzzle.situationText}</p>
+              {isSolved ? <span className="solved-badge">✓ ACCESSED</span> : null}
+            </div>
 
-        <div className="inspect-surface">
-          <ScaledSurface baseWidth="auto">
-            {renderClueSurface(puzzle, object)}
-          </ScaledSurface>
-        </div>
+            <div className="inspect-surface" style={{ flex: 1, marginTop: "8px" }}>
+              <ScaledSurface baseWidth="auto">
+                {renderClueSurface(puzzle, object)}
+              </ScaledSurface>
+            </div>
+          </div>
 
-        <div className="inspect-footer">
-          <label className="answer-row">
-            <span>Unlock Code</span>
-            <input
-              className="unlock-input"
-              onChange={(event) => setAnswer(event.target.value.toUpperCase().replace(/[^A-Z0-9]/g, "").slice(0, 4))}
-              onKeyDown={(event) => { if (event.key === "Enter") checkAnswer(); }}
-              placeholder="0000 또는 ABCD"
-              type="text"
-              value={answer}
-            />
-          </label>
-          {copyStatus ? <p className="copy-status">{copyStatus}</p> : null}
-          <div className="modal-actions">
-            <button className="primary-button sk-action-btn" onClick={checkAnswer} type="button" title="입력한 코드를 확인합니다 (Check Code)">
-              <CheckCircle2 size={24} />
-            </button>
-            <button className="secondary-button sk-action-btn" onClick={copyData} type="button" title="원시 데이터를 복사합니다 (Copy Data)">
-              <Copy size={24} />
-            </button>
-            <button className="secondary-button sk-action-btn" onClick={() => onOpenLab(puzzle)} type="button" title="파이썬 실습실 열기 (Open Python Lab)">
-              <TerminalSquare size={24} />
-            </button>
-            <button className="ghost-button sk-action-btn" onClick={onOpenHelp} type="button" title="파이썬 도움말 보기 (Reference)">
-              <BookOpen size={24} />
-            </button>
+          {/* Console / Action Area */}
+          <div className="inspect-side-column">
+            <span className="inspect-kicker">TERMINAL OVERRIDE</span>
+            <div className="console-panel">
+              <label className="answer-row">
+                <span style={{ fontSize: "0.8rem", color: "#a8c7d3" }}>ENTER UNLOCK CODE</span>
+                <input
+                  className="unlock-input"
+                  onChange={(event) => setAnswer(event.target.value.toUpperCase().replace(/[^A-Z0-9]/g, "").slice(0, 4))}
+                  onKeyDown={(event) => { if (event.key === "Enter") checkAnswer(); }}
+                  placeholder="CODE"
+                  type="text"
+                  value={answer}
+                />
+              </label>
+              <button className="primary-button sk-action-btn check-btn" onClick={checkAnswer} type="button" title="입력한 코드를 확인합니다 (Verify Code)">
+                <CheckCircle2 size={18} /> VERIFY
+              </button>
+              {copyStatus ? <p className="copy-status" style={{ textAlign: "center", marginTop: "8px", fontSize: "0.8rem", color: "#78ffb7" }}>{copyStatus}</p> : null}
+            </div>
+
+            <span className="inspect-kicker" style={{ marginTop: "8px" }}>DATA TOOLS</span>
+            <div className="action-grid modal-actions" style={{ display: "flex", flexDirection: "column" }}>
+              <button className="secondary-button sk-action-btn" onClick={copyData} type="button" title="원시 데이터를 복사합니다 (Extract Data)">
+                <Copy size={16} /> EXTRACT DATA
+              </button>
+              <button className="secondary-button sk-action-btn" onClick={() => onOpenLab(puzzle)} type="button" title="파이썬 실습실 열기 (Open Terminal)">
+                <TerminalSquare size={16} /> SYSTEM TERMINAL
+              </button>
+              <button className="ghost-button sk-action-btn" onClick={onOpenHelp} type="button" title="파이썬 도움말 보기 (Reference Manual)">
+                <BookOpen size={16} /> REFERENCE
+              </button>
+            </div>
           </div>
         </div>
       </div>

@@ -4904,3 +4904,114 @@ button, a, select, input[type="button"], input[type="submit"] { cursor: pointer;
   filter: drop-shadow(0 0 20px rgba(191, 122, 255, 0.8)) brightness(1.2) !important;
   transform: scale(1.05) !important;
 }
+/* Enhanced Inspect Modal Layout & Window Animation */
+.inspect-layout {
+  display: grid;
+  grid-template-columns: 1fr 260px;
+  gap: 24px;
+  min-height: 420px;
+}
+
+@media (max-width: 800px) {
+  .inspect-layout {
+    grid-template-columns: 1fr;
+  }
+}
+
+.inspect-main-column {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.inspect-side-column {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  border-left: 1px dashed rgba(122, 243, 255, 0.2);
+  padding-left: 24px;
+}
+
+.inspect-kicker {
+  font-family: 'Cascadia Code', monospace;
+  font-size: 0.75rem;
+  color: #7af3ff;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  margin-bottom: 8px;
+  display: block;
+  opacity: 0.8;
+  border-bottom: 1px solid rgba(122, 243, 255, 0.1);
+  padding-bottom: 4px;
+}
+
+.console-panel {
+  background: rgba(4, 10, 16, 0.6);
+  border: 1px solid rgba(122, 243, 255, 0.15);
+  border-radius: 4px;
+  padding: 16px;
+  box-shadow: inset 0 0 20px rgba(0, 0, 0, 0.5);
+  margin-bottom: auto;
+}
+
+.console-panel .answer-row {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin: 0;
+}
+
+.console-panel .unlock-input {
+  width: 100%;
+  background: rgba(0, 0, 0, 0.4);
+  border: 1px solid rgba(122, 243, 255, 0.3);
+  padding: 12px;
+  color: #fff;
+  font-family: 'Cascadia Code', monospace;
+  font-size: 1.2rem;
+  text-align: center;
+  border-radius: 2px;
+  transition: all 0.2s;
+}
+
+.console-panel .unlock-input:focus {
+  border-color: #7af3ff;
+  box-shadow: 0 0 15px rgba(122, 243, 255, 0.2);
+  outline: none;
+}
+
+.check-btn {
+  width: 100%;
+  margin-top: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 12px;
+}
+
+.action-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.action-grid button {
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  gap: 12px;
+  padding: 12px 16px;
+  font-size: 0.8rem;
+  width: 100%;
+}
+
+/* Window Open Animation */
+@keyframes windowOpen {
+  0% { transform: scale(0.97) translateY(10px); opacity: 0; filter: blur(4px); }
+  100% { transform: scale(1) translateY(0); opacity: 1; filter: blur(0); }
+}
+
+.game-window {
+  animation: windowOpen 0.3s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
