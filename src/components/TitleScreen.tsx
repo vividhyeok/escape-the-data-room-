@@ -105,7 +105,7 @@ export function TitleScreen(): React.JSX.Element {
         </button>
       </div>
       <div className="title-content">
-        <h1 className="game-logo flicker title-logo-glitch" data-text="ESCAPE THE DATA ROOM">ESCAPE<br/>THE DATA ROOM</h1>
+        <h1 className="game-logo">THE CODE ROOM</h1>
         <div className="title-menu">
           {hasSaveData ? (
             <>

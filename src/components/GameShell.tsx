@@ -310,19 +310,53 @@ export function GameShell(): React.JSX.Element {
   }
 
   function activateDemoMode(): void {
-    const wordPuzzle = puzzlesById["room-1-word-billboard"];
-    const wordObject = getRoomObjects("room-1").find((roomObject) => roomObject.puzzleId === wordPuzzle.id) ?? null;
+    const demoCodeDrafts: Record<string, string> = {
+      "room-0-pattern-tiles":   "answer = data\n",
+      "room-0-tv-sequence":     "answer = data + 10\n",
+      "room-0-desk-terminal":   "answer = data[0]\n",
+      "room-0-mini-ox-card":    "answer = data[:3]\n",
+      "room-0-name-tags":       "answer = len(data)\n",
+      "room-0-bookshelf-note":  "answer = data * 3\n",
+      "room-1-word-billboard":  "answer = data.upper()\n",
+      "room-1-ox-monitor":      "answer = data.replace('X', 'O')\n",
+      "room-1-number-panel":    "answer = data.split()\n",
+      "room-1-radio-signal":    "if data >= 100:\n    answer = 'PASS'\nelse:\n    answer = 'FAIL'\n",
+      "room-1-name-card":       "answer = data % 2 == 0\n",
+      "room-1-checksum-tablet": "answer = data > 0 and data < 10\n",
+      "room-2-file-cabinet":    "total = 0\nfor x in data:\n    total = total + x\nanswer = total\n",
+      "room-2-broken-tags":     "result = []\nfor x in data:\n    if x > 0:\n        result.append(x)\nanswer = result\n",
+      "room-2-score-board":     "answer = data['score']\n",
+      "room-2-timeline":        "result = []\nn = data\nwhile n > 0:\n    result.append(n)\n    n = n - 1\nanswer = result\n",
+      "room-2-access-log":      "answer = [x * 2 for x in data]\n",
+      "room-2-checksum-ledger": "result = ''\nfor char in data:\n    if char not in 'aeiou':\n        result = result + char\nanswer = result\n",
+      "room-3-validator":       "answer = data[::-1]\n",
+    };
 
-    resetProgress();
-    useGameStore.getState().setDemoMode(true);
-    setCurrentRoom("room-1");
-    saveCodeDraft(wordPuzzle.id, wordPuzzle.starterCode ?? "");
-    setSelectedObject(wordObject);
-    setLabPuzzleId(wordPuzzle.id);
+    const allPuzzles = Object.values(puzzlesById);
+
+    useGameStore.setState({
+      isDemoMode: true,
+      gameState: "PLAYING",
+      currentRoomId: "room-0",
+      currentViewId: "center",
+      codeDrafts: demoCodeDrafts,
+      solvedPuzzleIds: allPuzzles.map((p) => p.id),
+      collectedHints: allPuzzles.map((p) => p.rewardHint),
+      doorInputs: { "room-0": "8522", "room-1": "7479", "room-2": "3547" },
+      clearedRoomIds: ["room-0", "room-1", "room-2"],
+      reviewRoomId: undefined,
+      currentDialogueId: null,
+      unlockedStories: ["intro", "tutorial-1", "tutorial-2", "tutorial-3", "tutorial-4"],
+      doorAttempts: {},
+    });
+
+    setSelectedObject(null);
     setDoorOpen(false);
+    setHelpOpen(false);
+    setReviewRoomObject(null);
+    setLabPuzzleId(null);
     resetGameWindows();
-    setDemoLayout();
-    showToast("데모 모드 로드됨.");
+    showToast("[ 시연 모드 활성화 — 모든 퍼즐이 준비됐습니다 ]");
   }
 
   function toggleFullscreen() {

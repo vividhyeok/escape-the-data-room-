@@ -655,6 +655,30 @@ function renderClueSurface(puzzle: Puzzle, object: RoomObject): React.JSX.Elemen
   );
 }
 
+const SYNTAX_LABELS: Record<string, string> = {
+  Assign:      "변수 대입 ( = )",
+  BinOp:       "사칙연산 ( +, -, *, / )",
+  Subscript:   "인덱싱 / 딕셔너리 접근 [ ]",
+  Slice:       "슬라이싱 [ : ]",
+  For:         "for 반복문",
+  While:       "while 반복문",
+  If:          "if / else 조건문",
+  ListComp:    "리스트 컴프리헨션",
+  FunctionDef: "함수 정의 ( def )",
+  Return:      "return 문",
+  upper:       ".upper() 대문자 변환",
+  lower:       ".lower() 소문자 변환",
+  replace:     ".replace() 문자 치환",
+  split:       ".split() 문자열 분리",
+  strip:       ".strip() 공백 제거",
+  join:        ".join() 이어 붙이기",
+  append:      ".append() 항목 추가",
+  len:         "len() 길이 구하기",
+  sum:         "sum() 합계 함수",
+  print:       "print() 출력 함수",
+  filter:      "filter() 필터 함수",
+};
+
 export function InspectModal({
   object,
   puzzle,
@@ -687,10 +711,6 @@ export function InspectModal({
     if (isChecking) return;
     setIsChecking(true);
     setErrorMsg("");
-    SoundEngine.playProcessing();
-
-    // 1.5초간 연산 딜레이를 주어 PROCESSING 사운드가 충분히 재생되도록 함
-    await new Promise((r) => setTimeout(r, 1500));
 
     const result = await pythonRunner.run(code, {
       testCases: puzzle.testCases,
@@ -728,13 +748,18 @@ export function InspectModal({
 
             {/* Display Restrictions if any */}
             {(puzzle.requiredSyntax?.length || puzzle.bannedSyntax?.length) ? (
-              <div style={{ marginTop: "10px", padding: "10px", background: "rgba(0,0,0,0.4)", border: "1px dashed var(--neon-cyan)", fontSize: "0.85rem" }}>
-                <strong style={{ color: "var(--neon-cyan)" }}>! CONST</strong>
+              <div style={{ marginTop: "10px", padding: "10px 12px", background: "rgba(0,0,0,0.4)", border: "1px dashed var(--neon-cyan)", fontSize: "0.82rem", display: "flex", flexDirection: "column", gap: "6px" }}>
                 {puzzle.requiredSyntax && puzzle.requiredSyntax.length > 0 && (
-                  <div style={{ marginTop: "4px" }}>+ {puzzle.requiredSyntax.join(", ")}</div>
+                  <div>
+                    <span style={{ color: "var(--neon-cyan)", fontWeight: "bold" }}>반드시 사용: </span>
+                    <span>{puzzle.requiredSyntax.map((s) => SYNTAX_LABELS[s] ?? s).join(" · ")}</span>
+                  </div>
                 )}
                 {puzzle.bannedSyntax && puzzle.bannedSyntax.length > 0 && (
-                  <div style={{ marginTop: "4px", color: "#ff6b6b" }}>- {puzzle.bannedSyntax.join(", ")}</div>
+                  <div>
+                    <span style={{ color: "#ff6b6b", fontWeight: "bold" }}>사용 금지: </span>
+                    <span style={{ color: "#ff9999" }}>{puzzle.bannedSyntax.map((s) => SYNTAX_LABELS[s] ?? s).join(" · ")}</span>
+                  </div>
                 )}
               </div>
             ) : null}
