@@ -16,9 +16,9 @@ type RoomViewProps = {
 function CameraWobble() {
   useFrame(({ clock, camera }) => {
     const t = clock.getElapsedTime();
-    // Simulate anxious human breathing/wobble
-    camera.rotation.z = Math.sin(t * 0.8) * 0.002;
-    camera.position.y = Math.sin(t * 1.5) * 0.005;
+    // Ultra-subtle breathing wobble — barely perceptible, subconscious unease
+    camera.rotation.z = Math.sin(t * 0.4) * 0.0003;
+    camera.position.y = Math.sin(t * 0.7) * 0.0008;
   });
   return null;
 }
