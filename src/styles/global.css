@@ -6223,13 +6223,24 @@ button, a, select, input[type="button"], input[type="submit"] { cursor: pointer;
 
 .track-row {
   display: grid;
-  grid-template-columns: minmax(120px, 180px) minmax(0, 1fr) minmax(180px, auto);
+  grid-template-columns: minmax(110px, 168px) minmax(0, 1fr) auto minmax(96px, 128px);
   gap: 16px;
   align-items: center;
   padding: 12px 14px;
   border: 1px solid rgba(122, 243, 255, 0.13);
   border-radius: 8px;
   background: rgba(0, 0, 0, 0.22);
+  will-change: transform;
+}
+
+/* 진행이 늘어난 학생 강조 펄스 */
+.track-row.row-pulse {
+  animation: rowPulse 1100ms ease-out;
+}
+
+@keyframes rowPulse {
+  0% { background: rgba(148, 255, 197, 0.28); border-color: rgba(148, 255, 197, 0.6); box-shadow: 0 0 18px rgba(148, 255, 197, 0.3); }
+  100% { background: rgba(0, 0, 0, 0.22); border-color: rgba(122, 243, 255, 0.13); box-shadow: none; }
 }
 
 .track-name {
@@ -6274,26 +6285,93 @@ button, a, select, input[type="button"], input[type="submit"] { cursor: pointer;
   background: rgba(255, 255, 255, 0.1);
 }
 
-.track-stats {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 6px 14px;
-  justify-content: flex-end;
-  align-items: center;
-  text-align: right;
-}
-
 .track-progress {
   color: #ffffff;
   font-weight: 900;
   white-space: nowrap;
+  text-align: right;
 }
 
-.track-error,
-.track-time {
-  color: #aebfc8;
-  font-size: 0.86rem;
+/* 보조 지표 한 칸 (좌우 페이저로 내용이 바뀜) */
+.track-metric {
+  overflow: hidden;
+  text-align: right;
+}
+
+.metric-value {
+  display: inline-block;
+  color: #d9f7ff;
+  font-size: 0.9rem;
+  font-weight: 700;
   white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 100%;
+  animation: metricIn 280ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+@keyframes metricIn {
+  from { opacity: 0; transform: translateX(10px); }
+  to { opacity: 1; transform: translateX(0); }
+}
+
+/* 보조 지표 페이저 */
+.metric-pager {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 4px 6px;
+  border: 1px solid rgba(122, 243, 255, 0.22);
+  border-radius: 999px;
+  background: rgba(0, 0, 0, 0.28);
+}
+
+.metric-arrow {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  border: 0;
+  border-radius: 50%;
+  background: rgba(122, 243, 255, 0.1);
+  color: #7af3ff;
+  cursor: pointer;
+  transition: background 140ms ease;
+}
+
+.metric-arrow:hover { background: rgba(122, 243, 255, 0.24); }
+
+.metric-label {
+  min-width: 96px;
+  text-align: center;
+  color: #edf9ff;
+  font-size: 0.86rem;
+  font-weight: 800;
+}
+
+.metric-dots {
+  display: inline-flex;
+  gap: 4px;
+  margin-left: 2px;
+}
+
+.metric-dots i {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.22);
+}
+
+.metric-dots i.on {
+  background: #7af3ff;
+}
+
+.legend-hint {
+  margin-left: auto;
+  color: #6f828c;
+  font-size: 0.76rem;
+  font-style: italic;
 }
 
 /* 결과 게이팅 */
@@ -6350,12 +6428,19 @@ button, a, select, input[type="button"], input[type="submit"] { cursor: pointer;
   }
 
   .track-row {
-    grid-template-columns: 1fr;
-    gap: 10px;
+    grid-template-columns: 1fr auto;
+    gap: 8px 12px;
+    align-items: center;
   }
 
-  .track-stats {
-    justify-content: flex-start;
+  /* 모바일: 트랙은 한 줄 전체 차지, 나머지는 같은 줄에 정렬 */
+  .track-cells {
+    grid-column: 1 / -1;
+    order: 3;
+  }
+
+  .track-progress,
+  .track-metric {
     text-align: left;
   }
 

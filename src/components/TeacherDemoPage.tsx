@@ -85,7 +85,7 @@ export function TeacherDemoPage(): React.JSX.Element {
           <p className="classroom-subtitle">SW/AI 캠프 초반 진단용 파이썬 방탈출 활동</p>
         </div>
         <nav className="classroom-header-actions" aria-label="교사용 화면 이동">
-          <a className="classroom-button compact" href="#/dashboard">진행 현황 보기</a>
+          <a className="classroom-button compact" href="#/dashboard">플레이 현황</a>
           <a className="classroom-button compact" href="#/join">학생 입장 화면</a>
         </nav>
       </header>
@@ -247,7 +247,7 @@ export function TeacherDemoPage(): React.JSX.Element {
               </a>
               <a className="classroom-button primary" href="#/dashboard">
                 <ExternalLink size={16} />
-                실시간 진행 보기
+                실시간 플레이 현황
               </a>
             </div>
           </div>

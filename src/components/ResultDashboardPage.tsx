@@ -1,5 +1,5 @@
-import { AlertTriangle, BarChart3, Home, Loader2, Lock, RefreshCw, Users } from "lucide-react";
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { AlertTriangle, BarChart3, ChevronLeft, ChevronRight, Loader2, Lock, RefreshCw, Users } from "lucide-react";
+import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
 import {
   getClassAnalytics,
   getLastClassCode,
@@ -21,6 +21,15 @@ const SORT_OPTIONS: { key: SortKey; label: string }[] = [
   { key: "progress-asc", label: "진행 느린순" },
   { key: "error-desc", label: "오답률 높은순" },
   { key: "error-asc", label: "오답률 낮은순" },
+];
+
+// 상시로는 닉네임·진행 트랙만 보여주고, 보조 지표는 좌우로 넘겨가며 하나씩 본다(공간 절약).
+const METRICS: { key: string; label: string; get: (s: StudentProgress) => string }[] = [
+  { key: "error", label: "오답률", get: (s) => `${s.errorRate}%` },
+  { key: "last", label: "마지막 활동", get: (s) => formatLastActivity(s) },
+  { key: "recentFail", label: "최근 연속 실패", get: (s) => (s.recentFailCount > 0 ? `${s.recentFailCount}회` : "—") },
+  { key: "lastProblem", label: "마지막 시도 문제", get: (s) => s.lastProblemTitle ?? "—" },
+  { key: "attempts", label: "총 시도", get: (s) => `${s.attemptCount}회` },
 ];
 
 function formatPercent(value: number): string {
@@ -124,10 +133,76 @@ export function ResultDashboardPage(): React.JSX.Element {
     return () => window.clearInterval(timer);
   }, [autoRefresh, classCode, loadAnalytics]);
 
+  const [metricIndex, setMetricIndex] = useState(0);
+  const activeMetric = METRICS[metricIndex];
+
   const sortedStudents = useMemo(
     () => (analytics ? sortStudents(analytics.studentProgress, sortKey) : []),
     [analytics, sortKey],
   );
+
+  // ---- 순위 변동 애니메이션 (FLIP) + 진행 증가 펄스 ----
+  const rowRefs = useRef<Map<string, HTMLDivElement>>(new Map());
+  const prevRects = useRef<Map<string, DOMRect>>(new Map());
+  const prevSolved = useRef<Map<string, number>>(new Map());
+
+  useLayoutEffect(() => {
+    const els = rowRefs.current;
+    // 새 위치 측정
+    const newRects = new Map<string, DOMRect>();
+    els.forEach((el, id) => newRects.set(id, el.getBoundingClientRect()));
+
+    // First→Last 차이만큼 거꾸로 옮겨 두고, 다음 프레임에 0으로 보내 순위가 오르락내리락 움직이게 한다.
+    newRects.forEach((newRect, id) => {
+      const prev = prevRects.current.get(id);
+      const el = els.get(id);
+      if (!el) return;
+      if (prev) {
+        const dy = prev.top - newRect.top;
+        if (Math.abs(dy) > 1) {
+          el.style.transition = "none";
+          el.style.transform = `translateY(${dy}px)`;
+          el.getBoundingClientRect(); // reflow
+          requestAnimationFrame(() => {
+            el.style.transition = "transform 460ms cubic-bezier(0.22, 1, 0.36, 1)";
+            el.style.transform = "";
+          });
+        }
+      }
+    });
+    prevRects.current = newRects;
+
+    // 진행(해결 수)이 늘어난 학생은 잠깐 강조 펄스
+    sortedStudents.forEach((student) => {
+      const before = prevSolved.current.get(student.studentId);
+      if (before !== undefined && student.solvedCount > before) {
+        const el = els.get(student.studentId);
+        if (el) {
+          el.classList.remove("row-pulse");
+          void el.offsetWidth;
+          el.classList.add("row-pulse");
+        }
+      }
+      prevSolved.current.set(student.studentId, student.solvedCount);
+    });
+  }, [sortedStudents]);
+
+  // 보조 지표 좌우 넘기기
+  const cycleMetric = useCallback((dir: 1 | -1) => {
+    setMetricIndex((current) => (current + dir + METRICS.length) % METRICS.length);
+  }, []);
+
+  // 터치 스와이프로 보조 지표 전환
+  const touchStartX = useRef<number | null>(null);
+  function onTrackTouchStart(event: React.TouchEvent): void {
+    touchStartX.current = event.touches[0]?.clientX ?? null;
+  }
+  function onTrackTouchEnd(event: React.TouchEvent): void {
+    if (touchStartX.current === null) return;
+    const dx = (event.changedTouches[0]?.clientX ?? 0) - touchStartX.current;
+    if (Math.abs(dx) > 40) cycleMetric(dx < 0 ? 1 : -1);
+    touchStartX.current = null;
+  }
 
   const resultsUnlocked = Boolean(analytics && (analytics.allFinished || forceShowResults));
 
@@ -137,9 +212,9 @@ export function ResultDashboardPage(): React.JSX.Element {
       <header className="classroom-header">
         <a className="classroom-link" href="#/">데이터 룸</a>
         <div>
-          <span className="classroom-kicker">// 수업 진행 모니터</span>
-          <h1>수업 진행 현황</h1>
-          <p className="classroom-subtitle">수업 중 개입과 수업 후 보완 설명을 돕는 화면</p>
+          <span className="classroom-kicker">// 실시간 플레이 모니터</span>
+          <h1>플레이 현황</h1>
+          <p className="classroom-subtitle">학생들의 실시간 플레이를 추적하고, 수업 후 보완 설명을 돕는 화면</p>
         </div>
         <nav className="classroom-header-actions" aria-label="대시보드 이동">
           <a className="classroom-button compact" href="#/teacher">교사용 화면으로</a>
@@ -215,12 +290,12 @@ export function ResultDashboardPage(): React.JSX.Element {
             </section>
           ) : null}
 
-          {/* 실시간 진행 현황 — 학생별 가로 트래킹 테이블 (핵심) */}
+          {/* 실시간 플레이 현황 — 학생별 가로 트래킹 테이블 (핵심) */}
           <section className="classroom-panel page-enter-item" style={{ ["--i" as string]: 3 }}>
             <div className="panel-title-row">
               <div>
-                <span className="classroom-kicker">// 실시간 진행 현황</span>
-                <h2>학생별 진행 트래킹</h2>
+                <span className="classroom-kicker">// 실시간 플레이 현황</span>
+                <h2>학생별 플레이 트래킹</h2>
               </div>
               <Users size={22} />
             </div>
@@ -238,19 +313,43 @@ export function ResultDashboardPage(): React.JSX.Element {
                   </button>
                 ))}
               </div>
-              <div className="track-legend" aria-hidden="true">
-                <span><i className="cell-dot solved" /> 해결</span>
-                <span><i className="cell-dot attempted" /> 시도</span>
-                <span><i className="cell-dot untouched" /> 미시작</span>
+              {/* 보조 지표 페이저: 좌우로 넘기며 필요한 지표만 본다 */}
+              <div className="metric-pager" aria-label="보조 지표 선택">
+                <button className="metric-arrow" onClick={() => cycleMetric(-1)} type="button" aria-label="이전 지표">
+                  <ChevronLeft size={16} />
+                </button>
+                <span className="metric-label">{activeMetric.label}</span>
+                <button className="metric-arrow" onClick={() => cycleMetric(1)} type="button" aria-label="다음 지표">
+                  <ChevronRight size={16} />
+                </button>
+                <span className="metric-dots" aria-hidden="true">
+                  {METRICS.map((m, i) => (
+                    <i className={i === metricIndex ? "on" : ""} key={m.key} />
+                  ))}
+                </span>
               </div>
+            </div>
+
+            <div className="track-legend" aria-hidden="true">
+              <span><i className="cell-dot solved" /> 해결</span>
+              <span><i className="cell-dot attempted" /> 시도</span>
+              <span><i className="cell-dot untouched" /> 미시작</span>
+              <span className="legend-hint">← 표를 좌우로 넘기면 지표가 바뀝니다 →</span>
             </div>
 
             {sortedStudents.length === 0 ? (
               <p className="classroom-muted">아직 입장한 학생이 없습니다.</p>
             ) : (
-              <div className="track-table">
+              <div className="track-table" onTouchStart={onTrackTouchStart} onTouchEnd={onTrackTouchEnd}>
                 {sortedStudents.map((student) => (
-                  <div className="track-row" key={student.studentId}>
+                  <div
+                    className="track-row"
+                    key={student.studentId}
+                    ref={(el) => {
+                      if (el) rowRefs.current.set(student.studentId, el);
+                      else rowRefs.current.delete(student.studentId);
+                    }}
+                  >
                     <div className="track-name">
                       <strong>{student.nickname}</strong>
                       <em className={`status-badge status-${statusSlug(student.status)}`}>{student.status}</em>
@@ -260,10 +359,9 @@ export function ResultDashboardPage(): React.JSX.Element {
                         <i className={`track-cell ${cell}`} key={idx} />
                       ))}
                     </div>
-                    <div className="track-stats">
-                      <span className="track-progress">{student.solvedCount}/{student.selectedProblemCount}</span>
-                      <span className="track-error">오답률 {student.errorRate}%</span>
-                      <span className="track-time">{formatLastActivity(student)}</span>
+                    <span className="track-progress">{student.solvedCount}/{student.selectedProblemCount}</span>
+                    <div className="track-metric">
+                      <span className="metric-value" key={activeMetric.key}>{activeMetric.get(student)}</span>
                     </div>
                   </div>
                 ))}
