@@ -5,7 +5,7 @@ const env = (import.meta as ImportMeta & {
 }).env ?? {};
 
 const rawSupabaseUrl = env.VITE_SUPABASE_URL;
-const supabasePublishableKey = env.VITE_SUPABASE_PUBLISHABLE_KEY;
+const rawSupabasePublishableKey = env.VITE_SUPABASE_PUBLISHABLE_KEY;
 
 export const SUPABASE_CONFIG_ERROR_MESSAGE = "Supabase 환경변수를 확인해 주세요.";
 
@@ -31,9 +31,37 @@ function normalizeSupabaseUrl(value: string | undefined): string | undefined {
   }
 }
 
-const supabaseUrl = normalizeSupabaseUrl(rawSupabaseUrl);
+function isPublishableKey(value: string | undefined): boolean {
+  return Boolean(value?.trim().startsWith("sb_publishable_"));
+}
 
-if (rawSupabaseUrl && supabaseUrl && rawSupabaseUrl.trim() !== supabaseUrl) {
+function isSupabaseProjectUrl(value: string | undefined): boolean {
+  return Boolean(value?.trim().match(/^https?:\/\/[a-z0-9-]+(?:xxxx)?\.supabase\.co/i));
+}
+
+function getSupabaseEnvConfig(): {
+  rawUrl: string | undefined;
+  publishableKey: string | undefined;
+} {
+  if (isPublishableKey(rawSupabaseUrl) && isSupabaseProjectUrl(rawSupabasePublishableKey)) {
+    console.warn("VITE_SUPABASE_URL and VITE_SUPABASE_PUBLISHABLE_KEY appear to be swapped. Correcting them at runtime.");
+    return {
+      rawUrl: rawSupabasePublishableKey,
+      publishableKey: rawSupabaseUrl,
+    };
+  }
+
+  return {
+    rawUrl: rawSupabaseUrl,
+    publishableKey: rawSupabasePublishableKey,
+  };
+}
+
+const supabaseEnvConfig = getSupabaseEnvConfig();
+const supabaseUrl = normalizeSupabaseUrl(supabaseEnvConfig.rawUrl);
+const supabasePublishableKey = supabaseEnvConfig.publishableKey;
+
+if (supabaseEnvConfig.rawUrl && supabaseUrl && supabaseEnvConfig.rawUrl.trim() !== supabaseUrl) {
   console.warn("VITE_SUPABASE_URL을 Supabase project URL 형식으로 보정했습니다.");
 }
 
