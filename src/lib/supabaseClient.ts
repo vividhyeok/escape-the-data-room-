@@ -17,20 +17,24 @@ function normalizeSupabaseUrl(value: string | undefined): string | undefined {
 
   try {
     const url = new URL(trimmed);
+    url.hostname = url.hostname.replace(/xxxx\.supabase\.co$/i, ".supabase.co");
     url.pathname = url.pathname.replace(/\/rest\/v1\/?$/i, "").replace(/\/+$/g, "");
     url.search = "";
     url.hash = "";
     return url.toString().replace(/\/$/g, "");
   } catch {
     console.warn("VITE_SUPABASE_URL 형식이 올바르지 않습니다.", trimmed);
-    return trimmed.replace(/\/rest\/v1\/?$/i, "").replace(/\/+$/g, "");
+    return trimmed
+      .replace(/xxxx\.supabase\.co/i, ".supabase.co")
+      .replace(/\/rest\/v1\/?$/i, "")
+      .replace(/\/+$/g, "");
   }
 }
 
 const supabaseUrl = normalizeSupabaseUrl(rawSupabaseUrl);
 
 if (rawSupabaseUrl && supabaseUrl && rawSupabaseUrl.trim() !== supabaseUrl) {
-  console.warn("VITE_SUPABASE_URL에서 /rest/v1 경로를 제거하고 Supabase project URL로 보정했습니다.");
+  console.warn("VITE_SUPABASE_URL을 Supabase project URL 형식으로 보정했습니다.");
 }
 
 export const isSupabaseConfigured = Boolean(supabaseUrl && supabasePublishableKey);
@@ -39,9 +43,18 @@ if (!isSupabaseConfigured) {
   console.warn(SUPABASE_CONFIG_ERROR_MESSAGE);
 }
 
-export const supabase: SupabaseClient | null = isSupabaseConfigured
-  ? createClient(supabaseUrl as string, supabasePublishableKey as string)
-  : null;
+function createSupabaseClient(): SupabaseClient | null {
+  if (!isSupabaseConfigured) return null;
+
+  try {
+    return createClient(supabaseUrl as string, supabasePublishableKey as string);
+  } catch (error) {
+    console.warn("Supabase client 생성에 실패했습니다.", error);
+    return null;
+  }
+}
+
+export const supabase: SupabaseClient | null = createSupabaseClient();
 
 export function getSupabaseClient(): SupabaseClient {
   if (!supabase) {
