@@ -71,13 +71,14 @@ npm run test:v2
 3. 로컬 개발용 `.env.local`에 다음 값을 입력합니다.
 
 ```env
-VITE_SUPABASE_URL=
+VITE_SUPABASE_URL=https://your-project-ref.supabase.co
 VITE_SUPABASE_PUBLISHABLE_KEY=
 ```
 
 4. Vercel Project Settings의 Environment Variables에도 같은 두 값을 등록합니다.
-5. 프론트엔드 환경변수에는 Supabase service role key나 secret key를 절대 넣지 않습니다.
-6. `supabase/schema.sql`의 RLS policy는 발표/시연용입니다. 실제 운영용 보안 정책으로 사용하면 안 됩니다.
+5. `VITE_SUPABASE_URL`에는 `/rest/v1`을 붙이지 않습니다. Supabase SDK가 내부에서 해당 경로를 자동으로 붙입니다.
+6. 프론트엔드 환경변수에는 Supabase service role key나 secret key를 절대 넣지 않습니다.
+7. `supabase/schema.sql`의 RLS policy는 발표/시연용입니다. 실제 운영용 보안 정책으로 사용하면 안 됩니다.
 
 ## 현재 구현 상태
 
