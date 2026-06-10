@@ -10,6 +10,7 @@ import { indentWithTab } from "@codemirror/commands";
 import { oneDark } from "@codemirror/theme-one-dark";
 import { autocompletion, completionKeymap } from "@codemirror/autocomplete";
 import { pythonRunner } from "../lib/pythonRunner";
+import { getCurrentStudentSession, recordAttempt } from "../lib/classroomApi";
 import { SoundEngine } from "../utils/SoundEngine";
 
 type InspectModalProps = {
@@ -720,6 +721,26 @@ export function InspectModal({
     });
 
     setIsChecking(false);
+
+    try {
+      const shouldRecordClassroomAttempt = window.location.hash === "#/play";
+      const studentSession = shouldRecordClassroomAttempt ? getCurrentStudentSession() : null;
+      if (studentSession) {
+        void recordAttempt({
+          classCode: studentSession.classCode,
+          studentId: studentSession.studentId,
+          nickname: studentSession.nickname,
+          puzzleId: puzzle.id,
+          success: result.success,
+          errorMessage: result.stderr || "",
+          code,
+        }).catch((error) => {
+          console.warn("attempt log 저장 실패", error);
+        });
+      }
+    } catch (error) {
+      console.warn("attempt log 저장 준비 실패", error);
+    }
 
     if (result.success) {
       SoundEngine.playSuccess();

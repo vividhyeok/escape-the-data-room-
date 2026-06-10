@@ -62,6 +62,23 @@ npm run test:v1
 npm run test:v2
 ```
 
+## Supabase / Vercel 설정
+
+수업 세션, 학생 입장, 풀이 로그 저장 기능을 시연하려면 Supabase와 Vercel 환경변수가 필요합니다.
+
+1. Supabase SQL Editor에서 `supabase/schema.sql` 내용을 실행합니다.
+2. Supabase에 `class_sessions`, `student_sessions`, `attempt_logs` 테이블이 생성되었는지 확인합니다.
+3. 로컬 개발용 `.env.local`에 다음 값을 입력합니다.
+
+```env
+VITE_SUPABASE_URL=
+VITE_SUPABASE_PUBLISHABLE_KEY=
+```
+
+4. Vercel Project Settings의 Environment Variables에도 같은 두 값을 등록합니다.
+5. 프론트엔드 환경변수에는 Supabase service role key나 secret key를 절대 넣지 않습니다.
+6. `supabase/schema.sql`의 RLS policy는 발표/시연용입니다. 실제 운영용 보안 정책으로 사용하면 안 됩니다.
+
 ## 현재 구현 상태
 
 - Room 0~3 구조 (총 4개 방)

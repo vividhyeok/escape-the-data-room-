@@ -5070,6 +5070,596 @@ button, a, select, input[type="button"], input[type="submit"] { cursor: pointer;
 .game-window {
   animation: windowOpen 0.3s cubic-bezier(0.16, 1, 0.3, 1) both;
 }
+
+/* ==========================================================================
+   Classroom MVP pages
+   ========================================================================== */
+
+.classroom-page {
+  position: relative;
+  min-height: 100vh;
+  height: 100vh;
+  overflow-y: auto;
+  padding: 28px clamp(16px, 4vw, 56px) 48px;
+  color: #edf9ff;
+  background:
+    linear-gradient(180deg, rgba(3, 8, 12, 0.86), rgba(4, 7, 10, 0.96)),
+    radial-gradient(circle at 22% 16%, rgba(122, 243, 255, 0.12), transparent 30%),
+    radial-gradient(circle at 78% 24%, rgba(243, 187, 97, 0.1), transparent 26%),
+    #030508;
+}
+
+.classroom-page::before {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  content: "";
+  background-image:
+    linear-gradient(rgba(122, 243, 255, 0.04) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(122, 243, 255, 0.035) 1px, transparent 1px);
+  background-size: 42px 42px;
+  mask-image: linear-gradient(to bottom, rgba(0, 0, 0, 0.85), transparent 78%);
+}
+
+.classroom-scanlines {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 1;
+  background: linear-gradient(to bottom, transparent, transparent 50%, rgba(0, 0, 0, 0.22) 50%);
+  background-size: 100% 4px;
+  opacity: 0.45;
+}
+
+.classroom-page > *:not(.classroom-scanlines) {
+  position: relative;
+  z-index: 2;
+}
+
+.classroom-header {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  gap: 18px;
+  align-items: center;
+  max-width: 1180px;
+  margin: 0 auto 22px;
+  padding-bottom: 18px;
+  border-bottom: 1px solid rgba(122, 243, 255, 0.18);
+}
+
+.classroom-header h1,
+.landing-hero h1,
+.classroom-panel h2,
+.join-console h1 {
+  margin: 0;
+  letter-spacing: 0;
+}
+
+.classroom-header h1 {
+  font-size: clamp(1.55rem, 3vw, 2.4rem);
+}
+
+.classroom-kicker {
+  display: block;
+  color: #7af3ff;
+  font-family: "Cascadia Code", "Consolas", ui-monospace, monospace;
+  font-size: 0.76rem;
+  font-weight: 800;
+  letter-spacing: 0;
+  text-transform: uppercase;
+}
+
+.classroom-link,
+.classroom-link-block {
+  color: #f3bb61;
+  font-weight: 800;
+  text-decoration: none;
+}
+
+.classroom-link:hover,
+.classroom-link-block:hover {
+  color: #ffe0a5;
+}
+
+.classroom-header-actions,
+.classroom-actions-row,
+.landing-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  align-items: center;
+}
+
+.classroom-button {
+  min-height: 42px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 10px 14px;
+  border: 1px solid rgba(122, 243, 255, 0.42);
+  border-radius: 4px;
+  color: #edf9ff;
+  background: rgba(8, 19, 28, 0.86);
+  box-shadow: inset 0 0 14px rgba(122, 243, 255, 0.08);
+  font-weight: 800;
+  text-decoration: none;
+  transition: border-color 150ms ease, background 150ms ease, transform 150ms ease;
+}
+
+.classroom-button:hover,
+.classroom-button:focus-visible {
+  border-color: #7af3ff;
+  background: rgba(15, 36, 49, 0.92);
+  outline: none;
+  transform: translateY(-1px);
+}
+
+.classroom-button.primary {
+  border-color: #94ffc5;
+  color: #02110a;
+  background: #94ffc5;
+}
+
+.classroom-button.primary:hover,
+.classroom-button.primary:focus-visible {
+  background: #c2ffdc;
+}
+
+.classroom-button.compact {
+  min-height: 36px;
+  padding: 8px 11px;
+  font-size: 0.86rem;
+}
+
+.classroom-button:disabled {
+  cursor: not-allowed;
+  opacity: 0.48;
+  transform: none;
+}
+
+.landing-hero {
+  max-width: 980px;
+  min-height: 54vh;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 22px;
+  margin: 0 auto;
+  padding: 58px 0 34px;
+}
+
+.landing-hero h1 {
+  max-width: 820px;
+  color: #ffffff;
+  font-size: clamp(2.4rem, 7vw, 5.6rem);
+  line-height: 0.98;
+}
+
+.landing-hero p {
+  max-width: 720px;
+  margin: 0;
+  color: #b7cbd4;
+  font-size: clamp(1rem, 2vw, 1.2rem);
+}
+
+.classroom-band {
+  max-width: 1180px;
+  margin: 0 auto;
+  padding: 20px 0 0;
+  border-top: 1px solid rgba(122, 243, 255, 0.18);
+}
+
+.flow-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 14px;
+}
+
+.flow-item,
+.classroom-panel,
+.summary-cell,
+.join-console {
+  border: 1px solid rgba(122, 243, 255, 0.18);
+  border-radius: 8px;
+  background:
+    linear-gradient(180deg, rgba(12, 24, 34, 0.9), rgba(4, 9, 14, 0.92)),
+    rgba(2, 8, 13, 0.92);
+  box-shadow:
+    inset 0 0 22px rgba(122, 243, 255, 0.05),
+    0 20px 48px rgba(0, 0, 0, 0.32);
+}
+
+.flow-item {
+  min-height: 132px;
+  padding: 18px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.flow-item svg {
+  color: #f3bb61;
+}
+
+.flow-item strong {
+  font-size: 1.08rem;
+}
+
+.flow-item span,
+.classroom-muted,
+.problem-description,
+.join-console p {
+  color: #aebfc8;
+}
+
+.classroom-panel {
+  max-width: 1180px;
+  margin: 0 auto 18px;
+  padding: 20px;
+}
+
+.teacher-controls,
+.dashboard-query {
+  display: grid;
+  grid-template-columns: minmax(260px, 1fr) auto auto;
+  gap: 14px;
+  align-items: end;
+}
+
+.classroom-field {
+  display: grid;
+  gap: 7px;
+}
+
+.classroom-field.inline {
+  grid-template-columns: auto minmax(140px, 200px);
+  align-items: center;
+}
+
+.classroom-field span,
+.session-status span,
+.summary-cell span {
+  color: #7af3ff;
+  font-size: 0.78rem;
+  font-weight: 800;
+  text-transform: uppercase;
+}
+
+.classroom-field input {
+  width: 100%;
+  min-height: 42px;
+  padding: 10px 12px;
+  border: 1px solid rgba(122, 243, 255, 0.28);
+  border-radius: 4px;
+  color: #edf9ff;
+  background: rgba(0, 0, 0, 0.34);
+}
+
+.classroom-field input:focus {
+  border-color: #7af3ff;
+  box-shadow: 0 0 0 3px rgba(122, 243, 255, 0.14);
+  outline: none;
+}
+
+.session-status {
+  min-width: 120px;
+  padding: 8px 14px;
+  border: 1px dashed rgba(243, 187, 97, 0.42);
+  border-radius: 4px;
+  background: rgba(243, 187, 97, 0.08);
+}
+
+.session-status strong {
+  display: block;
+  color: #f3bb61;
+  font-size: 1.55rem;
+  line-height: 1;
+}
+
+.classroom-message {
+  max-width: 1180px;
+  margin: -4px auto 16px;
+  padding: 10px 12px;
+  border-left: 3px solid #94ffc5;
+  color: #d8ffe9;
+  background: rgba(148, 255, 197, 0.08);
+}
+
+.classroom-message.error {
+  border-left-color: #ff6b6b;
+  color: #ffd0d0;
+  background: rgba(255, 107, 107, 0.1);
+}
+
+.generated-session {
+  border-color: rgba(148, 255, 197, 0.42);
+}
+
+.class-code-display {
+  margin: 10px 0;
+  color: #94ffc5;
+  font-family: "Cascadia Code", "Consolas", ui-monospace, monospace;
+  font-size: clamp(2.8rem, 9vw, 5.4rem);
+  font-weight: 900;
+  line-height: 1;
+  letter-spacing: 0.08em;
+  text-shadow: 0 0 22px rgba(148, 255, 197, 0.36);
+}
+
+.generated-session code,
+.classroom-link-block,
+.empty-dashboard code {
+  display: block;
+  max-width: 100%;
+  overflow-wrap: anywhere;
+  color: #f3bb61;
+}
+
+.panel-title-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 18px;
+  margin-bottom: 12px;
+}
+
+.problem-list,
+.analytics-list,
+.concept-list {
+  display: grid;
+  gap: 10px;
+}
+
+.problem-row {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) minmax(170px, auto);
+  gap: 12px;
+  align-items: center;
+  padding: 14px;
+  border: 1px solid rgba(122, 243, 255, 0.16);
+  border-radius: 6px;
+  background: rgba(1, 7, 11, 0.58);
+}
+
+.problem-row.selected {
+  border-color: rgba(148, 255, 197, 0.46);
+  background: rgba(10, 36, 27, 0.36);
+}
+
+.problem-row input {
+  width: 18px;
+  height: 18px;
+  accent-color: #94ffc5;
+}
+
+.problem-body {
+  min-width: 0;
+  display: grid;
+  gap: 3px;
+}
+
+.problem-title {
+  font-weight: 900;
+}
+
+.problem-meta {
+  color: #f3bb61;
+  font-size: 0.88rem;
+}
+
+.problem-row code {
+  overflow-wrap: anywhere;
+  color: rgba(237, 249, 255, 0.62);
+  font-size: 0.78rem;
+  text-align: right;
+}
+
+.join-page {
+  display: grid;
+  place-items: center;
+}
+
+.join-console {
+  width: min(560px, 100%);
+  padding: clamp(20px, 4vw, 34px);
+}
+
+.join-console h1 {
+  margin-top: 4px;
+  font-size: clamp(2rem, 7vw, 4rem);
+}
+
+.join-console .classroom-field {
+  margin-top: 16px;
+}
+
+.dashboard-summary {
+  max-width: 1180px;
+  margin: 0 auto 18px;
+  display: grid;
+  grid-template-columns: 1fr 2fr 1fr 1fr;
+  gap: 12px;
+}
+
+.summary-cell {
+  min-height: 92px;
+  padding: 16px;
+}
+
+.summary-cell strong {
+  display: block;
+  margin-top: 8px;
+  overflow-wrap: anywhere;
+  color: #ffffff;
+  font-size: clamp(1.35rem, 3vw, 2.1rem);
+  line-height: 1.05;
+}
+
+.empty-dashboard {
+  display: grid;
+  gap: 8px;
+  justify-items: start;
+  border-style: dashed;
+}
+
+.empty-dashboard p {
+  margin: 0;
+  color: #d1e4ec;
+}
+
+.analytics-row {
+  display: grid;
+  grid-template-columns: minmax(220px, 1.2fr) minmax(180px, 1fr) minmax(220px, auto);
+  gap: 14px;
+  align-items: center;
+  padding: 14px;
+  border: 1px solid rgba(122, 243, 255, 0.14);
+  border-radius: 6px;
+  background: rgba(0, 0, 0, 0.22);
+}
+
+.analytics-row > div:first-child {
+  min-width: 0;
+  display: grid;
+  gap: 3px;
+}
+
+.analytics-row > div:first-child span {
+  color: #aebfc8;
+  font-size: 0.86rem;
+  overflow-wrap: anywhere;
+}
+
+.bar-meter {
+  height: 14px;
+  overflow: hidden;
+  border: 1px solid rgba(148, 255, 197, 0.28);
+  border-radius: 999px;
+  background: rgba(148, 255, 197, 0.08);
+}
+
+.bar-meter span {
+  display: block;
+  height: 100%;
+  min-width: 2px;
+  background: linear-gradient(90deg, #94ffc5, #f3bb61);
+}
+
+.analytics-row dl {
+  margin: 0;
+  display: grid;
+  grid-template-columns: repeat(3, minmax(58px, 1fr));
+  gap: 8px;
+}
+
+.analytics-row dt {
+  color: #7af3ff;
+  font-size: 0.72rem;
+  font-weight: 800;
+}
+
+.analytics-row dd {
+  margin: 2px 0 0;
+  color: #ffffff;
+  font-weight: 900;
+}
+
+.dashboard-two-col {
+  max-width: 1180px;
+  margin: 0 auto;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  gap: 18px;
+}
+
+.dashboard-two-col .classroom-panel {
+  margin: 0;
+}
+
+.concept-row {
+  display: grid;
+  gap: 4px;
+  padding: 12px;
+  border-left: 3px solid #94ffc5;
+  background: rgba(255, 255, 255, 0.035);
+}
+
+.concept-row.level-보통 {
+  border-left-color: #f3bb61;
+}
+
+.concept-row.level-높음 {
+  border-left-color: #ff6b6b;
+}
+
+.concept-row span {
+  color: #aebfc8;
+}
+
+.concept-row em {
+  color: #ffffff;
+  font-style: normal;
+  font-weight: 900;
+}
+
+.recommendation-list {
+  margin: 12px 0 0;
+  padding-left: 20px;
+  color: #d9f7ff;
+}
+
+.recommendation-list li + li {
+  margin-top: 10px;
+}
+
+.spin {
+  animation: classroomSpin 0.9s linear infinite;
+}
+
+@keyframes classroomSpin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@media (max-width: 860px) {
+  .classroom-header {
+    grid-template-columns: 1fr;
+  }
+
+  .classroom-header-actions,
+  .landing-actions,
+  .classroom-actions-row {
+    align-items: stretch;
+  }
+
+  .classroom-button {
+    width: 100%;
+  }
+
+  .flow-grid,
+  .teacher-controls,
+  .dashboard-query,
+  .dashboard-summary,
+  .dashboard-two-col,
+  .analytics-row {
+    grid-template-columns: 1fr;
+  }
+
+  .problem-row {
+    grid-template-columns: auto minmax(0, 1fr);
+  }
+
+  .problem-row code {
+    grid-column: 2;
+    text-align: left;
+  }
+
+  .classroom-field.inline {
+    grid-template-columns: 1fr;
+  }
+}
 /* =========================================
    Global VFX: Glitch, Distortion, Success
    ========================================= */
