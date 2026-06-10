@@ -1,5 +1,6 @@
 import {
   getTextbookProblemByPuzzleId,
+  getTextbookProblems,
   getTextbookProblemsByIds,
   type TextbookProblem,
 } from "../data/textbookProblemBank";
@@ -518,7 +519,12 @@ export async function getClassAnalytics(classCode: string): Promise<ClassAnalyti
   const attemptStudentCount = new Set(attemptLogs.map(getAttemptStudentKey)).size;
   const studentCount = Math.max(students.length, attemptStudentCount);
 
-  const selectedProblems = getTextbookProblemsByIds(classSession.selectedProblemIds);
+  let selectedProblems = getTextbookProblemsByIds(classSession.selectedProblemIds);
+  // 구버전 세션(과거 문제 id) 또는 매핑되지 않는 id가 저장된 경우 대비:
+  // 하나도 해석되지 않으면 기본 문제집(전체 문항)으로 폴백해 트래킹이 0/0에 멈추지 않게 한다.
+  if (selectedProblems.length === 0) {
+    selectedProblems = getTextbookProblems();
+  }
 
   const problemStats: ProblemAnalytics[] = selectedProblems.map((problem) => {
     const logsForPuzzle = attemptLogs.filter((log) => log.puzzleId === problem.mappedPuzzleId);

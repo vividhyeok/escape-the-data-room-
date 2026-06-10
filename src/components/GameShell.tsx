@@ -90,10 +90,16 @@ export function GameShell(): React.JSX.Element {
     return () => clearInterval(interval);
   }, [lastActiveTime, gameState]);
 
-  // 게임이 PLAYING 상태를 벗어나면(타이틀/크레딧 등) 긴장 연출 사운드를 확실히 종료한다.
-  // (메인 화면으로 돌아가도 심장박동/숨소리가 계속 울리던 문제 방지)
+  // 긴장 연출 사운드(심장박동/숨소리) 정리.
+  // - PLAYING 진입(특히 게임 재시작) 시: idle 타이머를 현재 시각으로 초기화하고 긴장 해제.
+  //   (예전 lastActiveTime이 남아 있어 재플레이하자마자 idle로 판정 → 심장소리가 바로 다시 울리고
+  //    안 꺼지던 문제 방지)
+  // - PLAYING 이탈(타이틀/크레딧) 시: 긴장 해제 + 숨소리 정지.
   useEffect(() => {
-    if (gameState !== "PLAYING") {
+    if (gameState === "PLAYING") {
+      setLastActiveTime(Date.now());
+      setIsTense(false);
+    } else {
       setIsTense(false);
       SoundEngine.stopBreathing();
     }
