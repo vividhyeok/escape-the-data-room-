@@ -73,6 +73,9 @@ export type StudentStatus =
   | "도움 필요"
   | "완료";
 
+// 학생별 가로 진행 트래킹용 — 선택 문제 순서대로 각 문제의 상태
+export type ProblemCellState = "solved" | "attempted" | "untouched";
+
 export type StudentProgress = {
   studentId: string;
   nickname: string;
@@ -80,11 +83,15 @@ export type StudentProgress = {
   selectedProblemCount: number;
   progressPercent: number;
   attemptCount: number;
+  failCount: number; // 전체 실패 시도 수
+  errorRate: number; // 오답률(%) = 실패 시도 / 전체 시도
   recentFailCount: number; // 마지막으로 시도한 문제에서 연속 실패한 횟수
   lastActivityAt: string | null;
   minutesSinceLastActivity: number | null;
   lastProblemTitle: string | null;
   lastProblemConcept: string | null;
+  problemCells: ProblemCellState[]; // 선택 문제 순서대로의 진행 상태(가로 트래킹용)
+  isFinished: boolean; // 선택 문제를 모두 해결했는지
   status: StudentStatus;
   needsHelp: boolean;
   helpReason: string | null;
@@ -102,6 +109,10 @@ export type ClassAnalytics = {
   averageProgress: number; // 평균 진행률(%)
   overallSuccessRate: number; // 전체 시도 대비 성공 시도 비율(%)
   totalFailCount: number; // 전체 실패 시도 수
+  // 결과 보기 게이팅
+  finishedCount: number; // 문제집을 모두 마친 학생 수
+  unfinishedStudents: StudentProgress[]; // 아직 마무리하지 않은 학생(미시작 포함)
+  allFinished: boolean; // 참여 학생이 1명 이상이고 전원 마무리했는지
   // 세부 분석
   studentProgress: StudentProgress[];
   helpNeededStudents: StudentProgress[];
@@ -353,6 +364,8 @@ function buildStudentProgress(
       .sort((a, b) => (a.createdAt ?? "").localeCompare(b.createdAt ?? ""));
 
     const attemptCount = logs.length;
+    const failCount = logs.filter((log) => !log.success).length;
+    const errorRate = attemptCount > 0 ? Math.round((failCount / attemptCount) * 100) : 0;
 
     // 선택된 문제 중 성공한 고유 퍼즐 수
     const solvedPuzzleIds = new Set(
@@ -360,9 +373,22 @@ function buildStudentProgress(
         .filter((log) => log.success && selectedPuzzleIds.has(log.puzzleId))
         .map((log) => log.puzzleId),
     );
+    // 시도는 했지만 아직 못 푼 퍼즐
+    const attemptedPuzzleIds = new Set(
+      logs.filter((log) => selectedPuzzleIds.has(log.puzzleId)).map((log) => log.puzzleId),
+    );
     const solvedCount = solvedPuzzleIds.size;
     const progressPercent =
       selectedProblemCount > 0 ? Math.round((solvedCount / selectedProblemCount) * 100) : 0;
+
+    // 선택 문제 순서대로의 셀 상태(가로 트래킹용)
+    const problemCells: ProblemCellState[] = selectedProblems.map((problem) => {
+      if (solvedPuzzleIds.has(problem.mappedPuzzleId)) return "solved";
+      if (attemptedPuzzleIds.has(problem.mappedPuzzleId)) return "attempted";
+      return "untouched";
+    });
+
+    const isFinished = selectedProblemCount > 0 && solvedCount >= selectedProblemCount;
 
     const lastLog = logs[logs.length - 1] ?? null;
     const lastActivityAt = lastLog?.createdAt ?? null;
@@ -392,7 +418,7 @@ function buildStudentProgress(
     if (attemptCount === 0) {
       status = "아직 시작 안 함";
       helpReason = "입장 후 아직 풀이 시도가 없습니다.";
-    } else if (selectedProblemCount > 0 && solvedCount >= selectedProblemCount) {
+    } else if (isFinished) {
       status = "완료";
     } else if (recentFailCount >= 2) {
       status = "도움 필요";
@@ -415,11 +441,15 @@ function buildStudentProgress(
       selectedProblemCount,
       progressPercent,
       attemptCount,
+      failCount,
+      errorRate,
       recentFailCount,
       lastActivityAt,
       minutesSinceLastActivity,
       lastProblemTitle,
       lastProblemConcept,
+      problemCells,
+      isFinished,
       status,
       needsHelp,
       helpReason,
@@ -558,6 +588,11 @@ export async function getClassAnalytics(classCode: string): Promise<ClassAnalyti
 
   const helpNeededStudents = studentProgress.filter((s) => s.needsHelp);
 
+  // 결과 보기 게이팅: 참여 학생이 1명 이상이고 전원이 문제집을 마쳐야 결과가 열린다.
+  const finishedCount = studentProgress.filter((s) => s.isFinished).length;
+  const unfinishedStudents = studentProgress.filter((s) => !s.isFinished);
+  const allFinished = studentProgress.length > 0 && unfinishedStudents.length === 0;
+
   // 가장 어려운 개념 = 평균 성공률이 가장 낮은(어려움이 가장 높은) 개념
   const hardestConcept = [...conceptStats]
     .filter((c) => c.failCount > 0 || c.averageSuccessRate < 100)
@@ -579,6 +614,9 @@ export async function getClassAnalytics(classCode: string): Promise<ClassAnalyti
     averageProgress,
     overallSuccessRate,
     totalFailCount,
+    finishedCount,
+    unfinishedStudents,
+    allFinished,
     studentProgress,
     helpNeededStudents,
     problemStats,

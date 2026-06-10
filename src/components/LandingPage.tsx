@@ -2,9 +2,9 @@ import { BarChart3, BookOpen, Play, TerminalSquare, Users } from "lucide-react";
 
 export function LandingPage(): React.JSX.Element {
   return (
-    <main className="classroom-page landing-page">
+    <main className="classroom-page landing-page page-enter">
       <div className="classroom-scanlines" aria-hidden="true" />
-      <section className="landing-hero">
+      <section className="landing-hero page-enter-item" style={{ ["--i" as string]: 0 }}>
         <span className="classroom-kicker">// ESCAPE THE DATA ROOM</span>
         <h1>ETDR 수업 세션</h1>
         <p>
@@ -28,7 +28,7 @@ export function LandingPage(): React.JSX.Element {
         </div>
       </section>
 
-      <section className="classroom-band">
+      <section className="classroom-band page-enter-item" style={{ ["--i" as string]: 1 }}>
         <div className="flow-grid">
           <div className="flow-item">
             <BookOpen size={22} />

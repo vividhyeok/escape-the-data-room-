@@ -5993,6 +5993,382 @@ button, a, select, input[type="button"], input[type="submit"] { cursor: pointer;
 }
 
 /* =========================================
+   화면 전환 (page transition)
+   ========================================= */
+
+.page-enter {
+  animation: pageEnter 380ms cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+@keyframes pageEnter {
+  from { opacity: 0; transform: translateY(10px) scale(0.995); filter: blur(2px); }
+  to   { opacity: 1; transform: translateY(0) scale(1); filter: blur(0); }
+}
+
+/* 패널들이 위에서부터 차례로 떠오르는 스태거 */
+.page-enter-item {
+  animation: itemEnter 460ms cubic-bezier(0.22, 1, 0.36, 1) both;
+  animation-delay: calc(var(--i, 0) * 70ms + 60ms);
+}
+
+@keyframes itemEnter {
+  from { opacity: 0; transform: translateY(14px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .page-enter,
+  .page-enter-item {
+    animation: none;
+  }
+}
+
+/* =========================================
+   교사: 문제집(ProblemSet) 선택
+   ========================================= */
+
+.set-list {
+  display: grid;
+  gap: 12px;
+  margin-top: 6px;
+}
+
+.set-card {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 14px;
+  align-items: start;
+  width: 100%;
+  padding: 16px 18px;
+  border: 1px solid rgba(122, 243, 255, 0.18);
+  border-radius: 8px;
+  background: rgba(1, 7, 11, 0.55);
+  color: #edf9ff;
+  text-align: left;
+  cursor: pointer;
+  transition: border-color 150ms ease, background 150ms ease, transform 150ms ease;
+}
+
+.set-card:hover {
+  border-color: rgba(122, 243, 255, 0.5);
+  transform: translateY(-1px);
+}
+
+.set-card.selected {
+  border-color: #94ffc5;
+  background: rgba(10, 36, 27, 0.42);
+  box-shadow: inset 0 0 0 1px rgba(148, 255, 197, 0.4);
+}
+
+.set-card.empty {
+  border-style: dashed;
+  opacity: 0.6;
+  cursor: default;
+}
+
+.set-card.empty:hover {
+  transform: none;
+  border-color: rgba(122, 243, 255, 0.18);
+}
+
+.set-card-check {
+  font-size: 1.2rem;
+  line-height: 1.4;
+  color: #94ffc5;
+}
+
+.set-card.empty .set-card-check {
+  color: #7af3ff;
+}
+
+.set-card-body {
+  display: grid;
+  gap: 5px;
+  min-width: 0;
+}
+
+.set-card-body strong {
+  font-size: 1.05rem;
+}
+
+.set-card-desc {
+  color: #aebfc8;
+  font-size: 0.9rem;
+}
+
+.set-card-meta {
+  color: #f3bb61;
+  font-size: 0.82rem;
+  font-weight: 700;
+}
+
+.set-preview {
+  margin-top: 14px;
+  border: 1px solid rgba(122, 243, 255, 0.14);
+  border-radius: 6px;
+  background: rgba(0, 0, 0, 0.2);
+}
+
+.set-preview > summary {
+  cursor: pointer;
+  padding: 12px 14px;
+  color: #7af3ff;
+  font-weight: 800;
+  font-size: 0.86rem;
+  list-style: none;
+}
+
+.set-preview > summary::-webkit-details-marker { display: none; }
+.set-preview > summary::before { content: "▸ "; }
+.set-preview[open] > summary::before { content: "▾ "; }
+
+.set-preview-list {
+  margin: 0;
+  padding: 0 14px 14px 34px;
+  display: grid;
+  gap: 8px;
+}
+
+.set-preview-list li {
+  display: grid;
+  gap: 2px;
+}
+
+.preview-title { font-weight: 700; }
+
+.preview-meta {
+  color: #aebfc8;
+  font-size: 0.82rem;
+}
+
+/* =========================================
+   대시보드: 학생별 가로 진행 트래킹
+   ========================================= */
+
+.dashboard-summary.slim {
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+}
+
+.dashboard-summary.slim .summary-cell {
+  min-height: 78px;
+  padding: 14px;
+}
+
+.track-toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 14px;
+}
+
+.sort-group {
+  display: inline-flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  padding: 4px;
+  border: 1px solid rgba(122, 243, 255, 0.2);
+  border-radius: 999px;
+  background: rgba(0, 0, 0, 0.28);
+}
+
+.sort-chip {
+  padding: 7px 14px;
+  border: 0;
+  border-radius: 999px;
+  background: transparent;
+  color: #aebfc8;
+  font-size: 0.84rem;
+  font-weight: 800;
+  cursor: pointer;
+  transition: background 140ms ease, color 140ms ease;
+}
+
+.sort-chip:hover { color: #edf9ff; }
+
+.sort-chip.active {
+  background: #7af3ff;
+  color: #02141a;
+}
+
+.track-legend {
+  display: inline-flex;
+  gap: 14px;
+  color: #aebfc8;
+  font-size: 0.8rem;
+}
+
+.track-legend span {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.cell-dot {
+  width: 11px;
+  height: 11px;
+  border-radius: 3px;
+  display: inline-block;
+}
+
+.cell-dot.solved { background: #94ffc5; }
+.cell-dot.attempted { background: #ffb454; }
+.cell-dot.untouched { background: rgba(255, 255, 255, 0.16); }
+
+.track-table {
+  display: grid;
+  gap: 8px;
+}
+
+.track-row {
+  display: grid;
+  grid-template-columns: minmax(120px, 180px) minmax(0, 1fr) minmax(180px, auto);
+  gap: 16px;
+  align-items: center;
+  padding: 12px 14px;
+  border: 1px solid rgba(122, 243, 255, 0.13);
+  border-radius: 8px;
+  background: rgba(0, 0, 0, 0.22);
+}
+
+.track-name {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  min-width: 0;
+}
+
+.track-name strong {
+  color: #ffffff;
+  font-size: 1rem;
+  overflow-wrap: anywhere;
+}
+
+.track-cells {
+  display: flex;
+  gap: 3px;
+  flex-wrap: nowrap;
+  overflow: hidden;
+}
+
+.track-cell {
+  flex: 1 1 0;
+  min-width: 6px;
+  height: 22px;
+  border-radius: 3px;
+  background: rgba(255, 255, 255, 0.12);
+  transition: background 200ms ease;
+}
+
+.track-cell.solved {
+  background: linear-gradient(180deg, #94ffc5, #5fe0a6);
+  box-shadow: 0 0 8px rgba(148, 255, 197, 0.35);
+}
+
+.track-cell.attempted {
+  background: linear-gradient(180deg, #ffc978, #ffb454);
+}
+
+.track-cell.untouched {
+  background: rgba(255, 255, 255, 0.1);
+}
+
+.track-stats {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px 14px;
+  justify-content: flex-end;
+  align-items: center;
+  text-align: right;
+}
+
+.track-progress {
+  color: #ffffff;
+  font-weight: 900;
+  white-space: nowrap;
+}
+
+.track-error,
+.track-time {
+  color: #aebfc8;
+  font-size: 0.86rem;
+  white-space: nowrap;
+}
+
+/* 결과 게이팅 */
+.results-locked {
+  display: grid;
+  gap: 10px;
+  padding: 18px;
+  border: 1px dashed rgba(122, 243, 255, 0.3);
+  border-radius: 8px;
+  background: rgba(0, 0, 0, 0.22);
+}
+
+.locked-line {
+  margin: 0;
+  font-size: 1.02rem;
+}
+
+.locked-line strong { color: #ffb454; }
+
+.classroom-button.subtle {
+  border-color: rgba(122, 243, 255, 0.24);
+  background: transparent;
+  color: #aebfc8;
+  font-weight: 700;
+}
+
+.classroom-button.subtle:hover {
+  color: #edf9ff;
+  border-color: rgba(122, 243, 255, 0.5);
+}
+
+.results-subtitle {
+  margin: 6px 0 12px;
+  font-size: 1.05rem;
+}
+
+.results-two-col {
+  margin-top: 18px;
+}
+
+.results-col {
+  display: grid;
+  gap: 10px;
+  align-content: start;
+}
+
+@media (max-width: 860px) {
+  .dashboard-summary.slim {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .set-card {
+    grid-template-columns: auto 1fr;
+  }
+
+  .track-row {
+    grid-template-columns: 1fr;
+    gap: 10px;
+  }
+
+  .track-stats {
+    justify-content: flex-start;
+    text-align: left;
+  }
+
+  .track-cell {
+    height: 18px;
+  }
+
+  .results-two-col {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* =========================================
    Global VFX: Glitch, Distortion, Success
    ========================================= */
 

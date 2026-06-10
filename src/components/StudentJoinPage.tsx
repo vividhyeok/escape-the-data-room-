@@ -60,9 +60,9 @@ export function StudentJoinPage({ requireCodeNotice = false }: StudentJoinPagePr
   }
 
   return (
-    <main className="classroom-page join-page">
+    <main className="classroom-page join-page page-enter">
       <div className="classroom-scanlines" aria-hidden="true" />
-      <section className="join-console">
+      <section className="join-console page-enter-item" style={{ ["--i" as string]: 0 }}>
         <span className="classroom-kicker">// STUDENT ACCESS</span>
         <h1>ETDR 수업 입장</h1>
         <p>교사가 알려준 6자리 코드를 입력하면 방탈출형 파이썬 복습 활동에 참여합니다.</p>

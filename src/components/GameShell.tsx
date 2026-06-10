@@ -90,6 +90,15 @@ export function GameShell(): React.JSX.Element {
     return () => clearInterval(interval);
   }, [lastActiveTime, gameState]);
 
+  // 게임이 PLAYING 상태를 벗어나면(타이틀/크레딧 등) 긴장 연출 사운드를 확실히 종료한다.
+  // (메인 화면으로 돌아가도 심장박동/숨소리가 계속 울리던 문제 방지)
+  useEffect(() => {
+    if (gameState !== "PLAYING") {
+      setIsTense(false);
+      SoundEngine.stopBreathing();
+    }
+  }, [gameState]);
+
   // Breathing + heartbeat audio when tense
   useEffect(() => {
     let heartbeatInterval: number | undefined;
@@ -279,6 +288,7 @@ export function GameShell(): React.JSX.Element {
 
   const handleReturnToTitle = () => {
     setIsPaused(false);
+    setIsTense(false); // 긴장 연출(심장박동 인터벌) 즉시 해제
     SoundEngine.stopBreathing();
     SoundEngine.playBGM('/assets/audio/main-banner.mp3');
     useGameStore.getState().setGameState("TITLE");

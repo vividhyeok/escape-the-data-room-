@@ -30,12 +30,21 @@ export function TitleScreen(): React.JSX.Element {
   const [isFullscreen, setIsFullscreen] = useState(!!document.fullscreenElement);
 
   useEffect(() => {
-    const initAudio = () => {
+    // 타이틀 화면 진입 즉시 메인 배너 BGM 재생 시도.
+    // (학생이 입장 버튼을 눌러 #/play 로 넘어온 경우처럼, 직전 사용자 제스처가 있으면 바로 재생됨)
+    const playTitleBgm = () => {
       SoundEngine.init();
+      SoundEngine.resume();
       SoundEngine.playBGM('/assets/audio/main-banner.mp3');
     };
-    window.addEventListener("click", initAudio, { once: true });
-    return () => window.removeEventListener("click", initAudio);
+    playTitleBgm();
+    // 브라우저 자동재생 정책으로 막혔을 경우, 첫 상호작용에서 다시 시도하는 폴백.
+    window.addEventListener("pointerdown", playTitleBgm, { once: true });
+    window.addEventListener("keydown", playTitleBgm, { once: true });
+    return () => {
+      window.removeEventListener("pointerdown", playTitleBgm);
+      window.removeEventListener("keydown", playTitleBgm);
+    };
   }, []);
 
   useEffect(() => {
