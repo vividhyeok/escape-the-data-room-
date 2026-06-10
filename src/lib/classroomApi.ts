@@ -1,5 +1,13 @@
-import { textbookProblemBank, type TextbookProblem } from "../data/textbookProblemBank";
+import {
+  getTextbookProblemByPuzzleId,
+  getTextbookProblemsByIds,
+  type TextbookProblem,
+} from "../data/textbookProblemBank";
 import { getSupabaseClient } from "./supabaseClient";
+
+// 수업 중 "활동 없음"으로 간주하는 기준 시간(분).
+// 실제 수업에서는 진행 속도에 따라 조정할 수 있는 값입니다.
+const STALE_ACTIVITY_MINUTES = 5;
 
 export const CURRENT_STUDENT_SESSION_KEY = "etdr.currentStudentSession";
 export const LAST_CLASS_CODE_KEY = "etdr.lastClassCode";
@@ -46,6 +54,7 @@ export type ProblemAnalytics = {
   attemptCount: number;
   failCount: number;
   successStudentCount: number;
+  unsolvedStudentCount: number;
   successRate: number;
 };
 
@@ -56,14 +65,50 @@ export type ConceptAnalytics = {
   level: "낮음" | "보통" | "높음";
 };
 
+// 수업 중 교사가 한눈에 읽는 학생 상태 라벨
+export type StudentStatus =
+  | "아직 시작 안 함"
+  | "진행 중"
+  | "순조로움"
+  | "도움 필요"
+  | "완료";
+
+export type StudentProgress = {
+  studentId: string;
+  nickname: string;
+  solvedCount: number;
+  selectedProblemCount: number;
+  progressPercent: number;
+  attemptCount: number;
+  recentFailCount: number; // 마지막으로 시도한 문제에서 연속 실패한 횟수
+  lastActivityAt: string | null;
+  minutesSinceLastActivity: number | null;
+  lastProblemTitle: string | null;
+  lastProblemConcept: string | null;
+  status: StudentStatus;
+  needsHelp: boolean;
+  helpReason: string | null;
+};
+
 export type ClassAnalytics = {
   classSession: ClassSession;
   students: StudentSession[];
   attemptLogs: AttemptLog[];
   studentCount: number;
   selectedProblemCount: number;
+  // 전체 진행 요약
+  notStartedCount: number; // 아직 풀이 시도가 없는 학생 수
+  solvedAnyCount: number; // 1개 이상 성공한 학생 수
+  averageProgress: number; // 평균 진행률(%)
+  overallSuccessRate: number; // 전체 시도 대비 성공 시도 비율(%)
+  totalFailCount: number; // 전체 실패 시도 수
+  // 세부 분석
+  studentProgress: StudentProgress[];
+  helpNeededStudents: StudentProgress[];
   problemStats: ProblemAnalytics[];
   conceptStats: ConceptAnalytics[];
+  hardestConcept: string | null;
+  hardestProblem: ProblemAnalytics | null;
   recommendations: string[];
   hasAttempts: boolean;
 };
@@ -282,6 +327,106 @@ function getAttemptStudentKey(log: AttemptLog): string {
   return log.studentId || log.nickname || log.id;
 }
 
+function minutesSince(isoString: string | null): number | null {
+  if (!isoString) return null;
+  const then = new Date(isoString).getTime();
+  if (Number.isNaN(then)) return null;
+  return Math.max(0, Math.round((Date.now() - then) / 60000));
+}
+
+// 학생별 진행 상태를 계산합니다.
+// - student_sessions 를 기준으로 학생 목록을 만들고
+// - 각 학생의 attempt_logs 를 묶어 성공한 문제 수, 마지막 활동, 연속 실패 등을 계산합니다.
+function buildStudentProgress(
+  students: StudentSession[],
+  attemptLogs: AttemptLog[],
+  selectedProblems: TextbookProblem[],
+): StudentProgress[] {
+  const selectedPuzzleIds = new Set(selectedProblems.map((p) => p.mappedPuzzleId));
+  const selectedProblemCount = selectedProblems.length;
+
+  return students.map((student) => {
+    // 시간순으로 정렬된 이 학생의 시도 로그
+    const logs = attemptLogs
+      .filter((log) => getAttemptStudentKey(log) === student.studentId)
+      .slice()
+      .sort((a, b) => (a.createdAt ?? "").localeCompare(b.createdAt ?? ""));
+
+    const attemptCount = logs.length;
+
+    // 선택된 문제 중 성공한 고유 퍼즐 수
+    const solvedPuzzleIds = new Set(
+      logs
+        .filter((log) => log.success && selectedPuzzleIds.has(log.puzzleId))
+        .map((log) => log.puzzleId),
+    );
+    const solvedCount = solvedPuzzleIds.size;
+    const progressPercent =
+      selectedProblemCount > 0 ? Math.round((solvedCount / selectedProblemCount) * 100) : 0;
+
+    const lastLog = logs[logs.length - 1] ?? null;
+    const lastActivityAt = lastLog?.createdAt ?? null;
+    const minutesSinceLastActivity = minutesSince(lastActivityAt);
+    const lastProblem = lastLog ? getTextbookProblemByPuzzleId(lastLog.puzzleId) : undefined;
+    const lastProblemTitle = lastProblem?.title ?? null;
+    const lastProblemConcept = lastProblem?.concept ?? null;
+
+    // 마지막으로 시도한 문제에서의 연속 실패 횟수
+    let recentFailCount = 0;
+    if (lastLog && !lastLog.success) {
+      for (let i = logs.length - 1; i >= 0; i -= 1) {
+        const log = logs[i];
+        if (log.puzzleId !== lastLog.puzzleId) break;
+        if (log.success) break;
+        recentFailCount += 1;
+      }
+    }
+
+    const isStale =
+      minutesSinceLastActivity !== null && minutesSinceLastActivity >= STALE_ACTIVITY_MINUTES;
+
+    // 상태 라벨 판단 (위에서부터 우선순위)
+    let status: StudentStatus;
+    let helpReason: string | null = null;
+
+    if (attemptCount === 0) {
+      status = "아직 시작 안 함";
+      helpReason = "입장 후 아직 풀이 시도가 없습니다.";
+    } else if (selectedProblemCount > 0 && solvedCount >= selectedProblemCount) {
+      status = "완료";
+    } else if (recentFailCount >= 2) {
+      status = "도움 필요";
+      helpReason = `${lastProblemConcept ?? lastProblemTitle ?? "최근"} 문제에서 ${recentFailCount}회 연속 실패`;
+    } else if (isStale && progressPercent < 50) {
+      status = "도움 필요";
+      helpReason = `${lastProblemTitle ?? "마지막 문제"} 시도 후 ${minutesSinceLastActivity}분간 활동이 없습니다.`;
+    } else if (progressPercent >= 70) {
+      status = "순조로움";
+    } else {
+      status = "진행 중";
+    }
+
+    const needsHelp = status === "도움 필요" || status === "아직 시작 안 함";
+
+    return {
+      studentId: student.studentId,
+      nickname: student.nickname,
+      solvedCount,
+      selectedProblemCount,
+      progressPercent,
+      attemptCount,
+      recentFailCount,
+      lastActivityAt,
+      minutesSinceLastActivity,
+      lastProblemTitle,
+      lastProblemConcept,
+      status,
+      needsHelp,
+      helpReason,
+    };
+  });
+}
+
 function buildRecommendations(problemStats: ProblemAnalytics[]): string[] {
   const weakProblems = problemStats
     .filter((stat) => stat.attemptCount > 0 && (stat.successRate < 80 || stat.failCount > 2))
@@ -343,11 +488,9 @@ export async function getClassAnalytics(classCode: string): Promise<ClassAnalyti
   const attemptStudentCount = new Set(attemptLogs.map(getAttemptStudentKey)).size;
   const studentCount = Math.max(students.length, attemptStudentCount);
 
-  const selectedProblems = classSession.selectedProblemIds
-    .map((problemId) => textbookProblemBank.find((problem) => problem.id === problemId))
-    .filter((problem): problem is TextbookProblem => Boolean(problem));
+  const selectedProblems = getTextbookProblemsByIds(classSession.selectedProblemIds);
 
-  const problemStats = selectedProblems.map((problem) => {
+  const problemStats: ProblemAnalytics[] = selectedProblems.map((problem) => {
     const logsForPuzzle = attemptLogs.filter((log) => log.puzzleId === problem.mappedPuzzleId);
     const successfulStudents = new Set(
       logsForPuzzle
@@ -363,6 +506,7 @@ export async function getClassAnalytics(classCode: string): Promise<ClassAnalyti
       attemptCount: logsForPuzzle.length,
       failCount: logsForPuzzle.filter((log) => !log.success).length,
       successStudentCount,
+      unsolvedStudentCount: Math.max(0, studentCount - successStudentCount),
       successRate,
     };
   });
@@ -398,14 +542,49 @@ export async function getClassAnalytics(classCode: string): Promise<ClassAnalyti
     };
   });
 
+  const studentProgress = buildStudentProgress(students, attemptLogs, selectedProblems);
+
+  const notStartedCount = studentProgress.filter((s) => s.attemptCount === 0).length;
+  const solvedAnyCount = studentProgress.filter((s) => s.solvedCount > 0).length;
+  const averageProgress = studentProgress.length
+    ? Math.round(
+        studentProgress.reduce((sum, s) => sum + s.progressPercent, 0) / studentProgress.length,
+      )
+    : 0;
+  const totalFailCount = attemptLogs.filter((log) => !log.success).length;
+  const overallSuccessRate = attemptLogs.length
+    ? Math.round((attemptLogs.filter((log) => log.success).length / attemptLogs.length) * 100)
+    : 0;
+
+  const helpNeededStudents = studentProgress.filter((s) => s.needsHelp);
+
+  // 가장 어려운 개념 = 평균 성공률이 가장 낮은(어려움이 가장 높은) 개념
+  const hardestConcept = [...conceptStats]
+    .filter((c) => c.failCount > 0 || c.averageSuccessRate < 100)
+    .sort((a, b) => a.averageSuccessRate - b.averageSuccessRate || b.failCount - a.failCount)[0]?.concept ?? null;
+
+  // 가장 어려운 문제 = 성공률이 낮고 실패가 많은 문제
+  const hardestProblem = [...problemStats]
+    .filter((p) => p.attemptCount > 0)
+    .sort((a, b) => a.successRate - b.successRate || b.failCount - a.failCount)[0] ?? null;
+
   return {
     classSession,
     students,
     attemptLogs,
     studentCount,
     selectedProblemCount: selectedProblems.length,
+    notStartedCount,
+    solvedAnyCount,
+    averageProgress,
+    overallSuccessRate,
+    totalFailCount,
+    studentProgress,
+    helpNeededStudents,
     problemStats,
     conceptStats,
+    hardestConcept,
+    hardestProblem,
     recommendations: buildRecommendations(problemStats),
     hasAttempts: attemptLogs.length > 0,
   };

@@ -8,8 +8,9 @@ export function LandingPage(): React.JSX.Element {
         <span className="classroom-kicker">// ESCAPE THE DATA ROOM</span>
         <h1>ETDR 수업 세션</h1>
         <p>
-          기존 파이썬 방탈출 게임을 유지하면서, 교사가 문제 세트를 선택하고 학생 풀이 로그를 확인하는
-          서버 연동형 형성평가 MVP입니다.
+          ETDR은 SW/AI 캠프나 비교과 파이썬 수업 초반에 학생들의 기초 문법 이해 수준을 짧게 진단하고,
+          교사가 학생들이 실제로 어려워한 개념만 선별해 보완 설명할 수 있도록 돕는 방탈출형 게임 기반
+          형성평가 도구입니다.
         </p>
         <div className="landing-actions" aria-label="주요 화면 이동">
           <a className="classroom-button primary" href="#/teacher">
