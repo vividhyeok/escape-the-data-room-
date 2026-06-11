@@ -17,7 +17,7 @@ export const rooms: Room[] = [
     subtitle: "잠긴 서재",
     description: "오래된 서재에 눈을 떴다. 장비들은 파이썬 코드로만 반응한다. 변수 할당·연산·인덱싱·슬라이싱으로 4개의 코드 조각을 모아 문을 열어라.",
     views: defaultViews,
-    doorCode: "8522",
+    doorCode: "852271",
     panoramaImage: `${BG}/room-0/pano.png`,
   },
   {
@@ -26,7 +26,7 @@ export const rooms: Room[] = [
     subtitle: "신호실",
     description: "라디오와 모니터가 가득한 신호실. 잡음 속에서 코드를 해독해야 한다. 문자열 메서드(upper·replace·split)와 조건문(if/else)으로 4개의 코드 조각을 찾아라.",
     views: defaultViews,
-    doorCode: "7479",
+    doorCode: "747936",
     panoramaImage: `${BG}/room-1/pano.png`,
   },
   {
@@ -35,7 +35,7 @@ export const rooms: Room[] = [
     subtitle: "기록실",
     description: "방대한 데이터 기록이 쌓인 서버 아카이브. 반복문(for·while)과 딕셔너리로 데이터를 처리하여 4개의 코드 조각을 완성하라.",
     views: defaultViews,
-    doorCode: "3547",
+    doorCode: "354792",
     panoramaImage: `${BG}/room-2/pano.png`,
   },
   {

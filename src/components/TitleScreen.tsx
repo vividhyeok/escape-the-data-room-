@@ -113,8 +113,14 @@ export function TitleScreen(): React.JSX.Element {
           {isMuted ? <VolumeX size={20} /> : <Volume2 size={20} />}
         </button>
       </div>
+      <div className="title-vignette" aria-hidden="true" />
+      <div className="title-scanlines" aria-hidden="true" />
       <div className="title-content">
-        <h1 className="game-logo">THE CODE ROOM</h1>
+        <div className="title-logo-block">
+          <span className="title-eyebrow">// PYTHON ESCAPE · 형성평가</span>
+          <h1 className="game-logo title-logo-glitch" data-text="THE CODE ROOM">THE CODE ROOM</h1>
+          <p className="title-tagline">데이터 룸에 갇혔다. 파이썬 코드로 잠금을 풀고 탈출하라.</p>
+        </div>
         <div className="title-menu">
           {hasSaveData ? (
             <>
@@ -128,6 +134,11 @@ export function TitleScreen(): React.JSX.Element {
           <button className="title-btn" onClick={() => { SoundEngine.playClick(); setShowSettings(true); }} onMouseEnter={() => SoundEngine.playHover()} type="button">SETTINGS</button>
           <button className="title-btn" onClick={() => { SoundEngine.playClick(); setShowCredits(true); }} onMouseEnter={() => SoundEngine.playHover()} type="button">CREDITS</button>
         </div>
+      </div>
+
+      <div className="title-footer" aria-hidden="true">
+        <span>2ntp · 김민혁 · 공원호</span>
+        <span>2026-1 캡스톤</span>
       </div>
 
       {showSettings && (
