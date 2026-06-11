@@ -70,10 +70,19 @@ def evaluate_puzzle(user_code, required_syntax_json, banned_syntax_json, test_ca
         expected = tc.get("expectedOutput", None)
         expected_str = str(expected)
 
-        env = {}
+        # 입력값 추출: "data = 5" -> "5", "data = 'AB'" -> "'AB'"
+        if "=" in input_code:
+            stdin_value = input_code.split("=", 1)[1].strip()
+        else:
+            stdin_value = input_code.strip()
+
+        # input() 이 호출되면 이 테스트 케이스의 입력값(문자열)을 돌려준다 (실제 stdin 처럼)
+        def fake_input(*args, _v=stdin_value):
+            return _v
+
+        env = {"input": fake_input}
         buf = io.StringIO()
         try:
-            exec(input_code, env)
             with contextlib.redirect_stdout(buf):
                 exec(user_code, env)
         except Exception as e:
@@ -84,7 +93,7 @@ def evaluate_puzzle(user_code, required_syntax_json, banned_syntax_json, test_ca
         # 1순위: print() 출력(stdout)으로 채점
         if out != "":
             if out != expected_str:
-                return json.dumps({"success": False, "error": f"출력이 예시와 다릅니다.\\n  입력: {input_code}\\n  기대 출력: {expected_str}\\n  실제 출력: {out}"})
+                return json.dumps({"success": False, "error": f"출력이 예시와 다릅니다.\\n  입력: {stdin_value}\\n  기대 출력: {expected_str}\\n  실제 출력: {out}"})
         # 2순위(보조): answer 변수에 저장한 경우도 인정
         elif "answer" in env:
             if env["answer"] != expected:

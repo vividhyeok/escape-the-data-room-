@@ -19,26 +19,27 @@ import { SoundEngine } from "../utils/SoundEngine";
 
 const GAME_BGM_URL = "/assets/audio/black-circuit.mp3";
 
+const DEMO_INPUT = "data = eval(input())\n";
 const DEMO_CODE_DRAFTS: Record<string, string> = {
-  "room-0-pattern-tiles":   "print(data)\n",
-  "room-0-tv-sequence":     "print(data + 10)\n",
-  "room-0-desk-terminal":   "print(data[0])\n",
-  "room-0-mini-ox-card":    "print(data[:3])\n",
-  "room-0-name-tags":       "print(len(data))\n",
-  "room-0-bookshelf-note":  "print(data * 3)\n",
-  "room-1-word-billboard":  "print(data.upper())\n",
-  "room-1-ox-monitor":      "print(data.replace('X', 'O'))\n",
-  "room-1-number-panel":    "print(data.split())\n",
-  "room-1-radio-signal":    "if data >= 100:\n    print('PASS')\nelse:\n    print('FAIL')\n",
-  "room-1-name-card":       "print(data % 2 == 0)\n",
-  "room-1-checksum-tablet": "print(data > 0 and data < 10)\n",
-  "room-2-file-cabinet":    "total = 0\nfor x in data:\n    total = total + x\nprint(total)\n",
-  "room-2-broken-tags":     "result = []\nfor x in data:\n    if x > 0:\n        result.append(x)\nprint(result)\n",
-  "room-2-score-board":     "best = 0\nfor item in data:\n    if item['score'] > best:\n        best = item['score']\nprint(best)\n",
-  "room-2-timeline":        "result = []\nn = data\nwhile n > 0:\n    result.append(n)\n    n = n - 1\nprint(result)\n",
-  "room-2-access-log":      "print([x * 2 for x in data if x > 0])\n",
-  "room-2-checksum-ledger": "result = ''\nfor char in data:\n    if char not in 'aeiou':\n        result = result + char\nprint(result)\n",
-  "room-3-validator":       "print(data[::-1])\n",
+  "room-0-pattern-tiles":   DEMO_INPUT + "print(data)\n",
+  "room-0-tv-sequence":     DEMO_INPUT + "print(data + 10)\n",
+  "room-0-desk-terminal":   DEMO_INPUT + "print(data[0])\n",
+  "room-0-mini-ox-card":    DEMO_INPUT + "print(data[:3])\n",
+  "room-0-name-tags":       DEMO_INPUT + "print(len(data))\n",
+  "room-0-bookshelf-note":  DEMO_INPUT + "print(data * 3)\n",
+  "room-1-word-billboard":  DEMO_INPUT + "print(data.upper())\n",
+  "room-1-ox-monitor":      DEMO_INPUT + "print(data.replace('X', 'O'))\n",
+  "room-1-number-panel":    DEMO_INPUT + "print(data.split())\n",
+  "room-1-radio-signal":    DEMO_INPUT + "if data >= 100:\n    print('PASS')\nelse:\n    print('FAIL')\n",
+  "room-1-name-card":       DEMO_INPUT + "print(data % 2 == 0)\n",
+  "room-1-checksum-tablet": DEMO_INPUT + "print(data > 0 and data < 10)\n",
+  "room-2-file-cabinet":    DEMO_INPUT + "total = 0\nfor x in data:\n    total = total + x\nprint(total)\n",
+  "room-2-broken-tags":     DEMO_INPUT + "result = []\nfor x in data:\n    if x > 0:\n        result.append(x)\nprint(result)\n",
+  "room-2-score-board":     DEMO_INPUT + "best = 0\nfor item in data:\n    if item['score'] > best:\n        best = item['score']\nprint(best)\n",
+  "room-2-timeline":        DEMO_INPUT + "result = []\nn = data\nwhile n > 0:\n    result.append(n)\n    n = n - 1\nprint(result)\n",
+  "room-2-access-log":      DEMO_INPUT + "print([x * 2 for x in data if x > 0])\n",
+  "room-2-checksum-ledger": DEMO_INPUT + "result = ''\nfor char in data:\n    if char not in 'aeiou':\n        result = result + char\nprint(result)\n",
+  "room-3-validator":       DEMO_INPUT + "print(data[::-1])\n",
 };
 
 export function GameShell(): React.JSX.Element {

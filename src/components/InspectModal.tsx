@@ -211,8 +211,8 @@ export function InspectModal({
                 </div>
               ))}
               <p className="io-note">
-                왼쪽 <b>입력</b>이 주어질 때 오른쪽 <b>출력</b>이 나오도록 <b>print()</b> 로 출력하면
-                자동 채점됩니다.
+                왼쪽 <b>입력</b>이 <b>input()</b> 으로 주어집니다. 오른쪽 <b>출력</b>이 나오도록
+                <b>print()</b> 로 출력하면 자동 채점됩니다.
               </p>
             </div>
           </div>
