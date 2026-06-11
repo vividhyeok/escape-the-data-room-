@@ -1,5 +1,5 @@
-import { AlertTriangle, BarChart3, ChevronLeft, ChevronRight, Loader2, Lock, RefreshCw, Users } from "lucide-react";
-import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
+import { AlertTriangle, CheckCircle, Clock, RefreshCw, Users } from "lucide-react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import {
   getClassAnalytics,
   getLastClassCode,
@@ -9,63 +9,50 @@ import {
   type StudentStatus,
 } from "../lib/classroomApi";
 
-const STUDENT_JOIN_URL = "https://escapethedataroom.vercel.app/#/join";
-
-// 수업 중 모니터링용 자동 새로고침 간격(ms). WebSocket/Realtime 없이 단순 polling 입니다.
+// 실시간 모니터 자동 새로고침 간격(ms)
 const POLL_INTERVAL_MS = 8000;
 
-type SortKey = "progress-desc" | "progress-asc" | "error-desc" | "error-asc";
+type SortKey = "roster" | "behind" | "help";
 
 const SORT_OPTIONS: { key: SortKey; label: string }[] = [
-  { key: "progress-desc", label: "진행 빠른순" },
-  { key: "progress-asc", label: "진행 느린순" },
-  { key: "error-desc", label: "오답률 높은순" },
-  { key: "error-asc", label: "오답률 낮은순" },
+  { key: "help", label: "도움 필요 먼저" },
+  { key: "behind", label: "진행 낮은순" },
+  { key: "roster", label: "입장순" },
 ];
 
-// 상시로는 닉네임·진행 트랙만 보여주고, 보조 지표는 좌우로 넘겨가며 하나씩 본다(공간 절약).
-const METRICS: { key: string; label: string; get: (s: StudentProgress) => string }[] = [
-  { key: "error", label: "오답률", get: (s) => `${s.errorRate}%` },
-  { key: "last", label: "마지막 활동", get: (s) => formatLastActivity(s) },
-  { key: "recentFail", label: "최근 연속 실패", get: (s) => (s.recentFailCount > 0 ? `${s.recentFailCount}회` : "—") },
-  { key: "lastProblem", label: "마지막 시도 문제", get: (s) => s.lastProblemTitle ?? "—" },
-  { key: "attempts", label: "총 시도", get: (s) => `${s.attemptCount}회` },
-];
-
-function formatPercent(value: number): string {
-  return `${Math.max(0, Math.min(100, value))}%`;
-}
-
-function statusSlug(status: StudentStatus): string {
+function badgeClass(status: StudentStatus): string {
   switch (status) {
-    case "아직 시작 안 함": return "idle";
-    case "도움 필요": return "help";
-    case "순조로움": return "good";
-    case "완료": return "done";
-    default: return "active";
+    case "아직 시작 안 함": return "td-badge td-badge-idle";
+    case "도움 필요": return "td-badge td-badge-bad";
+    case "순조로움": return "td-badge td-badge-good";
+    case "완료": return "td-badge td-badge-done";
+    default: return "td-badge td-badge-active";
   }
 }
 
-function formatLastActivity(student: StudentProgress): string {
-  if (student.minutesSinceLastActivity === null) return "—";
-  if (student.minutesSinceLastActivity <= 0) return "방금";
-  return `${student.minutesSinceLastActivity}분 전`;
+function lastActivityText(s: StudentProgress): string {
+  if (s.minutesSinceLastActivity === null) return "—";
+  if (s.minutesSinceLastActivity <= 0) return "방금";
+  return `${s.minutesSinceLastActivity}분 전`;
 }
 
-function sortStudents(students: StudentProgress[], key: SortKey): StudentProgress[] {
-  const list = [...students];
-  switch (key) {
-    case "progress-desc":
-      return list.sort((a, b) => b.progressPercent - a.progressPercent || a.errorRate - b.errorRate);
-    case "progress-asc":
-      return list.sort((a, b) => a.progressPercent - b.progressPercent || b.errorRate - a.errorRate);
-    case "error-desc":
-      return list.sort((a, b) => b.errorRate - a.errorRate || a.progressPercent - b.progressPercent);
-    case "error-asc":
-      return list.sort((a, b) => a.errorRate - b.errorRate || b.progressPercent - a.progressPercent);
-    default:
-      return list;
+const STATUS_ORDER: Record<StudentStatus, number> = {
+  "도움 필요": 0,
+  "진행 중": 1,
+  "순조로움": 2,
+  "아직 시작 안 함": 3,
+  "완료": 4,
+};
+
+function sortStudents(list: StudentProgress[], key: SortKey): StudentProgress[] {
+  const arr = [...list];
+  if (key === "behind") return arr.sort((a, b) => a.progressPercent - b.progressPercent);
+  if (key === "help") {
+    return arr.sort(
+      (a, b) => STATUS_ORDER[a.status] - STATUS_ORDER[b.status] || a.progressPercent - b.progressPercent,
+    );
   }
+  return arr; // roster: 입장순 유지
 }
 
 export function ResultDashboardPage(): React.JSX.Element {
@@ -75,38 +62,34 @@ export function ResultDashboardPage(): React.JSX.Element {
   const [isLoading, setIsLoading] = useState(false);
   const [autoRefresh, setAutoRefresh] = useState(true);
   const [lastUpdated, setLastUpdated] = useState<Date | null>(null);
-  const [sortKey, setSortKey] = useState<SortKey>("progress-desc");
-  const [forceShowResults, setForceShowResults] = useState(false);
+  const [sortKey, setSortKey] = useState<SortKey>("help");
 
   const loadAnalytics = useCallback(
     async (targetCode = classCode, silent = false): Promise<void> => {
-      const normalizedCode = targetCode.replace(/\D/g, "").slice(0, 6);
-      setClassCode(normalizedCode);
-
-      if (normalizedCode.length !== 6) {
-        setMessage("6자리 수업 코드를 입력해 주세요.");
+      const code = targetCode.replace(/\D/g, "").slice(0, 6);
+      setClassCode(code);
+      if (code.length !== 6) {
+        if (!silent) setMessage("6자리 수업 코드를 입력해 주세요.");
         setAnalytics(null);
         return;
       }
-
       if (!silent) setIsLoading(true);
       setMessage("");
-
       try {
-        const result = await getClassAnalytics(normalizedCode);
+        const result = await getClassAnalytics(code);
         if (!result) {
           setAnalytics(null);
           setMessage("해당 수업 코드를 찾을 수 없습니다.");
           return;
         }
-        saveLastClassCode(normalizedCode);
+        saveLastClassCode(code);
         setAnalytics(result);
         setLastUpdated(new Date());
       } catch (error) {
         console.warn(error);
         if (!silent) {
           setAnalytics(null);
-          setMessage(error instanceof Error ? error.message : "대시보드 데이터를 불러오지 못했습니다.");
+          setMessage(error instanceof Error ? error.message : "데이터를 불러오지 못했습니다.");
         }
       } finally {
         if (!silent) setIsLoading(false);
@@ -115,367 +98,186 @@ export function ResultDashboardPage(): React.JSX.Element {
     [classCode],
   );
 
-  const didInitialLoad = useRef(false);
+  const didInit = useRef(false);
   useEffect(() => {
-    if (didInitialLoad.current) return;
+    if (didInit.current) return;
     if (classCode.length === 6) {
-      didInitialLoad.current = true;
+      didInit.current = true;
       void loadAnalytics(classCode);
     }
   }, [classCode, loadAnalytics]);
 
   useEffect(() => {
-    if (!autoRefresh) return;
-    if (classCode.length !== 6) return;
-    const timer = window.setInterval(() => {
-      void loadAnalytics(classCode, true);
-    }, POLL_INTERVAL_MS);
+    if (!autoRefresh || classCode.length !== 6) return;
+    const timer = window.setInterval(() => void loadAnalytics(classCode, true), POLL_INTERVAL_MS);
     return () => window.clearInterval(timer);
   }, [autoRefresh, classCode, loadAnalytics]);
 
-  const [metricIndex, setMetricIndex] = useState(0);
-  const activeMetric = METRICS[metricIndex];
-
-  const sortedStudents = useMemo(
-    () => (analytics ? sortStudents(analytics.studentProgress, sortKey) : []),
-    [analytics, sortKey],
-  );
-
-  // ---- 순위 변동 애니메이션 (FLIP) + 진행 증가 펄스 ----
-  const rowRefs = useRef<Map<string, HTMLDivElement>>(new Map());
-  const prevRects = useRef<Map<string, DOMRect>>(new Map());
+  // 진행이 늘어난 학생을 잠깐 강조
   const prevSolved = useRef<Map<string, number>>(new Map());
-
-  useLayoutEffect(() => {
-    const els = rowRefs.current;
-    // 새 위치 측정
-    const newRects = new Map<string, DOMRect>();
-    els.forEach((el, id) => newRects.set(id, el.getBoundingClientRect()));
-
-    // First→Last 차이만큼 거꾸로 옮겨 두고, 다음 프레임에 0으로 보내 순위가 오르락내리락 움직이게 한다.
-    newRects.forEach((newRect, id) => {
-      const prev = prevRects.current.get(id);
-      const el = els.get(id);
-      if (!el) return;
-      if (prev) {
-        const dy = prev.top - newRect.top;
-        if (Math.abs(dy) > 1) {
-          el.style.transition = "none";
-          el.style.transform = `translateY(${dy}px)`;
-          el.getBoundingClientRect(); // reflow
-          requestAnimationFrame(() => {
-            el.style.transition = "transform 460ms cubic-bezier(0.22, 1, 0.36, 1)";
-            el.style.transform = "";
-          });
-        }
-      }
+  const [pulsed, setPulsed] = useState<Set<string>>(new Set());
+  useEffect(() => {
+    if (!analytics) return;
+    const next = new Set<string>();
+    analytics.studentProgress.forEach((s) => {
+      const before = prevSolved.current.get(s.studentId);
+      if (before !== undefined && s.solvedCount > before) next.add(s.studentId);
+      prevSolved.current.set(s.studentId, s.solvedCount);
     });
-    prevRects.current = newRects;
+    if (next.size > 0) {
+      setPulsed(next);
+      const t = window.setTimeout(() => setPulsed(new Set()), 1500);
+      return () => window.clearTimeout(t);
+    }
+  }, [analytics]);
 
-    // 진행(해결 수)이 늘어난 학생은 잠깐 강조 펄스
-    sortedStudents.forEach((student) => {
-      const before = prevSolved.current.get(student.studentId);
-      if (before !== undefined && student.solvedCount > before) {
-        const el = els.get(student.studentId);
-        if (el) {
-          el.classList.remove("row-pulse");
-          void el.offsetWidth;
-          el.classList.add("row-pulse");
-        }
-      }
-      prevSolved.current.set(student.studentId, student.solvedCount);
-    });
-  }, [sortedStudents]);
-
-  // 보조 지표 좌우 넘기기
-  const cycleMetric = useCallback((dir: 1 | -1) => {
-    setMetricIndex((current) => (current + dir + METRICS.length) % METRICS.length);
-  }, []);
-
-  // 터치 스와이프로 보조 지표 전환
-  const touchStartX = useRef<number | null>(null);
-  function onTrackTouchStart(event: React.TouchEvent): void {
-    touchStartX.current = event.touches[0]?.clientX ?? null;
-  }
-  function onTrackTouchEnd(event: React.TouchEvent): void {
-    if (touchStartX.current === null) return;
-    const dx = (event.changedTouches[0]?.clientX ?? 0) - touchStartX.current;
-    if (Math.abs(dx) > 40) cycleMetric(dx < 0 ? 1 : -1);
-    touchStartX.current = null;
-  }
-
-  const resultsUnlocked = Boolean(analytics && (analytics.allFinished || forceShowResults));
+  const rows = analytics ? sortStudents(analytics.studentProgress, sortKey) : [];
 
   return (
-    <main className="classroom-page dashboard-page page-enter">
-      <div className="classroom-scanlines" aria-hidden="true" />
-      <header className="classroom-header">
-        <a className="classroom-link" href="#/">데이터 룸</a>
-        <div>
-          <span className="classroom-kicker">// 실시간 플레이 모니터</span>
-          <h1>플레이 현황</h1>
-          <p className="classroom-subtitle">학생들의 실시간 플레이를 추적하고, 수업 후 보완 설명을 돕는 화면</p>
+    <main className="td">
+      {/* ── 상단 바 ── */}
+      <header className="td-topbar">
+        <div className="td-topbar-left">
+          <a className="td-back" href="#/">← 홈</a>
+          <h1>실시간 모니터</h1>
+          {autoRefresh ? <span className="td-live-dot">실시간</span> : null}
         </div>
-        <nav className="classroom-header-actions" aria-label="대시보드 이동">
-          <a className="classroom-button compact" href="#/teacher">교사용 화면으로</a>
-          <a className="classroom-button compact" href="#/join">학생 입장 화면</a>
-        </nav>
-      </header>
 
-      <section className="classroom-panel dashboard-query page-enter-item" style={{ ["--i" as string]: 0 }}>
-        <label className="classroom-field inline">
-          <span>클래스 코드</span>
+        <div className="td-topbar-right">
           <input
+            className="td-code-input"
             inputMode="numeric"
             maxLength={6}
-            onChange={(event) => setClassCode(event.currentTarget.value.replace(/\D/g, "").slice(0, 6))}
-            placeholder="000000"
+            onChange={(e) => setClassCode(e.currentTarget.value.replace(/\D/g, "").slice(0, 6))}
+            placeholder="코드"
             value={classCode}
           />
-        </label>
-        <button className="classroom-button primary" disabled={isLoading} onClick={() => void loadAnalytics()} type="button">
-          {isLoading ? <Loader2 className="spin" size={18} /> : <RefreshCw size={18} />}
-          새로고침
-        </button>
-        <label className="auto-refresh-toggle">
-          <input checked={autoRefresh} onChange={(event) => setAutoRefresh(event.currentTarget.checked)} type="checkbox" />
-          <span>자동 새로고침 ({POLL_INTERVAL_MS / 1000}초)</span>
-        </label>
-        {lastUpdated ? <span className="last-updated">갱신 {lastUpdated.toLocaleTimeString("ko-KR")}</span> : null}
-      </section>
+          <button className="td-btn" disabled={isLoading} onClick={() => void loadAnalytics()} type="button">
+            <RefreshCw size={14} />
+            {isLoading ? "불러오는 중…" : "새로고침"}
+          </button>
+          <label className="td-switch">
+            <input checked={autoRefresh} onChange={(e) => setAutoRefresh(e.currentTarget.checked)} type="checkbox" />
+            자동
+          </label>
+          <a className="td-btn primary" href="#/results">
+            최종 결과 보기 →
+          </a>
+        </div>
+      </header>
 
-      {message ? <p className="classroom-message error">{message}</p> : null}
+      {message ? <p className="td-message">{message}</p> : null}
 
       {analytics ? (
-        <>
-          {/* 요약 카드 (간결하게) */}
-          <section className="dashboard-summary slim page-enter-item" style={{ ["--i" as string]: 1 }}>
-            <div className="summary-cell">
-              <span>참여 학생</span>
-              <strong>{analytics.studentCount}명</strong>
+        <div className="td-body">
+          {/* ── 요약 카드 ── */}
+          <section className="td-summary">
+            <div className="td-card">
+              <div className="td-card-icon blue"><Users size={18} /></div>
+              <span className="td-card-label">참여 학생</span>
+              <span className="td-card-value">{analytics.studentCount}</span>
             </div>
-            <div className="summary-cell">
-              <span>평균 진행률</span>
-              <strong>{analytics.averageProgress}%</strong>
+            <div className="td-card warn">
+              <div className="td-card-icon red"><AlertTriangle size={18} /></div>
+              <span className="td-card-label">도움 필요</span>
+              <span className="td-card-value">{analytics.helpNeededStudents.length}</span>
             </div>
-            <div className="summary-cell">
-              <span>완료</span>
-              <strong>{analytics.finishedCount}/{analytics.studentCount}</strong>
+            <div className="td-card idle">
+              <div className="td-card-icon gray"><Clock size={18} /></div>
+              <span className="td-card-label">미시작</span>
+              <span className="td-card-value">{analytics.notStartedCount}</span>
             </div>
-            <div className={`summary-cell ${analytics.helpNeededStudents.length > 0 ? "alert" : ""}`}>
-              <span>도움 필요</span>
-              <strong>{analytics.helpNeededStudents.length}명</strong>
+            <div className="td-card done">
+              <div className="td-card-icon green"><CheckCircle size={18} /></div>
+              <span className="td-card-label">완료</span>
+              <span className="td-card-value">{analytics.finishedCount}</span>
             </div>
           </section>
 
-          {/* 지금 도와주면 좋은 학생 */}
+          {/* ── 평균 진행률 ── */}
+          <div className="td-progress-wrap">
+            <span className="td-progress-label">반 전체 진행률</span>
+            <div className="td-progress-bar">
+              <div className="td-progress-fill" style={{ width: `${analytics.averageProgress}%` }} />
+            </div>
+            <span className="td-progress-pct">{analytics.averageProgress}%</span>
+            {lastUpdated ? (
+              <span className="td-progress-updated">갱신 {lastUpdated.toLocaleTimeString("ko-KR")}</span>
+            ) : null}
+          </div>
+
+          {/* ── 도움 필요 알림 ── */}
           {analytics.helpNeededStudents.length > 0 ? (
-            <section className="classroom-panel help-panel page-enter-item" style={{ ["--i" as string]: 2 }}>
-              <div className="panel-title-row">
-                <div>
-                  <span className="classroom-kicker">// 개입 추천</span>
-                  <h2>지금 도와주면 좋은 학생</h2>
+            <section className="td-help-alert">
+              <h2>
+                <AlertTriangle size={16} />
+                지금 도움이 필요한 학생 ({analytics.helpNeededStudents.length}명)
+              </h2>
+              {analytics.helpNeededStudents.map((s) => (
+                <div className="td-help-row" key={s.studentId}>
+                  <span className="td-help-name">{s.nickname}</span>
+                  <span className="td-help-reason">{s.helpReason ?? "도움이 필요할 수 있습니다."}</span>
+                  <span className={badgeClass(s.status)}>{s.status}</span>
                 </div>
-                <AlertTriangle size={22} color="#ffb454" />
-              </div>
-              <ul className="help-list">
-                {analytics.helpNeededStudents.map((student) => (
-                  <li key={student.studentId}>
-                    <strong>{student.nickname}</strong>
-                    <span>{student.helpReason ?? "도움이 필요할 수 있습니다."}</span>
-                    <em className={`status-badge status-${statusSlug(student.status)}`}>{student.status}</em>
-                  </li>
-                ))}
-              </ul>
+              ))}
             </section>
           ) : null}
 
-          {/* 실시간 플레이 현황 — 학생별 가로 트래킹 테이블 (핵심) */}
-          <section className="classroom-panel page-enter-item" style={{ ["--i" as string]: 3 }}>
-            <div className="panel-title-row">
-              <div>
-                <span className="classroom-kicker">// 실시간 플레이 현황</span>
-                <h2>학생별 플레이 트래킹</h2>
-              </div>
-              <Users size={22} />
-            </div>
-
-            <div className="track-toolbar">
-              <div className="sort-group" role="group" aria-label="정렬 기준">
-                {SORT_OPTIONS.map((option) => (
+          {/* ── 학생별 진행 ── */}
+          <section className="td-section">
+            <div className="td-section-head">
+              <h2>학생별 진행 ({analytics.studentCount}명)</h2>
+              <div className="td-seg">
+                {SORT_OPTIONS.map((o) => (
                   <button
-                    className={`sort-chip ${sortKey === option.key ? "active" : ""}`}
-                    key={option.key}
-                    onClick={() => setSortKey(option.key)}
+                    className={sortKey === o.key ? "on" : ""}
+                    key={o.key}
+                    onClick={() => setSortKey(o.key)}
                     type="button"
                   >
-                    {option.label}
+                    {o.label}
                   </button>
                 ))}
               </div>
-              {/* 보조 지표 페이저: 좌우로 넘기며 필요한 지표만 본다 */}
-              <div className="metric-pager" aria-label="보조 지표 선택">
-                <button className="metric-arrow" onClick={() => cycleMetric(-1)} type="button" aria-label="이전 지표">
-                  <ChevronLeft size={16} />
-                </button>
-                <span className="metric-label">{activeMetric.label}</span>
-                <button className="metric-arrow" onClick={() => cycleMetric(1)} type="button" aria-label="다음 지표">
-                  <ChevronRight size={16} />
-                </button>
-                <span className="metric-dots" aria-hidden="true">
-                  {METRICS.map((m, i) => (
-                    <i className={i === metricIndex ? "on" : ""} key={m.key} />
-                  ))}
-                </span>
-              </div>
             </div>
 
-            <div className="track-legend" aria-hidden="true">
-              <span><i className="cell-dot solved" /> 해결</span>
-              <span><i className="cell-dot attempted" /> 시도</span>
-              <span><i className="cell-dot untouched" /> 미시작</span>
-              <span className="legend-hint">← 표를 좌우로 넘기면 지표가 바뀝니다 →</span>
-            </div>
-
-            {sortedStudents.length === 0 ? (
-              <p className="classroom-muted">아직 입장한 학생이 없습니다.</p>
+            {rows.length === 0 ? (
+              <p className="td-empty">아직 입장한 학생이 없습니다. 학생이 코드로 들어오면 여기에 표시됩니다.</p>
             ) : (
-              <div className="track-table" onTouchStart={onTrackTouchStart} onTouchEnd={onTrackTouchEnd}>
-                {sortedStudents.map((student) => (
-                  <div
-                    className="track-row"
-                    key={student.studentId}
-                    ref={(el) => {
-                      if (el) rowRefs.current.set(student.studentId, el);
-                      else rowRefs.current.delete(student.studentId);
-                    }}
-                  >
-                    <div className="track-name">
-                      <strong>{student.nickname}</strong>
-                      <em className={`status-badge status-${statusSlug(student.status)}`}>{student.status}</em>
+              <div className="td-roster">
+                {rows.map((s) => (
+                  <div className={`td-student ${pulsed.has(s.studentId) ? "pulse" : ""}`} key={s.studentId}>
+                    <div className="td-student-info">
+                      <span className="td-student-name">{s.nickname}</span>
+                      <span className={badgeClass(s.status)}>{s.status}</span>
                     </div>
-                    <div className="track-cells" aria-label={`${student.solvedCount}/${student.selectedProblemCount} 해결`}>
-                      {student.problemCells.map((cell, idx) => (
-                        <i className={`track-cell ${cell}`} key={idx} />
-                      ))}
-                    </div>
-                    <span className="track-progress">{student.solvedCount}/{student.selectedProblemCount}</span>
-                    <div className="track-metric">
-                      <span className="metric-value" key={activeMetric.key}>{activeMetric.get(student)}</span>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            )}
-          </section>
-
-          {/* 수업 결과 분석 — 전원 마무리 후 활성화 */}
-          <section className="classroom-panel page-enter-item" style={{ ["--i" as string]: 4 }}>
-            <div className="panel-title-row">
-              <div>
-                <span className="classroom-kicker">// 수업 결과 분석</span>
-                <h2>수업 결과 분석</h2>
-              </div>
-              {resultsUnlocked ? <BarChart3 size={22} /> : <Lock size={22} color="#8fa6b0" />}
-            </div>
-
-            {!resultsUnlocked ? (
-              <div className="results-locked">
-                {analytics.studentCount === 0 ? (
-                  <p>아직 입장한 학생이 없습니다. 학생이 코드로 입장하면 진행 현황이 표시됩니다.</p>
-                ) : (
-                  <>
-                    <p className="locked-line">
-                      <strong>{analytics.unfinishedStudents.map((s) => s.nickname).join(", ")}</strong>{" "}
-                      학생이 아직 마무리하지 않았습니다.
-                    </p>
-                    <p className="classroom-muted">
-                      해당 학생들이 문제집을 모두 마치면 결과 보기가 자동으로 활성화됩니다.
-                      ({analytics.finishedCount}/{analytics.studentCount} 완료)
-                    </p>
-                  </>
-                )}
-                <div className="classroom-actions-row">
-                  <button className="classroom-button" disabled type="button">
-                    <Lock size={16} /> 결과 보기 (대기 중)
-                  </button>
-                  {analytics.studentCount > 0 ? (
-                    <button className="classroom-button subtle" onClick={() => setForceShowResults(true)} type="button">
-                      그래도 지금 결과 보기
-                    </button>
-                  ) : null}
-                </div>
-              </div>
-            ) : (
-              <div className="results-body">
-                {!analytics.allFinished ? (
-                  <p className="classroom-message">
-                    아직 전원이 마무리하지 않았지만, 현재까지의 풀이 로그를 기준으로 결과를 표시합니다.
-                  </p>
-                ) : null}
-
-                {/* 문제별 성공률/실패 */}
-                <h3 className="results-subtitle">문제별 성공률 / 실패</h3>
-                <div className="analytics-list">
-                  {analytics.problemStats.map((stat) => (
-                    <article className="analytics-row" key={stat.problem.id}>
-                      <div>
-                        <strong>{stat.problem.title}</strong>
-                        <span>{stat.problem.unit} · {stat.problem.concept} · 난이도 {stat.problem.difficulty}</span>
-                      </div>
-                      <div className="bar-meter" aria-label={`${stat.successRate}% 성공률`}>
-                        <span style={{ width: formatPercent(stat.successRate) }} />
-                      </div>
-                      <dl>
-                        <div><dt>성공률</dt><dd>{stat.successRate}%</dd></div>
-                        <div><dt>실패</dt><dd>{stat.failCount}</dd></div>
-                        <div><dt>미해결</dt><dd>{stat.unsolvedStudentCount}</dd></div>
-                      </dl>
-                    </article>
-                  ))}
-                </div>
-
-                <div className="dashboard-two-col results-two-col">
-                  <div className="results-col">
-                    <span className="classroom-kicker">// 개념별 어려움</span>
-                    <div className="concept-list">
-                      {analytics.conceptStats.map((concept) => (
-                        <div className={`concept-row level-${concept.level}`} key={concept.concept}>
-                          <strong>{concept.concept}</strong>
-                          <span>성공률 {concept.averageSuccessRate}% · 실패 {concept.failCount}회</span>
-                          <em>어려움 {concept.level}</em>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-
-                  <div className="results-col">
-                    <span className="classroom-kicker">// 수업 후 설명 추천</span>
-                    {analytics.recommendations.length > 0 ? (
-                      <ul className="recommendation-list">
-                        {analytics.recommendations.map((recommendation, index) => (
-                          <li key={`${recommendation}-${index}`}>{recommendation}</li>
+                    <div className="td-track">
+                      <div className="td-cells" title={`${s.solvedCount}/${s.selectedProblemCount} 해결`}>
+                        {s.problemCells.map((c, i) => (
+                          <i className={`td-cell ${c}`} key={i} />
                         ))}
-                      </ul>
-                    ) : (
-                      <p className="classroom-muted">
-                        현재 로그 기준으로 두드러진 취약 개념은 없습니다.
-                      </p>
-                    )}
+                      </div>
+                      <div className="td-track-meta">
+                        <span>{s.progressPercent}% 완료</span>
+                        <span>{lastActivityText(s)}</span>
+                      </div>
+                    </div>
+                    <div className="td-student-meta">
+                      <span className="td-student-frac">{s.solvedCount}/{s.selectedProblemCount}</span>
+                      <span className="td-student-time">{lastActivityText(s)}</span>
+                    </div>
                   </div>
-                </div>
+                ))}
               </div>
             )}
-          </section>
 
-          {!analytics.hasAttempts ? (
-            <section className="classroom-panel empty-dashboard page-enter-item" style={{ ["--i" as string]: 5 }}>
-              <Users size={24} />
-              <p>아직 학생 풀이 기록이 없습니다. 학생이 코드로 입장해 문제를 풀면 이곳에 진행이 표시됩니다.</p>
-              <code>{STUDENT_JOIN_URL}</code>
-            </section>
-          ) : null}
-        </>
+            <div className="td-legend">
+              <span><i className="solved" /> 해결</span>
+              <span><i className="attempted" /> 시도 중</span>
+              <span><i className="untouched" /> 미시작</span>
+            </div>
+          </section>
+        </div>
       ) : null}
     </main>
   );

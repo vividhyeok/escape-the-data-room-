@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { GameShell } from "../components/GameShell";
+import { FinalResultsPage } from "../components/FinalResultsPage";
 import { LandingPage } from "../components/LandingPage";
 import { ResultDashboardPage } from "../components/ResultDashboardPage";
 import { StudentJoinPage } from "../components/StudentJoinPage";
@@ -41,9 +42,14 @@ export function App(): React.JSX.Element {
     return <StudentJoinPage requireCodeNotice />;
   }
 
+  if (hash === "#/results") {
+    return <FinalResultsPage />;
+  }
+
   if (hash === "#/dashboard") {
     return <ResultDashboardPage />;
   }
 
   return <LandingPage />;
 }
+
