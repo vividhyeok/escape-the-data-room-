@@ -1,16 +1,16 @@
-import { useEffect, useState, useRef, useCallback } from "react";
-import { CheckCircle2, Copy, TerminalSquare, BookOpen, XCircle, Loader2 } from "lucide-react";
+import { useState } from "react";
+import { BookOpen, CheckCircle2, FastForward, Loader2, RotateCcw } from "lucide-react";
 import type { Puzzle, RoomObject } from "../data/types";
 import { useGameStore } from "../store/gameStore";
 import { GameWindow } from "./GameWindow";
 import CodeMirror from "@uiw/react-codemirror";
 import { python } from "@codemirror/lang-python";
-import { keymap, EditorView } from "@codemirror/view";
+import { keymap } from "@codemirror/view";
 import { indentWithTab } from "@codemirror/commands";
 import { oneDark } from "@codemirror/theme-one-dark";
 import { autocompletion, completionKeymap } from "@codemirror/autocomplete";
 import { pythonRunner } from "../lib/pythonRunner";
-import { getCurrentStudentSession, recordAttempt } from "../lib/classroomApi";
+import { getCurrentStudentSession, recordAttempt, SKIP_MARKER } from "../lib/classroomApi";
 import { SoundEngine } from "../utils/SoundEngine";
 
 type InspectModalProps = {
@@ -22,692 +22,103 @@ type InspectModalProps = {
   onHintAcquired?: (message: string) => void;
 };
 
-function normalizeAnswer(value: string): string {
-  return value.trim().toUpperCase().replace(/[^A-Z0-9]/g, "");
+// 스킵 버튼이 열리는 실패 횟수(이 만큼 틀리면 건너뛰기 가능)
+const SKIP_THRESHOLD = 3;
+
+// 값을 파이썬 리터럴 형태의 문자열로 (리스트/딕셔너리 내부 표시용)
+function pyLiteral(value: unknown): string {
+  if (typeof value === "string") return `'${value}'`;
+  if (typeof value === "boolean") return value ? "True" : "False";
+  if (value === null) return "None";
+  if (Array.isArray(value)) return `[${value.map(pyLiteral).join(", ")}]`;
+  if (typeof value === "object") {
+    return `{${Object.entries(value as Record<string, unknown>)
+      .map(([k, v]) => `'${k}': ${pyLiteral(v)}`)
+      .join(", ")}}`;
+  }
+  return String(value);
 }
 
-function fallbackCopyText(text: string): void {
-  const textarea = document.createElement("textarea");
-  textarea.value = text;
-  textarea.setAttribute("readonly", "true");
-  textarea.style.position = "fixed";
-  textarea.style.left = "-9999px";
-  document.body.appendChild(textarea);
-  textarea.select();
-  document.execCommand("copy");
-  document.body.removeChild(textarea);
+// print() 로 출력했을 때 화면에 보이는 형태 (문자열은 따옴표 없이)
+function printedForm(value: unknown): string {
+  if (typeof value === "string") return value;
+  if (typeof value === "boolean") return value ? "True" : "False";
+  if (value === null) return "None";
+  if (Array.isArray(value)) return `[${value.map(pyLiteral).join(", ")}]`;
+  if (typeof value === "object") return pyLiteral(value);
+  return String(value);
 }
 
-/**
- * Renders children at a fixed internal width, then scales the whole block
- * to fit the container — like an image. Text never reflows.
- */
-function ScaledSurface({ children, baseWidth = "auto" }: { children: React.ReactNode; baseWidth?: number | "auto" }) {
-  const containerRef = useRef<HTMLDivElement>(null);
-  const innerRef = useRef<HTMLDivElement>(null);
-  const [scale, setScale] = useState(1);
-  const [size, setSize] = useState({ w: typeof baseWidth === "number" ? baseWidth : 460, h: 0 });
-
-  const measure = useCallback(() => {
-    const container = containerRef.current;
-    const inner = innerRef.current;
-    if (!container || !inner) return;
-
-    const prevTransform = inner.style.transform;
-    inner.style.transform = "none";
-    const naturalWidth = inner.offsetWidth;
-    const naturalHeight = inner.offsetHeight;
-    
-    const iw = baseWidth === "auto" ? Math.max(460, naturalWidth) : baseWidth;
-    const ih = naturalHeight;
-    
-    inner.style.transform = prevTransform;
-
-    const cw = container.clientWidth;
-    const s = Math.min(cw / (iw || 1), 1);
-    
-    setScale(s);
-    setSize({ w: iw, h: ih });
-  }, [baseWidth]);
-
-  useEffect(() => {
-    measure();
-    const ro = new ResizeObserver(measure);
-    if (containerRef.current) ro.observe(containerRef.current);
-    if (innerRef.current) ro.observe(innerRef.current);
-    return () => ro.disconnect();
-  }, [measure]);
-
-  return (
-    <div ref={containerRef} className="scaled-surface-container" style={{ width: "100%", overflow: "hidden" }}>
-      <div style={{ height: size.h * scale, position: "relative" }}>
-        <div
-          ref={innerRef}
-          className="scaled-surface-inner"
-          style={{
-            width: baseWidth === "auto" ? "max-content" : baseWidth,
-            minWidth: baseWidth === "auto" ? 460 : undefined,
-            transformOrigin: "top left",
-            transform: `scale(${scale})`,
-            position: "absolute",
-            top: 0,
-            left: 0,
-          }}
-        >
-          {children}
-        </div>
-      </div>
-    </div>
-  );
-}
-
-function renderClueSurface(puzzle: Puzzle, object: RoomObject): React.JSX.Element {
-  // Room 0 surfaces
-  if (puzzle.id === "room-0-tv-sequence") {
-    const parts = puzzle.dataText.split(/\s+/).filter(Boolean);
-    return (
-      <div className="clue-surface tv-surface">
-        <div className="tv-frame">
-          {parts.map((part, index) => (
-            <span className={part === "?" ? "tv-num tv-num-active" : "tv-num"} key={index}>
-              {part}
-            </span>
-          ))}
-        </div>
-      </div>
-    );
-  }
-
-  if (puzzle.id === "room-0-desk-terminal") {
-    return (
-      <div className="clue-surface terminal-surface">
-        <div className="terminal-line">
-          <span className="term-prompt">❯</span>
-          <code>{puzzle.dataText}</code>
-        </div>
-      </div>
-    );
-  }
-
-  if (puzzle.id === "room-0-mini-ox-card") {
-    const chars = /\s/.test(puzzle.dataText) ? puzzle.dataText.split(/\s+/).filter(Boolean) : puzzle.dataText.split("");
-    return (
-      <div className="clue-surface mini-ox-surface">
-        <div className="ox-row" style={{ gridTemplateColumns: `repeat(${chars.length}, 1fr)` }}>
-          {chars.map((char, index) => (
-            <span className={char === "X" ? "x-cell" : "o-cell"} key={index}>
-              {char}
-            </span>
-          ))}
-        </div>
-      </div>
-    );
-  }
-
-  if (puzzle.id === "room-0-name-tags") {
-    const names = puzzle.dataText.split(/\s+/).filter(Boolean);
-    return (
-      <div className="clue-surface name-card-surface">
-        {names.map((name, index) => (
-          <span className={`name-token card-${(index % 9) + 1}`} key={index}>
-            {name}
-          </span>
-        ))}
-      </div>
-    );
-  }
-
-  if (puzzle.id === "room-0-pattern-tiles") {
-    const shapeIcon: Record<string, string> = { triangle: "▲", square: "■", circle: "●", "?": "?" };
-    const tiles = puzzle.dataText.split(/\s+/).filter(Boolean);
-    return (
-      <div className="clue-surface tile-surface">
-        {tiles.map((tile, index) => (
-          <span className={`tile-token ${tile === "?" ? "tile-unknown" : ""}`} key={index}>
-            <em>{shapeIcon[tile] ?? tile}</em>
-            <small>{tile}</small>
-          </span>
-        ))}
-      </div>
-    );
-  }
-
-  if (puzzle.id === "room-0-bookshelf-note") {
-    return (
-      <div className="clue-surface note-surface">
-        <p>{puzzle.dataText}</p>
-      </div>
-    );
-  }
-
-  // Room 2 surfaces
-  if (puzzle.id === "room-2-file-cabinet") {
-    const lines = puzzle.dataText.split(/\r?\n/).filter(Boolean);
-    return (
-      <div className="clue-surface file-log-surface">
-        {lines.map((line, index) => {
-          const parts = line.split("/").map((s) => s.trim());
-          const isSuccess = line.includes("success");
-          return (
-            <div className={`log-row ${isSuccess ? "log-ok" : "log-err"}`} key={index}>
-              <code>{parts[0]}</code>
-              <span>{parts[1]}</span>
-              <em>{parts[2]}</em>
-            </div>
-          );
-        })}
-      </div>
-    );
-  }
-
-  if (puzzle.id === "room-2-broken-tags") {
-    const tags = puzzle.dataText.split(/\r?\n/).filter(Boolean);
-    return (
-      <div className="clue-surface broken-tag-surface">
-        {tags.map((tag, index) => (
-          <span className={`broken-tag variant-${index % 4}`} key={index}>
-            {tag}
-          </span>
-        ))}
-      </div>
-    );
-  }
-
-  if (puzzle.id === "room-2-score-board") {
-    const lines = puzzle.dataText.split(/\r?\n/).filter(Boolean);
-    const nameSection = lines.slice(1, 6);
-    const scoreSection = lines.slice(7);
-    return (
-      <div className="clue-surface score-surface">
-        <div className="score-block">
-          <div className="score-header">NAMES</div>
-          {nameSection.map((line, index) => {
-            const [id, name] = line.split("/").map((s) => s.trim());
-            return (
-              <div className="score-row" key={index}>
-                <code>{id}</code>
-                <span>{name}</span>
-              </div>
-            );
-          })}
-        </div>
-        <div className="score-block">
-          <div className="score-header">SCORES</div>
-          {scoreSection.map((line, index) => {
-            const [id, score] = line.split("/").map((s) => s.trim());
-            return (
-              <div className="score-row" key={index}>
-                <code>{id}</code>
-                <strong>{score}</strong>
-              </div>
-            );
-          })}
-        </div>
-      </div>
-    );
-  }
-
-  if (puzzle.id === "room-2-access-log") {
-    const lines = puzzle.dataText.split(/\r?\n/).filter(Boolean);
-    return (
-      <div className="clue-surface access-log-surface">
-        {lines.map((line, index) => {
-          const parts = line.split("/").map((s) => s.trim());
-          const isSuccess = line.includes("success");
-          const isFail = line.includes("fail");
-          return (
-            <div className={`access-row ${isSuccess ? "access-ok" : isFail ? "access-fail" : ""}`} key={index}>
-              <code>{parts[0]}</code>
-              <span>{parts.slice(1).join(" · ")}</span>
-            </div>
-          );
-        })}
-      </div>
-    );
-  }
-
-  if (puzzle.id === "room-2-timeline") {
-    const lines = puzzle.dataText.split(/\r?\n/).filter(Boolean);
-    return (
-      <div className="clue-surface timeline-surface">
-        {lines.map((line, index) => {
-          const [time, event] = line.split("/").map((s) => s.trim());
-          return (
-            <div className="timeline-row" key={index}>
-              <span className="timeline-time">{time}</span>
-              <span className="timeline-dot" />
-              <span className="timeline-event">{event}</span>
-            </div>
-          );
-        })}
-      </div>
-    );
-  }
-
-  if (puzzle.id === "room-2-checksum-ledger") {
-    const lines = puzzle.dataText.split(/\r?\n/).filter(Boolean);
-    return (
-      <div className="clue-surface checksum-surface">
-        {lines.map((line, index) => {
-          const parts = line.split("/").map((s) => s.trim());
-          const code = parts[0];
-          const status = parts[2];
-          return (
-            <span className={status === "PASS" ? "log-pass" : "log-fail"} key={index}>
-              <strong>{code}</strong>
-              <em>{status}</em>
-            </span>
-          );
-        })}
-      </div>
-    );
-  }
-
-  // Room 3 surfaces
-  if (puzzle.id === "room-3-switch-panel") {
-    const switchLabels = ["S1", "S2", "S3", "S4", "S5", "S6"];
-    const conditions = puzzle.dataText.split(/\r?\n/).filter(Boolean).slice(1);
-    return (
-      <div className="clue-surface switch-surface">
-        <div className="switch-row">
-          {switchLabels.map((s) => (
-            <span className="switch-item" key={s}>
-              <span className="switch-toggle" />
-              <strong>{s}</strong>
-            </span>
-          ))}
-        </div>
-        <div className="switch-conditions">
-          {conditions.map((cond, index) => (
-            <p key={index}>{cond}</p>
-          ))}
-        </div>
-      </div>
-    );
-  }
-
-  if (puzzle.id === "room-3-logic-gate") {
-    const lines = puzzle.dataText.split(/\r?\n/).filter(Boolean);
-    const tableLines = lines.slice(0, 5);
-    const ruleLines = lines.slice(6);
-    return (
-      <div className="clue-surface gate-surface">
-        {tableLines.map((line, index) => {
-          const cells = line.split(/[\s|]+/).filter(Boolean);
-          return (
-            <div className={`gate-row ${index === 0 ? "gate-header-row" : ""}`} key={index}>
-              {cells.map((cell, j) => (
-                <span className={cell === "?" ? "gate-cell gate-unknown" : "gate-cell"} key={j}>
-                  {cell}
-                </span>
-              ))}
-            </div>
-          );
-        })}
-        <div className="gate-rules">
-          {ruleLines.map((rule, index) => (
-            <code key={index}>{rule}</code>
-          ))}
-        </div>
-      </div>
-    );
-  }
-
-  if (puzzle.id === "room-3-candidate-codes") {
-    const lines = puzzle.dataText.split(/\r?\n/).filter(Boolean);
-    const codeLines = lines.slice(0, 2);
-    const condLines = lines.slice(3);
-    const codes = codeLines.flatMap((line) => line.split(/\s+/).filter(Boolean));
-    return (
-      <div className="clue-surface code-pin-surface">
-        <div className="pin-grid">
-          {codes.map((code, index) => (
-            <span className="pin-code" key={index}>
-              {code}
-            </span>
-          ))}
-        </div>
-        <div className="pin-conditions">
-          {condLines.map((cond, index) => (
-            <p key={index}>{cond}</p>
-          ))}
-        </div>
-      </div>
-    );
-  }
-
-  if (puzzle.id === "room-3-warning-lamp") {
-    const lines = puzzle.dataText.split(/\r?\n/).filter(Boolean);
-    const dataRows = lines.slice(1, 5);
-    return (
-      <div className="clue-surface lamp-surface">
-        <div className="lamp-header-row">
-          <span>A</span>
-          <span>B</span>
-          <span>C</span>
-          <span className="lamp-label">LAMP</span>
-        </div>
-        {dataRows.map((row, index) => {
-          const cells = row.split(/[\s|]+/).filter(Boolean);
-          return (
-            <div className="lamp-row" key={index}>
-              {cells.slice(0, 3).map((val, j) => (
-                <span className={`lamp-bit ${val === "1" ? "bit-on" : "bit-off"}`} key={j}>
-                  {val}
-                </span>
-              ))}
-              <span className="lamp-indicator">?</span>
-            </div>
-          );
-        })}
-      </div>
-    );
-  }
-
-  if (puzzle.id === "room-3-experiment") {
-    const lines = puzzle.dataText.split(/\r?\n/).filter(Boolean);
-    return (
-      <div className="clue-surface console-surface">
-        {lines.map((line, index) => {
-          const isSection = line.startsWith("후보") || line.startsWith("규칙");
-          return (
-            <div className={`console-line ${isSection ? "console-section" : ""}`} key={index}>
-              {line}
-            </div>
-          );
-        })}
-      </div>
-    );
-  }
-
-  if (puzzle.id === "room-3-power-meter") {
-    const lines = puzzle.dataText.split(/\r?\n/).filter(Boolean);
-    return (
-      <div className="clue-surface meter-surface">
-        {lines.map((line, index) => {
-          const parts = line.split(/\s+/);
-          const code = parts[0];
-          const state = parts[1] ?? "";
-          return (
-            <div className={`meter-row state-${state}`} key={index}>
-              <code>{code}</code>
-              <span className="meter-state">{state}</span>
-            </div>
-          );
-        })}
-      </div>
-    );
-  }
-
-  // Room 4 surfaces
-  if (puzzle.id === "room-4-validator") {
-    const lines = puzzle.dataText.split(/\r?\n/).filter(Boolean);
-    return (
-      <div className="clue-surface validator-surface">
-        {lines.map((line, index) => {
-          const isBug = line.includes('== "5"') || (line.includes("== 18") && line.includes("False"));
-          return (
-            <div className={`val-line ${isBug ? "val-bug" : ""}`} key={index}>
-              <code>{line}</code>
-            </div>
-          );
-        })}
-      </div>
-    );
-  }
-
-  if (puzzle.id === "room-4-test-log") {
-    const lines = puzzle.dataText.split(/\r?\n/).filter(Boolean);
-    return (
-      <div className="clue-surface checksum-surface">
-        {lines.map((line, index) => {
-          const [code, status] = line.split(/\s+/);
-          return (
-            <span className={status === "PASS" ? "log-pass" : "log-fail"} key={index}>
-              <strong>{code}</strong>
-              <em>{status}</em>
-            </span>
-          );
-        })}
-      </div>
-    );
-  }
-
-  if (puzzle.id === "room-4-candidate-dial") {
-    const condLines = puzzle.dataText.split(/\r?\n/).filter(Boolean).slice(1);
-    return (
-      <div className="clue-surface dial-surface">
-        <div className="dial-face">
-          <span className="dial-ring" />
-          <strong>1000~9999</strong>
-        </div>
-        <div className="dial-conditions">
-          {condLines.map((line, index) => (
-            <p key={index}>{line}</p>
-          ))}
-        </div>
-      </div>
-    );
-  }
-
-  if (puzzle.id === "room-4-error-server") {
-    const lines = puzzle.dataText.split(/\r?\n/).filter(Boolean);
-    return (
-      <div className="clue-surface error-log-surface">
-        {lines.map((line, index) => {
-          const colonIdx = line.indexOf(":");
-          const errorType = colonIdx >= 0 ? line.slice(0, colonIdx) : line;
-          const errorMsg = colonIdx >= 0 ? line.slice(colonIdx + 1) : "";
-          return (
-            <div className="error-row" key={index}>
-              <code className="error-type">{errorType}</code>
-              {errorMsg ? <span className="error-msg">{errorMsg}</span> : null}
-            </div>
-          );
-        })}
-      </div>
-    );
-  }
-
-  if (puzzle.id === "room-4-broken-crt") {
-    const lines = puzzle.dataText.split(/\r?\n/).filter(Boolean).slice(1);
-    return (
-      <div className="clue-surface crt-surface">
-        {lines.map((line, index) => {
-          const [input, rest] = line.split("->").map((s) => s.trim());
-          if (!rest) return null;
-          const [expected, actual] = rest.split("/").map((s) => s.trim());
-          return (
-            <div className="crt-row" key={index}>
-              <code className="crt-input">{input}</code>
-              <span className="crt-arrow">→</span>
-              <code className="crt-expected">{expected}</code>
-              <span className="crt-slash">/</span>
-              <code className="crt-actual">{actual}</code>
-            </div>
-          );
-        })}
-      </div>
-    );
-  }
-
-  if (puzzle.id === "room-4-sum-analyzer") {
-    const lines = puzzle.dataText.split(/\r?\n/).filter(Boolean);
-    return (
-      <div className="clue-surface checksum-surface">
-        {lines.map((line, index) => {
-          const [code, status] = line.split(/\s+/);
-          return (
-            <span className={status === "PASS" ? "log-pass" : "log-fail"} key={index}>
-              <strong>{code}</strong>
-              <em>{status}</em>
-            </span>
-          );
-        })}
-      </div>
-    );
-  }
-
-  if (puzzle.id === "room-1-word-billboard") {
-    const words = puzzle.dataText.split(/\s+/);
-    return (
-      <div className="clue-surface billboard-surface">
-        <div className="slot-clue" aria-label="Five slot clue">
-          <span />
-          <span />
-          <span className="active" />
-          <span />
-          <span />
-        </div>
-        <div className="word-grid">
-          {words.map((word, index) => (
-            <span className={`word-token drift-${index % 9}`} key={`${puzzle.id}-${index}-${word}`}>
-              {word}
-            </span>
-          ))}
-        </div>
-      </div>
-    );
-  }
-
-  if (puzzle.id === "room-1-ox-monitor") {
-    const rows = puzzle.dataText.split(/\r?\n/).filter(Boolean);
-    return (
-      <div className="clue-surface ox-surface">
-        <div className="ox-hint-card">
-          <span><code>X X</code> → 꺼짐</span>
-          <span><code>X</code>&nbsp;&nbsp; → 남음</span>
-        </div>
-        {rows.map((row, rowIndex) => (
-          <div className="ox-line" key={`${puzzle.id}-${rowIndex}`}>
-            <span className="ox-line-num">{String(rowIndex + 1).padStart(2, "0")}</span>
-            <div className="ox-row" style={{ gridTemplateColumns: `repeat(${row.length}, minmax(7px, 1fr))` }}>
-              {row.split("").map((cell, cellIndex) => (
-                <span className={cell === "X" ? "x-cell" : "o-cell"} key={`${rowIndex}-${cellIndex}`}>
-                  {cell}
-                </span>
-              ))}
-            </div>
-          </div>
-        ))}
-      </div>
-    );
-  }
-
-  if (puzzle.id === "room-1-number-panel") {
-    return (
-      <div className="clue-surface number-surface">
-        {puzzle.dataText.split(/\s+/).map((num, index) => (
-          <span className={`number-token tile-${index % 8}`} key={`${puzzle.id}-${index}`}>
-            {num}
-          </span>
-        ))}
-      </div>
-    );
-  }
-
-  if (puzzle.id === "room-1-name-card") {
-    return (
-      <div className="clue-surface name-card-surface">
-        {puzzle.dataText.split(/\s+/).map((name, index) => (
-          <span className={`name-token card-${index % 10}`} key={`${puzzle.id}-${index}`}>
-            {name}
-          </span>
-        ))}
-      </div>
-    );
-  }
-
-  if (puzzle.id === "room-1-radio-signal") {
-    const lines = puzzle.dataText.split(/\r?\n/).filter(Boolean);
-    return (
-      <div className="clue-surface radio-surface">
-        <div className="radio-dial" />
-        <div className="frequency-grid">
-          {lines
-            .filter((line) => /^\d/.test(line))
-            .flatMap((line) => line.split(/\s+/))
-            .map((freq, index) => (
-              <span className={`freq-token pulse-${index % 7}`} key={`${puzzle.id}-${index}`}>
-                {freq}
-              </span>
-            ))}
-        </div>
-      </div>
-    );
-  }
-
-  if (puzzle.id === "room-1-checksum-tablet") {
-    return (
-      <div className="clue-surface noise-strip-surface">
-        {puzzle.dataText.split("").map((char, index) => (
-          <span className={/\d/.test(char) ? "noise-digit" : "noise-char"} key={`${puzzle.id}-${index}`}>
-            {char}
-          </span>
-        ))}
-      </div>
-    );
-  }
-
-  return (
-    <div className="clue-surface generic-surface">
-      <span className="surface-object-label">{object.title}</span>
-      <pre>{puzzle.dataText}</pre>
-    </div>
-  );
+// 테스트 케이스의 입력 코드("data = 5")에서 값("5")만 추출 — 변수명은 숨긴다
+function inputValue(inputCode: string): string {
+  return inputCode.replace(/^\s*data\s*=\s*/, "").trim();
 }
 
 const SYNTAX_LABELS: Record<string, string> = {
-  Assign:      "변수 대입 ( = )",
-  BinOp:       "사칙연산 ( +, -, *, / )",
-  Subscript:   "인덱싱 / 딕셔너리 접근 [ ]",
-  Slice:       "슬라이싱 [ : ]",
-  For:         "for 반복문",
-  While:       "while 반복문",
-  If:          "if / else 조건문",
-  ListComp:    "리스트 컴프리헨션",
+  Assign: "변수 대입 ( = )",
+  BinOp: "사칙연산 ( +, -, *, / )",
+  Subscript: "인덱싱 / 딕셔너리 접근 [ ]",
+  Slice: "슬라이싱 [ : ]",
+  For: "for 반복문",
+  While: "while 반복문",
+  If: "if / else 조건문",
+  ListComp: "리스트 컴프리헨션",
   FunctionDef: "함수 정의 ( def )",
-  Return:      "return 문",
-  upper:       ".upper() 대문자 변환",
-  lower:       ".lower() 소문자 변환",
-  replace:     ".replace() 문자 치환",
-  split:       ".split() 문자열 분리",
-  strip:       ".strip() 공백 제거",
-  join:        ".join() 이어 붙이기",
-  append:      ".append() 항목 추가",
-  len:         "len() 길이 구하기",
-  sum:         "sum() 합계 함수",
-  print:       "print() 출력 함수",
-  filter:      "filter() 필터 함수",
+  Return: "return 문",
+  upper: ".upper() 대문자 변환",
+  lower: ".lower() 소문자 변환",
+  replace: ".replace() 문자 치환",
+  split: ".split() 문자열 분리",
+  strip: ".strip() 공백 제거",
+  join: ".join() 이어 붙이기",
+  append: ".append() 항목 추가",
+  len: "len() 길이 구하기",
+  sum: "sum() 합계 함수",
+  print: "print() 출력 함수",
+  filter: "filter() 필터 함수",
+  max: "max() 최댓값 함수",
 };
 
 export function InspectModal({
   object,
   puzzle,
   onClose,
-  onOpenLab,
   onOpenHelp,
   onHintAcquired,
 }: InspectModalProps): React.JSX.Element {
   const codeDrafts = useGameStore((state) => state.codeDrafts);
   const saveCodeDraft = useGameStore((state) => state.saveCodeDraft);
-  
+  const solvePuzzle = useGameStore((state) => state.solvePuzzle);
+  const recordPuzzleFail = useGameStore((state) => state.recordPuzzleFail);
+  const skipPuzzle = useGameStore((state) => state.skipPuzzle);
+  const solvedPuzzleIds = useGameStore((state) => state.solvedPuzzleIds);
+  const skippedPuzzleIds = useGameStore((state) => state.skippedPuzzleIds);
+  const failCount = useGameStore((state) => state.puzzleFailCounts[puzzle.id] ?? 0);
+
+  const isSolved = solvedPuzzleIds.includes(puzzle.id);
+  const isSkipped = skippedPuzzleIds.includes(puzzle.id);
+  const skipAvailable = !isSolved && failCount >= SKIP_THRESHOLD;
+
   const [code, setCode] = useState(() => codeDrafts[puzzle.id] ?? puzzle.starterCode ?? "");
   const [isShaking, setIsShaking] = useState(false);
   const [isChecking, setIsChecking] = useState(false);
   const [errorMsg, setErrorMsg] = useState("");
 
-  const solvePuzzle = useGameStore((state) => state.solvePuzzle);
-  const solvedPuzzleIds = useGameStore((state) => state.solvedPuzzleIds);
-  const isSolved = solvedPuzzleIds.includes(puzzle.id);
-
-  useEffect(() => {
-    setCode(codeDrafts[puzzle.id] ?? puzzle.starterCode ?? "");
-    
-    setErrorMsg("");
-  }, [puzzle.id, codeDrafts, puzzle.starterCode]);
-
-
+  // 교사용 데이터 저장 (#/play 에서 학생 세션이 있을 때만)
+  function logAttempt(success: boolean, errorMessage: string, attemptCode: string): void {
+    if (window.location.hash !== "#/play") return;
+    const session = getCurrentStudentSession();
+    if (!session) return;
+    void recordAttempt({
+      classCode: session.classCode,
+      studentId: session.studentId,
+      nickname: session.nickname,
+      puzzleId: puzzle.id,
+      success,
+      errorMessage,
+      code: attemptCode,
+    }).catch((error) => console.warn("attempt log 저장 실패", error));
+  }
 
   async function handleVerify(): Promise<void> {
     if (isChecking) return;
@@ -721,84 +132,103 @@ export function InspectModal({
     });
 
     setIsChecking(false);
-
-    try {
-      const shouldRecordClassroomAttempt = window.location.hash === "#/play";
-      const studentSession = shouldRecordClassroomAttempt ? getCurrentStudentSession() : null;
-      if (studentSession) {
-        void recordAttempt({
-          classCode: studentSession.classCode,
-          studentId: studentSession.studentId,
-          nickname: studentSession.nickname,
-          puzzleId: puzzle.id,
-          success: result.success,
-          errorMessage: result.stderr || "",
-          code,
-        }).catch((error) => {
-          console.warn("attempt log 저장 실패", error);
-        });
-      }
-    } catch (error) {
-      console.warn("attempt log 저장 준비 실패", error);
-    }
+    logAttempt(result.success, result.stderr || "", code);
 
     if (result.success) {
       SoundEngine.playSuccess();
       solvePuzzle(puzzle);
       window.dispatchEvent(new CustomEvent("puzzle-solved-vfx"));
-      onHintAcquired?.(puzzle.requiredForDoor ? "Door Code piece acquired!" : "Puzzle solved! Access Granted.");
+      onHintAcquired?.("코드 조각 획득! 잠금이 해제되었습니다.");
     } else {
       SoundEngine.playError();
+      recordPuzzleFail(puzzle.id);
       setErrorMsg(result.stderr || "실패: 조건을 만족하지 못했습니다.");
       setIsShaking(true);
       window.setTimeout(() => setIsShaking(false), 360);
-      onHintAcquired?.("코드 검증 실패.");
     }
   }
 
+  function handleSkip(): void {
+    if (isSolved) return;
+    skipPuzzle(puzzle);
+    SoundEngine.playGlitch();
+    window.dispatchEvent(new CustomEvent("puzzle-solved-vfx"));
+    // 스킵은 완료로 집계하되, 마커로 '직접 풀지 않음'을 구분할 수 있게 기록
+    logAttempt(true, SKIP_MARKER, code);
+    onHintAcquired?.("문제를 건너뛰고 코드 조각을 받았습니다.");
+  }
+
+  function resetToStarter(): void {
+    const starter = puzzle.starterCode ?? "";
+    setCode(starter);
+    saveCodeDraft(puzzle.id, starter);
+    setErrorMsg("");
+  }
+
+  const statusLabel = isSolved ? (isSkipped ? "⚑ 건너뜀" : "✓ 해결됨") : "○ 미해결";
+  const statusClass = isSolved ? (isSkipped ? "badge-skipped" : "badge-solved") : "badge-locked";
+
   return (
     <GameWindow id={`inspect-${puzzle.id}`} type="inspect" eyebrow="//SYS.INSPECT" title={object.title} onClose={onClose}>
-      <div className={`inspect-modal ${isShaking ? "shake" : ""}`}>
+      <div className={`inspect-modal code-focus ${isShaking ? "shake" : ""}`}>
         <div className="inspect-layout">
-          {/* Main Visual/Data Area */}
-          <div className="inspect-main-column">
-            <span className="inspect-kicker">OBJ ID: {object.shortLabel}</span>
-            <div className="inspect-header" style={{ border: "none", padding: 0, margin: 0 }}>
-              <p className="situation-text">{puzzle.situationText}</p>
-              <span className={`solved-badge ${isSolved ? "badge-solved" : "badge-locked"}`}>
-                {isSolved ? "✓ ACCESSED" : "○ LOCKED"}
-              </span>
+          {/* 문제 설명 + 데이터 (그래픽 없음) */}
+          <div className="inspect-brief">
+            <div className="brief-head">
+              <span className="inspect-kicker">{puzzle.title}</span>
+              <span className={`solved-badge ${statusClass}`}>{statusLabel}</span>
             </div>
 
-            {/* Display Restrictions if any */}
+            <p className="situation-text">{puzzle.situationText}</p>
+
             {(puzzle.requiredSyntax?.length || puzzle.bannedSyntax?.length) ? (
-              <div style={{ marginTop: "10px", padding: "10px 12px", background: "rgba(0,0,0,0.4)", border: "1px dashed var(--neon-cyan)", fontSize: "0.82rem", display: "flex", flexDirection: "column", gap: "6px" }}>
+              <div className="syntax-rules">
                 {puzzle.requiredSyntax && puzzle.requiredSyntax.length > 0 && (
-                  <div>
-                    <span style={{ color: "var(--neon-cyan)", fontWeight: "bold" }}>반드시 사용: </span>
+                  <div className="rule-line">
+                    <span className="rule-tag use">반드시 사용</span>
                     <span>{puzzle.requiredSyntax.map((s) => SYNTAX_LABELS[s] ?? s).join(" · ")}</span>
                   </div>
                 )}
                 {puzzle.bannedSyntax && puzzle.bannedSyntax.length > 0 && (
-                  <div>
-                    <span style={{ color: "#ff6b6b", fontWeight: "bold" }}>사용 금지: </span>
-                    <span style={{ color: "#ff9999" }}>{puzzle.bannedSyntax.map((s) => SYNTAX_LABELS[s] ?? s).join(" · ")}</span>
+                  <div className="rule-line">
+                    <span className="rule-tag ban">사용 금지</span>
+                    <span className="ban-text">{puzzle.bannedSyntax.map((s) => SYNTAX_LABELS[s] ?? s).join(" · ")}</span>
                   </div>
                 )}
               </div>
             ) : null}
 
-            <div className="inspect-surface" style={{ flex: 1, marginTop: "8px" }}>
-              <ScaledSurface baseWidth="auto">
-                {renderClueSurface(puzzle, object)}
-              </ScaledSurface>
+            <div className="io-examples">
+              <div className="io-head">
+                <span className="io-col">입력</span>
+                <span className="io-col">출력</span>
+              </div>
+              {(puzzle.testCases ?? []).slice(0, 3).map((tc, index) => (
+                <div className="io-row" key={index}>
+                  <code className="io-in">{inputValue(tc.inputCode)}</code>
+                  <span className="io-arrow">→</span>
+                  <code className="io-out">{printedForm(tc.expectedOutput)}</code>
+                </div>
+              ))}
+              <p className="io-note">
+                왼쪽 <b>입력</b>이 주어질 때 오른쪽 <b>출력</b>이 나오도록 <b>print()</b> 로 출력하면
+                자동 채점됩니다.
+              </p>
             </div>
           </div>
 
-          {/* Console / Action Area */}
-          <div className="inspect-side-column" style={{ display: "flex", flexDirection: "column" }}>
-            <span className="inspect-kicker">/ TERMINAL</span>
-            <div className="editor-container" style={{ flex: 1, minHeight: "280px", border: "1px solid var(--neon-cyan)", background: "#1e1e1e", overflow: "hidden", display: "flex", flexDirection: "column" }}>
+          {/* 코드 작성 영역 (크게) */}
+          <div className="inspect-editor-col">
+            <span className="inspect-kicker">/ PYTHON</span>
+            <div
+              className="editor-container big-editor"
+              onKeyDownCapture={(e) => {
+                if ((e.ctrlKey || e.metaKey) && e.key === "Enter") {
+                  e.preventDefault();
+                  void handleVerify();
+                }
+              }}
+            >
               <CodeMirror
                 value={code}
                 onChange={(val) => {
@@ -815,47 +245,50 @@ export function InspectModal({
                   indentOnInput: true,
                   bracketMatching: true,
                   closeBrackets: true,
+                  highlightActiveLine: true,
                 }}
-                style={{ flex: 1, fontSize: "14px", overflowY: "auto" }}
+                style={{ flex: 1, fontSize: "16px", height: "100%" }}
               />
             </div>
 
-            {errorMsg && (
+            {errorMsg ? (
               <div className="inspect-error-panel">
-                <span className="inspect-error-label">⚠ 오류</span>
+                <span className="inspect-error-label">⚠ 결과</span>
                 <pre className="inspect-error-body">{errorMsg}</pre>
               </div>
-            )}
+            ) : null}
 
-            <div className="action-grid modal-actions" style={{ display: "flex", flexDirection: "column", marginTop: "10px" }}>
-              <button
-                className="primary-button sk-action-btn check-btn"
-                onClick={handleVerify}
-                type="button"
-                disabled={isChecking}
-                title="코드 실행 및 정답 확인 (Ctrl+Enter)"
-              >
+            <div className="editor-actions">
+              <button className="primary-button run-btn" onClick={handleVerify} type="button" disabled={isChecking}>
                 {isChecking ? <Loader2 size={18} className="spin" /> : <CheckCircle2 size={18} />}
+                <span>{isChecking ? "실행 중…" : "코드 실행 / 검증 (Ctrl+Enter)"}</span>
               </button>
 
-              <div style={{ display: "flex", gap: "8px", marginTop: "8px" }}>
-                <button className="ghost-button sk-action-btn" onClick={onOpenHelp} type="button" title="파이썬 레퍼런스 보기" style={{ flex: 1 }}>
-                  <BookOpen size={16} />
+              <div className="editor-subactions">
+                <button className="ghost-button" onClick={onOpenHelp} type="button" title="파이썬 레퍼런스 보기">
+                  <BookOpen size={16} /> 레퍼런스
                 </button>
-                <button
-                  className="ghost-button sk-action-btn"
-                  onClick={() => {
-                    const starter = puzzle.starterCode ?? "";
-                    setCode(starter);
-                    saveCodeDraft(puzzle.id, starter);
-                  }}
-                  type="button"
-                  title="스타터 코드로 초기화"
-                  style={{ flex: 1 }}
-                >
-                  <TerminalSquare size={16} />
+                <button className="ghost-button" onClick={resetToStarter} type="button" title="처음 상태로 초기화">
+                  <RotateCcw size={16} /> 초기화
                 </button>
               </div>
+
+              {/* 스킵: 일정 횟수 이상 실패하면 활성화 */}
+              {!isSolved ? (
+                skipAvailable ? (
+                  <button className="skip-button active" onClick={handleSkip} type="button">
+                    <FastForward size={16} /> 이 문제 건너뛰기 (조각 획득)
+                  </button>
+                ) : (
+                  <p className="skip-hint">
+                    {failCount > 0
+                      ? `${SKIP_THRESHOLD - failCount}번 더 시도하면 '건너뛰기'가 열립니다.`
+                      : "막히면 여러 번 시도해 보세요. 계속 막히면 건너뛰기가 열립니다."}
+                  </p>
+                )
+              ) : isSkipped ? (
+                <p className="skip-hint done">이 문제는 건너뛰어 조각을 받았습니다.</p>
+              ) : null}
             </div>
           </div>
         </div>

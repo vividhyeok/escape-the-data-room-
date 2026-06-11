@@ -10,6 +10,10 @@ import { getSupabaseClient } from "./supabaseClient";
 // 실제 수업에서는 진행 속도에 따라 조정할 수 있는 값입니다.
 const STALE_ACTIVITY_MINUTES = 5;
 
+// 학생이 문제를 직접 풀지 않고 '건너뛰기'로 완료했을 때 attempt 로그에 남기는 마커.
+// success=true 로 기록(=게임 진행/완료에는 포함)하되, 이 마커로 '직접 풀이'와 구분한다.
+export const SKIP_MARKER = "__SKIPPED__";
+
 export const CURRENT_STUDENT_SESSION_KEY = "etdr.currentStudentSession";
 export const LAST_CLASS_CODE_KEY = "etdr.lastClassCode";
 
@@ -54,9 +58,10 @@ export type ProblemAnalytics = {
   puzzleId: string;
   attemptCount: number;
   failCount: number;
-  successStudentCount: number;
+  successStudentCount: number; // 직접 풀어 성공한 학생 수 (스킵 제외)
+  skippedStudentCount: number; // 건너뛰기로 통과한 학생 수
   unsolvedStudentCount: number;
-  successRate: number;
+  successRate: number; // 직접 풀이 기준 성공률
 };
 
 export type ConceptAnalytics = {
@@ -86,6 +91,7 @@ export type StudentProgress = {
   attemptCount: number;
   failCount: number; // 전체 실패 시도 수
   errorRate: number; // 오답률(%) = 실패 시도 / 전체 시도
+  skippedCount: number; // 건너뛴 문제 수
   recentFailCount: number; // 마지막으로 시도한 문제에서 연속 실패한 횟수
   lastActivityAt: string | null;
   minutesSinceLastActivity: number | null;
@@ -367,6 +373,11 @@ function buildStudentProgress(
     const attemptCount = logs.length;
     const failCount = logs.filter((log) => !log.success).length;
     const errorRate = attemptCount > 0 ? Math.round((failCount / attemptCount) * 100) : 0;
+    const skippedCount = new Set(
+      logs
+        .filter((log) => log.success && (log.errorMessage ?? "").includes(SKIP_MARKER) && selectedPuzzleIds.has(log.puzzleId))
+        .map((log) => log.puzzleId),
+    ).size;
 
     // 선택된 문제 중 성공한 고유 퍼즐 수
     const solvedPuzzleIds = new Set(
@@ -444,6 +455,7 @@ function buildStudentProgress(
       attemptCount,
       failCount,
       errorRate,
+      skippedCount,
       recentFailCount,
       lastActivityAt,
       minutesSinceLastActivity,
@@ -528,12 +540,25 @@ export async function getClassAnalytics(classCode: string): Promise<ClassAnalyti
 
   const problemStats: ProblemAnalytics[] = selectedProblems.map((problem) => {
     const logsForPuzzle = attemptLogs.filter((log) => log.puzzleId === problem.mappedPuzzleId);
-    const successfulStudents = new Set(
+    // 직접 풀어 성공(스킵 제외)
+    const genuineStudents = new Set(
       logsForPuzzle
-        .filter((log) => log.success)
+        .filter((log) => log.success && !(log.errorMessage ?? "").includes(SKIP_MARKER))
         .map(getAttemptStudentKey),
     );
-    const successStudentCount = successfulStudents.size;
+    // 건너뛰기로 통과 (직접 성공한 적이 없는 학생만 집계)
+    const skippedStudents = new Set(
+      logsForPuzzle
+        .filter((log) => log.success && (log.errorMessage ?? "").includes(SKIP_MARKER))
+        .map(getAttemptStudentKey),
+    );
+    skippedStudents.forEach((id) => {
+      if (genuineStudents.has(id)) skippedStudents.delete(id);
+    });
+
+    const successStudentCount = genuineStudents.size;
+    const skippedStudentCount = skippedStudents.size;
+    const passedCount = successStudentCount + skippedStudentCount;
     const successRate = studentCount > 0 ? Math.round((successStudentCount / studentCount) * 100) : 0;
 
     return {
@@ -542,7 +567,8 @@ export async function getClassAnalytics(classCode: string): Promise<ClassAnalyti
       attemptCount: logsForPuzzle.length,
       failCount: logsForPuzzle.filter((log) => !log.success).length,
       successStudentCount,
-      unsolvedStudentCount: Math.max(0, studentCount - successStudentCount),
+      skippedStudentCount,
+      unsolvedStudentCount: Math.max(0, studentCount - passedCount),
       successRate,
     };
   });

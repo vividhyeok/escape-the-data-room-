@@ -22,14 +22,14 @@ export const puzzles: Puzzle[] = [
     title: "변수 할당",
     situationText:
       "먼지 쌓인 타일 상자에 숫자가 깜빡이고 있다.\n" +
-      "시스템을 깨우려면 data의 값을 그대로 answer라는 변수에 저장해야 한다.\n" +
-      "파이썬에서 = 기호는 오른쪽 값을 왼쪽 변수에 대입한다는 의미다.",
+      "시스템을 깨우려면 data의 값을 그대로 화면에 출력해야 한다.\n" +
+      "파이썬에서 print(...) 는 괄호 안의 값을 화면에 출력한다.",
     dataText: "7 3 5 8",
     testCases: [
       { inputCode: "data = 100", expectedOutput: 100 },
       { inputCode: "data = 42",  expectedOutput: 42  },
     ],
-    requiredSyntax: ["Assign"], bannedSyntax: [],
+    requiredSyntax: [], bannedSyntax: [],
     referenceItems: [
       ref("answer = data", "data 변수의 값을 answer에 복사합니다."),
       ref("= 연산자", "파이썬에서 = 는 수학의 같다가 아닌 '저장'을 의미합니다."),
@@ -37,10 +37,10 @@ export const puzzles: Puzzle[] = [
     rewardHint: hint("room-0-hint-tiles", "room-0", "room-0-pattern-tiles",
       "[코드 조각 획득] 변수는 값을 담는 그릇이다. 첫 번째 열쇠 파편: 8"),
     starterCode:
-      "# data 변수에는 시스템이 자동으로 숫자를 넣어 줍니다.\n" +
-      "# data의 값을 그대로 answer에 저장해 보세요.\n" +
-      "\n" +
-      "answer = ___  # ___ 를 data로 바꿔 보세요\n",
+      "# [목표] data 의 값을 그대로 print() 로 출력하세요.\n" +
+      "#  - data 는 시스템이 자동으로 채워 주는 변수입니다.\n" +
+      "#  - 결과는 print() 로 출력하면 됩니다.\n" +
+      "\n",
     imageUrl: "/assets/images/objects/room-0/pattern-tile-box.png",
     isRequired: true, requiredForDoor: true,
     doorCodePosition: 1, doorCodePiece: "8", puzzleType: "code",
@@ -67,9 +67,9 @@ export const puzzles: Puzzle[] = [
     rewardHint: hint("room-0-hint-crt-tv", "room-0", "room-0-tv-sequence",
       "[코드 조각 획득] 연산으로 신호를 보정했다. 두 번째 열쇠 파편: 5"),
     starterCode:
-      "# data에 10을 더한 결과를 answer에 저장하세요.\n" +
-      "\n" +
-      "answer = data + ___  # ___ 를 숫자로 채우세요\n",
+      "# [목표] data 에 10 을 더한 값을 print() 로 출력하세요.\n" +
+      "#  - 예) data 가 5 이면 출력은 15\n" +
+      "\n",
     imageUrl: "/assets/images/objects/room-0/crt-tv.png",
     isRequired: true, requiredForDoor: true,
     doorCodePosition: 2, doorCodePiece: "5", puzzleType: "code",
@@ -97,10 +97,9 @@ export const puzzles: Puzzle[] = [
     rewardHint: hint("room-0-hint-terminal", "room-0", "room-0-desk-terminal",
       "[코드 조각 획득] 데이터의 시작은 항상 0이다. 세 번째 열쇠 파편: 2"),
     starterCode:
-      "# data 는 문자열 변수입니다.\n" +
-      "# 대괄호 [ ] 와 인덱스 번호로 특정 글자를 꺼낼 수 있습니다.\n" +
-      "\n" +
-      "answer = data[___]  # 첫 번째 글자의 인덱스 번호는?\n",
+      "# [목표] data 문자열의 '첫 번째 글자'를 print() 로 출력하세요.\n" +
+      "#  - 인덱싱 [ ] 을 사용합니다. (파이썬 인덱스는 0 부터 시작)\n" +
+      "\n",
     imageUrl: "/assets/images/objects/room-0/desk-terminal.png",
     isRequired: true, requiredForDoor: true,
     doorCodePosition: 3, doorCodePiece: "2", puzzleType: "code",
@@ -128,10 +127,9 @@ export const puzzles: Puzzle[] = [
     rewardHint: hint("room-0-hint-ox", "room-0", "room-0-mini-ox-card",
       "[코드 조각 획득] 슬라이싱으로 코드를 잘라냈다. 네 번째 열쇠 파편: 2"),
     starterCode:
-      "# 슬라이싱으로 data의 앞 3글자를 잘라내세요.\n" +
-      "# data[시작:끝] 형태로 작성합니다.\n" +
-      "\n" +
-      "answer = data[___:___]  # 앞 3글자를 가져오려면?\n",
+      "# [목표] data 문자열의 '앞 3글자'를 잘라 print() 로 출력하세요.\n" +
+      "#  - 슬라이싱 [시작:끝] 을 사용합니다. (끝 인덱스는 포함되지 않음)\n" +
+      "\n",
     imageUrl: "/assets/images/objects/room-0/mini-ox-card.png",
     isRequired: true, requiredForDoor: true,
     doorCodePosition: 4, doorCodePiece: "2", puzzleType: "code",
@@ -158,9 +156,9 @@ export const puzzles: Puzzle[] = [
     rewardHint: hint("room-0-hint-names", "room-0", "room-0-name-tags",
       "[검증 단서] 네 자리 코드 합계 힌트 — 8+5+2+2 = 17"),
     starterCode:
-      "# len() 함수로 data의 글자 수를 구하세요.\n" +
-      "\n" +
-      "answer = len(___)  # 괄호 안에 무엇을 넣어야 할까요?\n",
+      "# [목표] data 의 길이(글자 수)를 구해 print() 로 출력하세요.\n" +
+      "#  - len() 함수를 사용합니다.\n" +
+      "\n",
     imageUrl: "/assets/images/objects/room-0/name-tags-bundle.png",
     isRequired: true, requiredForDoor: true,
     doorCodePosition: 5, doorCodePiece: "✓", puzzleType: "code",
@@ -188,9 +186,9 @@ export const puzzles: Puzzle[] = [
     rewardHint: hint("room-0-hint-note", "room-0", "room-0-bookshelf-note",
       "[검증 단서] 세 번째와 네 번째 자리는 같은 숫자"),
     starterCode:
-      "# data 문자열을 3번 반복한 결과를 answer에 저장하세요.\n" +
-      "\n" +
-      "answer = data * ___  # 몇 번 반복할까요?\n",
+      "# [목표] data 문자열을 3번 반복한 결과를 print() 로 출력하세요.\n" +
+      "#  - 예) data 가 'AB' 이면 출력은 'ABABAB'\n" +
+      "\n",
     imageUrl: "/assets/images/objects/room-0/bookshelf-note.png",
     isRequired: true, requiredForDoor: true,
     doorCodePosition: 6, doorCodePiece: "✓", puzzleType: "code",
@@ -225,10 +223,9 @@ export const puzzles: Puzzle[] = [
     rewardHint: hint("room-1-hint-word", "room-1", "room-1-word-billboard",
       "[코드 조각 획득] 신호가 정규화됐다. 첫 번째 열쇠 파편: 7"),
     starterCode:
-      "# .upper() 메서드를 사용해 대문자로 변환하세요.\n" +
-      "# 사용법: 문자열.upper()\n" +
-      "\n" +
-      "answer = data.___()  # ___ 자리에 메서드 이름을 입력하세요\n",
+      "# [목표] data 문자열을 모두 대문자로 바꿔 print() 로 출력하세요.\n" +
+      "#  - 문자열 메서드를 사용합니다. (반드시 .upper() 사용)\n" +
+      "\n",
     imageUrl: "/assets/images/objects/room-1/word-billboard.png",
     isRequired: true, requiredForDoor: true,
     doorCodePosition: 1, doorCodePiece: "7", puzzleType: "code",
@@ -256,9 +253,9 @@ export const puzzles: Puzzle[] = [
     rewardHint: hint("room-1-hint-ox", "room-1", "room-1-ox-monitor",
       "[코드 조각 획득] 오염된 신호가 복구됐다. 두 번째 열쇠 파편: 4"),
     starterCode:
-      "# .replace() 메서드로 'X'를 'O'로 바꾸세요.\n" +
-      "\n" +
-      "answer = data.replace(___, ___)  # ('바꿀것', '바꿀내용') 형태\n",
+      "# [목표] data 안의 모든 'X' 를 'O' 로 바꿔 print() 로 출력하세요.\n" +
+      "#  - 문자열 메서드를 사용합니다. (반드시 .replace() 사용)\n" +
+      "\n",
     imageUrl: "/assets/images/objects/room-1/ox-monitor.png",
     isRequired: true, requiredForDoor: true,
     doorCodePosition: 2, doorCodePiece: "4", puzzleType: "code",
@@ -271,7 +268,7 @@ export const puzzles: Puzzle[] = [
     situationText:
       "패널에 공백으로 구분된 여러 개의 코드가 한 줄로 표시되어 있다.\n" +
       ".split() 메서드로 문자열을 공백 기준으로 분리하면 리스트가 된다.\n" +
-      "분리된 리스트를 answer에 저장하라.",
+      "분리된 리스트를 print() 로 출력하라.",
     dataText: "ALPHA BRAVO CHARLIE DELTA",
     testCases: [
       { inputCode: "data = 'A B C'",    expectedOutput: ["A", "B", "C"]          },
@@ -285,10 +282,9 @@ export const puzzles: Puzzle[] = [
     rewardHint: hint("room-1-hint-num", "room-1", "room-1-number-panel",
       "[코드 조각 획득] 코드가 분리됐다. 세 번째 열쇠 파편: 7"),
     starterCode:
-      "# .split() 메서드로 data를 공백 기준으로 나누세요.\n" +
-      "# 결과는 리스트(목록) 형태입니다.\n" +
-      "\n" +
-      "answer = data.___()  # 공백으로 나누는 메서드는?\n",
+      "# [목표] data 를 공백 기준으로 나눠 리스트로 만들어 print() 로 출력하세요.\n" +
+      "#  - 문자열 메서드를 사용합니다. (반드시 .split() 사용)\n" +
+      "\n",
     imageUrl: "/assets/images/objects/room-1/number-panel.png",
     isRequired: true, requiredForDoor: true,
     doorCodePosition: 3, doorCodePiece: "7", puzzleType: "code",
@@ -301,7 +297,7 @@ export const puzzles: Puzzle[] = [
     situationText:
       "라디오 수신기에 신호 강도값이 잡혔다.\n" +
       "100 이상이면 수신 성공('PASS'), 미만이면 수신 실패('FAIL')로 판정한다.\n" +
-      "if/else 조건문으로 두 경우를 나누어 answer에 저장하라.",
+      "if/else 조건문으로 두 경우를 나누어 print() 로 출력하라.",
     dataText: "085.7\n100.3\n112.9\n097.5",
     testCases: [
       { inputCode: "data = 100", expectedOutput: "PASS" },
@@ -317,12 +313,9 @@ export const puzzles: Puzzle[] = [
     rewardHint: hint("room-1-hint-radio", "room-1", "room-1-radio-signal",
       "[코드 조각 획득] 신호 강도가 판별됐다. 네 번째 열쇠 파편: 9"),
     starterCode:
-      "# if/else 로 data의 크기에 따라 다른 값을 저장하세요.\n" +
-      "\n" +
-      "if data >= ___:       # 조건: data가 얼마 이상이면?\n" +
-      "    answer = 'PASS'\n" +
-      "else:\n" +
-      "    answer = 'FAIL'\n",
+      "# [목표] data 가 100 이상이면 'PASS', 아니면 'FAIL' 을 print() 로 출력하세요.\n" +
+      "#  - if / else 조건문과 비교 연산자(>=)를 사용합니다.\n" +
+      "\n",
     imageUrl: "/assets/images/objects/room-1/radio-signal-device.png",
     isRequired: true, requiredForDoor: true,
     doorCodePosition: 4, doorCodePiece: "9", puzzleType: "code",
@@ -350,13 +343,9 @@ export const puzzles: Puzzle[] = [
     rewardHint: hint("room-1-hint-name", "room-1", "room-1-name-card",
       "[검증 단서] 첫 번째 자리 = 세 번째 자리 (같은 숫자)"),
     starterCode:
-      "# data가 짝수면 True, 홀수면 False를 저장하세요.\n" +
-      "# 힌트: 짝수는 2로 나눈 나머지가 0입니다.\n" +
-      "\n" +
-      "if data % 2 == ___:\n" +
-      "    answer = True\n" +
-      "else:\n" +
-      "    answer = False\n",
+      "# [목표] data 가 짝수면 True, 홀수면 False 를 print() 로 출력하세요.\n" +
+      "#  - 힌트: 짝수는 2 로 나눈 나머지(%)가 0 입니다.\n" +
+      "\n",
     imageUrl: "/assets/images/objects/room-1/name-card-board.png",
     isRequired: true, requiredForDoor: true,
     doorCodePosition: 5, doorCodePiece: "✓", puzzleType: "code",
@@ -369,7 +358,7 @@ export const puzzles: Puzzle[] = [
     situationText:
       "스트립에 기록된 유효 범위는 0 초과, 10 미만이다.\n" +
       "두 조건을 동시에 확인하려면 and 논리 연산자를 사용한다.\n" +
-      "data가 유효 범위 안이면 True, 아니면 False를 answer에 저장하라.",
+      "data가 유효 범위 안이면 True, 아니면 False를 print() 로 출력하라.",
     dataText: "5 1 5 - 1 A",
     testCases: [
       { inputCode: "data = 5",  expectedOutput: true  },
@@ -384,10 +373,9 @@ export const puzzles: Puzzle[] = [
     rewardHint: hint("room-1-hint-noise", "room-1", "room-1-checksum-tablet",
       "[검증 단서] 네 자리 합계 = 27"),
     starterCode:
-      "# 두 조건을 and 로 연결하세요.\n" +
-      "# 조건1: data가 0보다 크다  조건2: data가 10보다 작다\n" +
-      "\n" +
-      "answer = data > ___ and data < ___\n",
+      "# [목표] data 가 0 보다 크고 동시에 10 보다 작으면 True, 아니면 False 를 print() 로 출력하세요.\n" +
+      "#  - 두 조건을 and 로 연결합니다.\n" +
+      "\n",
     imageUrl: "/assets/images/objects/room-1/noise-strip.png",
     isRequired: true, requiredForDoor: true,
     doorCodePosition: 6, doorCodePiece: "✓", puzzleType: "code",
@@ -423,14 +411,10 @@ export const puzzles: Puzzle[] = [
     rewardHint: hint("room-2-hint-file", "room-2", "room-2-file-cabinet",
       "[코드 조각 획득] 기록을 집계했다. 첫 번째 열쇠 파편: 3"),
     starterCode:
-      "# for문으로 리스트를 순회하며 합계를 구하세요.\n" +
-      "# sum() 함수는 사용할 수 없습니다!\n" +
-      "\n" +
-      "total = 0           # 누적 변수 초기화\n" +
-      "for x in data:\n" +
-      "    total = total + ___   # 각 항목을 더하세요\n" +
-      "\n" +
-      "answer = total\n",
+      "# [목표] 리스트 data 의 모든 값을 더한 총합을 print() 로 출력하세요.\n" +
+      "#  - for 반복문으로 직접 누적하세요. (sum() 사용 금지)\n" +
+      "#  - 힌트: 누적 변수를 0 으로 초기화한 뒤 항목을 하나씩 더합니다.\n" +
+      "\n",
     imageUrl: "/assets/images/objects/room-2/file-cabinet.png",
     isRequired: true, requiredForDoor: true,
     doorCodePosition: 1, doorCodePiece: "3", puzzleType: "code",
@@ -459,14 +443,10 @@ export const puzzles: Puzzle[] = [
     rewardHint: hint("room-2-hint-tags", "room-2", "room-2-broken-tags",
       "[코드 조각 획득] 손상 데이터를 걸러냈다. 두 번째 열쇠 파편: 5"),
     starterCode:
-      "# 빈 리스트를 만들고, 양수만 append 하세요.\n" +
-      "\n" +
-      "result = []          # 결과를 담을 빈 리스트\n" +
-      "for x in data:\n" +
-      "    if x > ___:      # 조건: 0보다 크면\n" +
-      "        result.append(___)\n" +
-      "\n" +
-      "answer = result\n",
+      "# [목표] 리스트 data 에서 0 보다 큰 값만 모아 새 리스트를 만들어 print() 로 출력하세요.\n" +
+      "#  - for 와 if 를 사용합니다. (filter() 사용 금지)\n" +
+      "#  - 힌트: 빈 리스트를 만들고 .append() 로 추가합니다.\n" +
+      "\n",
     imageUrl: "/assets/images/objects/room-2/broken-name-tags.png",
     isRequired: true, requiredForDoor: true,
     doorCodePosition: 2, doorCodePiece: "5", puzzleType: "code",
@@ -479,7 +459,7 @@ export const puzzles: Puzzle[] = [
     situationText:
       "보안 데이터베이스에 여러 에이전트의 정보가 딕셔너리 리스트로 저장되어 있다.\n" +
       "for문으로 리스트를 순회하며, 각 항목의 'score' 키로 값에 접근하라.\n" +
-      "if문으로 더 높은 점수를 찾아 누적하여 가장 높은 점수를 answer에 저장하라.",
+      "if문으로 더 높은 점수를 찾아 누적하여 가장 높은 점수를 print() 로 출력하라.",
     dataText: "SECURITY DB\nA001/에이전트 알파\nA002/에이전트 베타\nA003/에이전트 감마\nA004/에이전트 델타\nA005/에이전트 엡실론\n\nA001/88\nA002/72\nA003/95\nA004/61\nA005/87",
     testCases: [
       { inputCode: "data = [{'name': 'A', 'score': 60}, {'name': 'B', 'score': 90}]", expectedOutput: 90 },
@@ -495,15 +475,10 @@ export const puzzles: Puzzle[] = [
     rewardHint: hint("room-2-hint-score", "room-2", "room-2-score-board",
       "[코드 조각 획득] 최고 점수를 찾아냈다. 세 번째 열쇠 파편: 4"),
     starterCode:
-      "# 리스트 속 딕셔너리에서 가장 높은 score를 찾으세요.\n" +
-      "# max() 함수는 사용 금지입니다!\n" +
-      "\n" +
-      "best = 0              # 현재 최댓값 저장 변수\n" +
-      "for item in data:\n" +
-      "    if item[___] > best:   # 어떤 키의 값을 비교?\n" +
-      "        best = item[___]\n" +
-      "\n" +
-      "answer = best\n",
+      "# [목표] 딕셔너리 리스트 data 에서 가장 높은 'score' 값을 print() 로 출력하세요.\n" +
+      "#  - for, if, 그리고 item['score'] 접근을 사용합니다. (max() 사용 금지)\n" +
+      "#  - 힌트: 최댓값 변수를 두고 더 큰 값을 만나면 갱신합니다.\n" +
+      "\n",
     imageUrl: "/assets/images/objects/room-2/score-board.png",
     isRequired: true, requiredForDoor: true,
     doorCodePosition: 3, doorCodePiece: "4", puzzleType: "code",
@@ -531,15 +506,10 @@ export const puzzles: Puzzle[] = [
     rewardHint: hint("room-2-hint-time", "room-2", "room-2-timeline",
       "[코드 조각 획득] 카운트다운 완료. 네 번째 열쇠 파편: 7"),
     starterCode:
-      "# while문으로 data에서 1까지 감소하는 리스트를 만드세요.\n" +
-      "\n" +
-      "result = []\n" +
-      "n = data\n" +
-      "while n > ___:        # n이 얼마보다 클 때 반복?\n" +
-      "    result.append(n)\n" +
-      "    n = n - ___       # n을 얼마나 줄여야 할까요?\n" +
-      "\n" +
-      "answer = result\n",
+      "# [목표] data 부터 1 까지 1 씩 줄어드는 숫자 리스트를 만들어 print() 로 출력하세요.\n" +
+      "#  - while 반복문을 사용합니다.\n" +
+      "#  - 예) data 가 3 이면 출력은[3, 2, 1]\n" +
+      "\n",
     imageUrl: "/assets/images/objects/room-2/timeline-board.png",
     isRequired: true, requiredForDoor: true,
     doorCodePosition: 4, doorCodePiece: "7", puzzleType: "code",
@@ -566,10 +536,9 @@ export const puzzles: Puzzle[] = [
     rewardHint: hint("room-2-hint-log", "room-2", "room-2-access-log",
       "[검증 단서] 짝수 번째 자리(2번·4번) 합 = 12"),
     starterCode:
-      "# 양수인 원소만 2배로 만든 리스트를 구하세요.\n" +
-      "# 형태: [표현식 for 변수 in 리스트 if 조건]\n" +
-      "\n" +
-      "answer = [x * 2 for x in data if x > ___]  # 조건: 0보다 크면\n",
+      "# [목표] 리스트 data 에서 0 보다 큰 값만 2배로 만든 리스트를 print() 로 출력하세요.\n" +
+      "#  - 리스트 컴프리헨션을 사용합니다.  형태: [표현식 for 변수 in 리스트 if 조건]\n" +
+      "\n",
     imageUrl: "/assets/images/objects/room-2/access-log-table.png",
     isRequired: true, requiredForDoor: true,
     doorCodePosition: 5, doorCodePiece: "✓", puzzleType: "code",
@@ -598,14 +567,9 @@ export const puzzles: Puzzle[] = [
     rewardHint: hint("room-2-hint-checksum", "room-2", "room-2-checksum-ledger",
       "[검증 단서] 네 자리 중 가장 작은 값은 첫 번째 자리 (3)"),
     starterCode:
-      "# 모음이 아닌 글자만 모아 새 문자열을 만드세요.\n" +
-      "\n" +
-      "result = ''\n" +
-      "for char in data:\n" +
-      "    if char not in ___:  # 모음 목록 문자열은?\n" +
-      "        result = result + char\n" +
-      "\n" +
-      "answer = result\n",
+      "# [목표] data 문자열에서 모음(a, e, i, o, u)을 모두 제거한 문자열을 print() 로 출력하세요.\n" +
+      "#  - for 반복문과 if (in 연산자)를 사용합니다.\n" +
+      "\n",
     imageUrl: "/assets/images/objects/room-2/archive-note.png",
     isRequired: true, requiredForDoor: true,
     doorCodePosition: 6, doorCodePiece: "✓", puzzleType: "code",
@@ -623,7 +587,7 @@ export const puzzles: Puzzle[] = [
     situationText:
       "최종 검토 콘솔에 문자열이 표시되어 있다.\n" +
       "슬라이싱의 세 번째 인수 (스텝)를 -1로 설정하면 문자열을 뒤집을 수 있다.\n" +
-      "data[::-1] 로 뒤집힌 문자열을 answer에 저장하라.",
+      "data[::-1] 로 뒤집힌 문자열을 print() 로 출력하라.",
     dataText: "PYTHON",
     testCases: [
       { inputCode: "data = 'ABC'",    expectedOutput: "CBA"    },
@@ -638,10 +602,9 @@ export const puzzles: Puzzle[] = [
     rewardHint: hint("room-3-hint-1", "room-3", "room-3-validator",
       "[보너스] 역방향 슬라이싱 완료. [::-1] 은 파이썬만의 우아한 기법이다."),
     starterCode:
-      "# 역방향 슬라이싱으로 data를 뒤집으세요.\n" +
-      "# 힌트: [::-1] 의 의미는 '끝에서 처음으로, 한 칸씩'\n" +
-      "\n" +
-      "answer = data[___]  # 역방향 슬라이싱 표현식은?\n",
+      "# [목표] data 문자열을 거꾸로 뒤집어 print() 로 출력하세요.\n" +
+      "#  - 슬라이싱의 스텝(세 번째 값)을 사용합니다.\n" +
+      "\n",
     imageUrl: "/assets/images/objects/room-3/finish-console.png",
     isRequired: false, requiredForDoor: false, isHidden: true, puzzleType: "code",
   },

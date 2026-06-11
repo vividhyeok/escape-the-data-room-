@@ -28,6 +28,8 @@ self.onmessage = async (event: MessageEvent<{ id: number; code: string; context?
 import ast
 import traceback
 import json
+import io
+import contextlib
 
 def evaluate_puzzle(user_code, required_syntax_json, banned_syntax_json, test_cases_json):
     required_syntax = json.loads(required_syntax_json)
@@ -66,20 +68,30 @@ def evaluate_puzzle(user_code, required_syntax_json, banned_syntax_json, test_ca
     for i, tc in enumerate(test_cases):
         input_code = tc.get("inputCode", "")
         expected = tc.get("expectedOutput", None)
-        
+        expected_str = str(expected)
+
         env = {}
+        buf = io.StringIO()
         try:
             exec(input_code, env)
-            exec(user_code, env)
+            with contextlib.redirect_stdout(buf):
+                exec(user_code, env)
         except Exception as e:
             return json.dumps({"success": False, "error": f"실행 에러:\\n{traceback.format_exc()}"})
-            
-        if "answer" not in env:
-            return json.dumps({"success": False, "error": "정답 변수 누락: 'answer' 라는 이름의 변수에 최종 결과를 저장해 주세요."})
-            
-        if env["answer"] != expected:
-            return json.dumps({"success": False, "error": f"오답: 'answer' 값이 기대한 결과와 다릅니다. (기대값: {expected}, 실제값: {env['answer']})"})
-            
+
+        out = buf.getvalue().strip()
+
+        # 1순위: print() 출력(stdout)으로 채점
+        if out != "":
+            if out != expected_str:
+                return json.dumps({"success": False, "error": f"출력이 예시와 다릅니다.\\n  입력: {input_code}\\n  기대 출력: {expected_str}\\n  실제 출력: {out}"})
+        # 2순위(보조): answer 변수에 저장한 경우도 인정
+        elif "answer" in env:
+            if env["answer"] != expected:
+                return json.dumps({"success": False, "error": f"결과가 예시와 다릅니다. (기대: {expected_str}, 실제: {env['answer']})"})
+        else:
+            return json.dumps({"success": False, "error": "출력이 없습니다. print() 로 결과를 출력해 주세요."})
+
     return json.dumps({"success": True, "error": ""})
 `;
       await py.runPythonAsync(evalScript);

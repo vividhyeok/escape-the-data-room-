@@ -7,6 +7,8 @@ type GameProgress = {
   currentRoomId: string;
   currentViewId: ViewId;
   solvedPuzzleIds: string[];
+  skippedPuzzleIds: string[];
+  puzzleFailCounts: Record<string, number>;
   collectedHints: RoomHint[];
   codeDrafts: Record<string, string>;
   doorInputs: Record<string, string>;
@@ -28,6 +30,8 @@ type GameActions = {
   setCurrentView: (viewId: ViewId) => void;
   saveCodeDraft: (puzzleId: string, code: string) => void;
   solvePuzzle: (puzzle: Puzzle) => void;
+  recordPuzzleFail: (puzzleId: string) => void;
+  skipPuzzle: (puzzle: Puzzle) => void;
   setDoorInput: (roomId: string, attempt: string) => void;
   recordDoorAttempt: (roomId: string, attempt: string) => void;
   clearRoom: (roomId: string) => void;
@@ -48,6 +52,8 @@ const initialProgress: GameProgress = {
   currentRoomId: "room-0",
   currentViewId: "center",
   solvedPuzzleIds: [],
+  skippedPuzzleIds: [],
+  puzzleFailCounts: {},
   collectedHints: [],
   codeDrafts: {},
   doorInputs: {},
@@ -89,6 +95,25 @@ export const useGameStore = create<GameStore>()(
       solvePuzzle: (puzzle) =>
         set((state) => ({
           solvedPuzzleIds: addUnique(state.solvedPuzzleIds, puzzle.id, (id) => id === puzzle.id),
+          collectedHints: addUnique(
+            state.collectedHints,
+            puzzle.rewardHint,
+            (existingHint) => existingHint.id === puzzle.rewardHint.id,
+          ),
+        })),
+      recordPuzzleFail: (puzzleId) =>
+        set((state) => ({
+          puzzleFailCounts: {
+            ...state.puzzleFailCounts,
+            [puzzleId]: (state.puzzleFailCounts[puzzleId] ?? 0) + 1,
+          },
+        })),
+      // 스킵: 못 푼 학생도 조각을 얻어 방을 통과하고 게임을 끝낼 수 있게 한다.
+      // (스킵한 퍼즐은 skippedPuzzleIds 로 따로 표시해 교사 데이터에서 구분 가능)
+      skipPuzzle: (puzzle) =>
+        set((state) => ({
+          solvedPuzzleIds: addUnique(state.solvedPuzzleIds, puzzle.id, (id) => id === puzzle.id),
+          skippedPuzzleIds: addUnique(state.skippedPuzzleIds, puzzle.id, (id) => id === puzzle.id),
           collectedHints: addUnique(
             state.collectedHints,
             puzzle.rewardHint,
@@ -138,6 +163,8 @@ export const useGameStore = create<GameStore>()(
         currentRoomId: state.currentRoomId,
         currentViewId: state.currentViewId,
         solvedPuzzleIds: state.solvedPuzzleIds,
+        skippedPuzzleIds: state.skippedPuzzleIds,
+        puzzleFailCounts: state.puzzleFailCounts,
         collectedHints: state.collectedHints,
         codeDrafts: state.codeDrafts,
         doorInputs: state.doorInputs,

@@ -1,44 +1,64 @@
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { getPuzzlesForRoom } from "../data/puzzles";
 import type { Room } from "../data/types";
 import { useGameStore } from "../store/gameStore";
 import { GameWindow } from "./GameWindow";
+import { SoundEngine } from "../utils/SoundEngine";
 
 type DoorKeypadProps = {
   room: Room;
   onClose: () => void;
 };
 
-function normalizeCode(code: string): string {
-  return code.trim().replace(/\s+/g, "").toUpperCase();
-}
-
 export function DoorKeypad({ room, onClose }: DoorKeypadProps): React.JSX.Element {
-  const doorAttempt = useGameStore((state) => state.doorInputs[room.id] ?? "");
-  const setDoorInput = useGameStore((state) => state.setDoorInput);
-  const recordDoorAttempt = useGameStore((state) => state.recordDoorAttempt);
   const clearRoom = useGameStore((state) => state.clearRoom);
-  const collectedHints = useGameStore((state) => state.collectedHints);
   const solvedPuzzleIds = useGameStore((state) => state.solvedPuzzleIds);
-  const [message, setMessage] = useState("");
+  const [unlocking, setUnlocking] = useState(false);
   const [unlocked, setUnlocked] = useState(false);
-  const [rejected, setRejected] = useState(false);
-  const roomHints = collectedHints.filter((hint) => hint.roomId === room.id);
-  const roomPuzzles = getPuzzlesForRoom(room.id);
-  const requiredDoorPuzzles = roomPuzzles
-    .filter((puzzle) => puzzle.requiredForDoor)
-    .sort((a, b) => (a.doorCodePosition ?? 99) - (b.doorCodePosition ?? 99));
-  const solvedRequiredDoorPuzzles = requiredDoorPuzzles.filter((puzzle) => solvedPuzzleIds.includes(puzzle.id));
-  const hasRequiredDoorGate = requiredDoorPuzzles.length > 0;
-  const requiredDoorReady = !hasRequiredDoorGate || solvedRequiredDoorPuzzles.length === requiredDoorPuzzles.length;
+  const [scramble, setScramble] = useState(0);
 
+  // 이 방의 퍼즐 = 조각. 각 문제를 풀면 1조각씩 모인다.
+  const roomPieces = getPuzzlesForRoom(room.id).filter((p) => p.requiredForDoor && !p.isHidden);
+  const totalPieces = roomPieces.length;
+  const collectedPieces = roomPieces.filter((p) => solvedPuzzleIds.includes(p.id)).length;
+  const allCollected = totalPieces > 0 && collectedPieces >= totalPieces;
+  const codeDigits = room.doorCode.split("");
+  const codeLength = codeDigits.length;
+
+  // 조각을 모을수록 코드가 한 자리씩 '해독'된다(progressive decryption).
+  // 마지막 한 자리는 모든 조각을 모아야만 풀린다.
+  const ratio = totalPieces > 0 ? collectedPieces / totalPieces : 0;
+  const unlockedDigitCount = allCollected
+    ? codeLength
+    : Math.min(codeLength - 1, Math.floor(ratio * codeLength));
+
+  const hasLockedDigits = unlockedDigitCount < codeLength;
+
+  // 아직 해독되지 않은 자리는 숫자가 계속 돌아가는 연출
+  useEffect(() => {
+    if (!hasLockedDigits || unlocked) return;
+    const timer = window.setInterval(() => setScramble((s) => s + 1), 90);
+    return () => window.clearInterval(timer);
+  }, [hasLockedDigits, unlocked]);
+
+  // 모든 조각을 처음 모은 순간 '해독 완료' 사운드 1회
+  const revealPlayed = useRef(false);
+  useEffect(() => {
+    if (allCollected && !revealPlayed.current) {
+      revealPlayed.current = true;
+      SoundEngine.playGlitch();
+      window.setTimeout(() => SoundEngine.playSuccess(), 300);
+    }
+  }, [allCollected]);
+
+  // Room 3 (검토실)은 최종 탈출 연출
   if (room.id === "room-3") {
     return (
       <GameWindow id={`keypad-${room.id}`} type="keypad" eyebrow="//SYS.EXIT" title={room.subtitle} onClose={onClose}>
         <div className="door-modal">
           <div className="final-exit-panel">
-            <strong>Review complete</strong>
-            <p>놓친 선택 단서와 저장된 풀이를 확인한 뒤 최종 탈출을 마무리합니다.</p>
+            <strong>최종 검토 완료</strong>
+            <p>지나온 방의 풀이를 모두 확인했습니다. 마지막 문을 열어 탈출을 마무리하세요.</p>
             <button
               className="primary-button"
               onClick={() => {
@@ -55,77 +75,28 @@ export function DoorKeypad({ room, onClose }: DoorKeypadProps): React.JSX.Elemen
     );
   }
 
-  if (room.id === "room-3") {
-    return (
-      <GameWindow id={`keypad-${room.id}`} type="keypad" eyebrow="//SYS.EXIT" title={room.subtitle} onClose={onClose}>
-        <div className="door-modal">
-          <div className="optional-exit-panel">
-            <strong>여기서는 풀 만큼만 풀어도 된다.</strong>
-            <p>
-              아래층의 단서는 추가 도전용이다. 남은 퍼즐을 더 조사하거나, 지금까지 확인한 내용으로 탐색을 마무리할 수 있다.
-            </p>
-            <div className="door-pieces" aria-label="Optional challenge progress">
-              {requiredDoorPuzzles.map((puzzle, index) => {
-                const isSolved = solvedPuzzleIds.includes(puzzle.id);
-                return (
-                  <span className={isSolved ? "piece acquired" : "piece"} key={puzzle.id}>
-                    {index + 1}: {isSolved ? puzzle.doorCodePiece ?? "?" : "?"}
-                  </span>
-                );
-              })}
-            </div>
-            <button
-              className="primary-button"
-              onClick={() => {
-                clearRoom(room.id);
-                onClose();
-              }}
-              type="button"
-            >
-              이쯤에서 마무리
-            </button>
-          </div>
-        </div>
-      </GameWindow>
-    );
-  }
-
-  function updateAttempt(value: string): void {
-    setDoorInput(room.id, value.toUpperCase().replace(/[^A-Z0-9]/g, "").slice(0, 4));
-    setMessage("");
-  }
-
-  function submitCode(): void {
-    const normalizedAttempt = normalizeCode(doorAttempt);
-    if (normalizedAttempt) {
-      recordDoorAttempt(room.id, doorAttempt);
-    }
-
-    if (normalizedAttempt.length < 3) {
-      setMessage("3~4자리(숫자/영문) 코드를 입력하세요.");
-      return;
-    }
-
-    if (!requiredDoorReady) {
-      setMessage("Door Code 조각을 모두 모은 뒤 입력하세요.");
-      return;
-    }
-
-    if (normalizedAttempt === room.doorCode) {
+  function handleUnlock(): void {
+    if (!allCollected || unlocking) return;
+    setUnlocking(true);
+    SoundEngine.playGlitch();
+    // 짧은 '해독 시퀀스' 후 잠금 해제
+    window.setTimeout(() => {
+      SoundEngine.playDoorOpen();
       clearRoom(room.id);
       setUnlocked(true);
-      window.setTimeout(() => onClose(), 1600);
-      return;
-    }
+      window.setTimeout(() => onClose(), 1700);
+    }, 850);
+  }
 
-    setMessage("Code mismatch.");
-    setRejected(true);
-    window.setTimeout(() => setRejected(false), 500);
+  function digitChar(index: number): string {
+    if (index < unlockedDigitCount) return codeDigits[index];
+    // 잠긴 자리는 매 틱마다 무작위 숫자
+    return String((scramble * 7 + index * 3) % 10);
   }
 
   return (
     <GameWindow id={`keypad-${room.id}`} type="keypad" eyebrow="//SYS.DOOR" title={room.subtitle} onClose={onClose}>
-      <div className={`door-modal ${unlocked ? "door-unlocked" : ""} ${rejected ? "door-rejected" : ""}`}>
+      <div className={`door-modal ${unlocked ? "door-unlocked" : ""}`}>
         {unlocked && (
           <div className="door-access-granted" aria-live="assertive">
             <span className="access-icon">✓</span>
@@ -133,48 +104,57 @@ export function DoorKeypad({ room, onClose }: DoorKeypadProps): React.JSX.Elemen
             <p>{room.subtitle} — 탈출 성공</p>
           </div>
         )}
-        <div className="door-grid" style={unlocked ? { display: "none" } : undefined}>
-          <div className="keypad-display">
-            <label>
-              <span>Door Code</span>
-              <input
-                inputMode="text"
-                onChange={(event) => updateAttempt(event.target.value)}
-                onKeyDown={(e) => { if (e.key === "Enter") submitCode(); }}
-                placeholder="0000 또는 ABCD"
-                type="text"
-                value={doorAttempt}
-              />
-            </label>
-            <button className="primary-button" onClick={submitCode} type="button">
-              입력
-            </button>
-            {message ? <p className="feedback">{message}</p> : null}
+
+        <div className="door-grid-v2" style={unlocked ? { display: "none" } : undefined}>
+          {/* 조각으로 해독되는 4자리 코드 */}
+          <div className="code-reveal">
+            <span className="code-reveal-label">
+              {allCollected
+                ? "코드 해독 완료 — 잠금을 해제하세요"
+                : `잠금 코드 해독 중… (${unlockedDigitCount}/${codeLength} 자리)`}
+            </span>
+            <div className={`code-digits ${unlocking ? "decrypting" : ""}`}>
+              {codeDigits.map((_, index) => {
+                const isDecoded = index < unlockedDigitCount;
+                return (
+                  <span
+                    className={`code-digit ${isDecoded ? "decoded" : "locked"}`}
+                    key={index}
+                    style={{ ["--d" as string]: index }}
+                  >
+                    {digitChar(index)}
+                  </span>
+                );
+              })}
+            </div>
           </div>
-          <div className="door-hints">
-            <span>Collected Clues</span>
-            {hasRequiredDoorGate ? (
-              <div className="door-pieces" aria-label="Door Code pieces">
-                {requiredDoorPuzzles.map((puzzle, index) => {
-                  const isSolved = solvedPuzzleIds.includes(puzzle.id);
-                  return (
-                    <span className={isSolved ? "piece acquired" : "piece"} key={puzzle.id}>
-                      {index + 1}: {isSolved ? puzzle.doorCodePiece ?? "?" : "?"}
-                    </span>
-                  );
-                })}
-              </div>
-            ) : null}
-            {roomHints.length ? (
-              <ul>
-                {roomHints.map((hint) => (
-                  <li key={hint.id}>{hint.text}</li>
-                ))}
-              </ul>
-            ) : (
-              <p>No collected clues yet.</p>
-            )}
+
+          {/* 조각 진행 (각 문제 = 1조각) */}
+          <div className="piece-tracker" aria-label={`코드 조각 ${collectedPieces}/${totalPieces}`}>
+            <div className="piece-tracker-head">
+              <span>코드 조각</span>
+              <strong>{collectedPieces} / {totalPieces}</strong>
+            </div>
+            <div className="piece-dots">
+              {roomPieces.map((piece, index) => (
+                <span
+                  className={`piece-dot ${solvedPuzzleIds.includes(piece.id) ? "filled" : ""}`}
+                  key={piece.id}
+                  title={`조각 ${index + 1}`}
+                />
+              ))}
+            </div>
           </div>
+
+          {/* 잠금 해제 */}
+          <button
+            className={`door-unlock-btn ${allCollected ? "ready" : ""}`}
+            onClick={handleUnlock}
+            type="button"
+            disabled={!allCollected || unlocking}
+          >
+            {unlocking ? "해제 중…" : allCollected ? "🔓 잠금 해제" : `조각을 모으세요 (${collectedPieces}/${totalPieces})`}
+          </button>
         </div>
       </div>
     </GameWindow>

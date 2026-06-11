@@ -22,7 +22,7 @@ type GameWindowProps = {
 const STORAGE_PREFIX = "escape-the-data-room:window:";
 
 const DEFAULT_WINDOW_SIZES: Record<GameWindowType, Pick<WindowRect, "width" | "height">> = {
-  inspect:   { width: 980, height: 640 },
+  inspect:   { width: 1120, height: 720 },
   python:    { width: 720, height: 580 },
   reference: { width: 440, height: 540 },
   keypad:    { width: 420, height: 520 },
