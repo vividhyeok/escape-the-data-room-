@@ -7278,7 +7278,9 @@ button, a, select, input[type="button"], input[type="submit"] { cursor: pointer;
   font-family: var(--td-font);
   background: var(--td-bg);
   color: var(--td-text);
-  min-height: 100vh;
+  position: absolute;
+  inset: 0;
+  z-index: 50;
   overflow-y: auto;
   -webkit-font-smoothing: antialiased;
 }
@@ -7767,6 +7769,11 @@ button, a, select, input[type="button"], input[type="submit"] { cursor: pointer;
   box-shadow: 0 1px 4px rgba(245, 158, 11, 0.2);
 }
 
+.td-cell.skipped {
+  background: linear-gradient(180deg, #a78bfa, #8b5cf6);
+  box-shadow: 0 1px 4px rgba(139, 92, 246, 0.25);
+}
+
 .td-cell.untouched {
   background: #eef0f3;
 }
@@ -7823,6 +7830,7 @@ button, a, select, input[type="button"], input[type="submit"] { cursor: pointer;
 }
 
 .td-legend i.solved { background: var(--td-success); }
+.td-legend i.skipped { background: #8b5cf6; }
 .td-legend i.attempted { background: var(--td-warning); }
 .td-legend i.untouched { background: #e2e5ea; }
 
@@ -7842,7 +7850,10 @@ button, a, select, input[type="button"], input[type="submit"] { cursor: pointer;
   font-family: var(--td-font);
   background: var(--td-bg);
   color: var(--td-text);
-  min-height: 100vh;
+  position: absolute;
+  inset: 0;
+  z-index: 50;
+  overflow-y: auto;
   -webkit-font-smoothing: antialiased;
 }
 

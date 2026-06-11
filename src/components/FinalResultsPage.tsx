@@ -247,10 +247,26 @@ export function FinalResultsPage(): React.JSX.Element {
                 <div className="fr-student-row" key={s.studentId}>
                   <span style={{ fontWeight: 700 }}>{s.nickname}</span>
                   <span>
-                    <div className="fr-mini-bar">
+                    <div className="fr-mini-bar" style={{ marginBottom: 6 }}>
                       <span style={{ width: `${s.progressPercent}%` }} />
                     </div>
-                    <span style={{ fontSize: "0.82rem", color: "#5f6673", marginTop: 2, display: "block" }}>
+                    <div className="td-cells">
+                      {s.problemCells.map((c, i) => {
+                        const stateLabel =
+                          c.state === "solved" ? "정답" :
+                          c.state === "skipped" ? "건너뛰기" :
+                          c.state === "attempted" ? "시도 중" : "미시작";
+                        return (
+                          <i
+                            className={`td-cell ${c.state}`}
+                            key={i}
+                            title={`${i + 1}. ${c.title} [${c.concept}] - ${stateLabel}`}
+                            style={{ height: 16 }}
+                          />
+                        );
+                      })}
+                    </div>
+                    <span style={{ fontSize: "0.82rem", color: "#5f6673", marginTop: 4, display: "block" }}>
                       {s.solvedCount}/{s.selectedProblemCount} ({s.progressPercent}%)
                     </span>
                   </span>

@@ -80,7 +80,12 @@ export type StudentStatus =
   | "완료";
 
 // 학생별 가로 진행 트래킹용 — 선택 문제 순서대로 각 문제의 상태
-export type ProblemCellState = "solved" | "attempted" | "untouched";
+export type ProblemCellData = {
+  puzzleId: string;
+  title: string;
+  concept: string;
+  state: "solved" | "skipped" | "attempted" | "untouched";
+};
 
 export type StudentProgress = {
   studentId: string;
@@ -97,7 +102,7 @@ export type StudentProgress = {
   minutesSinceLastActivity: number | null;
   lastProblemTitle: string | null;
   lastProblemConcept: string | null;
-  problemCells: ProblemCellState[]; // 선택 문제 순서대로의 진행 상태(가로 트래킹용)
+  problemCells: ProblemCellData[]; // 선택 문제 순서대로의 진행 상태 및 문제 정보
   isFinished: boolean; // 선택 문제를 모두 해결했는지
   status: StudentStatus;
   needsHelp: boolean;
@@ -389,15 +394,31 @@ function buildStudentProgress(
     const attemptedPuzzleIds = new Set(
       logs.filter((log) => selectedPuzzleIds.has(log.puzzleId)).map((log) => log.puzzleId),
     );
+    // 건너뛴 문제
+    const skippedPuzzleIds = new Set(
+      logs
+        .filter((log) => log.success && (log.errorMessage ?? "").includes(SKIP_MARKER) && selectedPuzzleIds.has(log.puzzleId))
+        .map((log) => log.puzzleId),
+    );
+    
     const solvedCount = solvedPuzzleIds.size;
     const progressPercent =
       selectedProblemCount > 0 ? Math.round((solvedCount / selectedProblemCount) * 100) : 0;
 
     // 선택 문제 순서대로의 셀 상태(가로 트래킹용)
-    const problemCells: ProblemCellState[] = selectedProblems.map((problem) => {
-      if (solvedPuzzleIds.has(problem.mappedPuzzleId)) return "solved";
-      if (attemptedPuzzleIds.has(problem.mappedPuzzleId)) return "attempted";
-      return "untouched";
+    const problemCells: ProblemCellData[] = selectedProblems.map((problem) => {
+      let state: ProblemCellData["state"] = "untouched";
+      if (solvedPuzzleIds.has(problem.mappedPuzzleId)) {
+        state = skippedPuzzleIds.has(problem.mappedPuzzleId) ? "skipped" : "solved";
+      } else if (attemptedPuzzleIds.has(problem.mappedPuzzleId)) {
+        state = "attempted";
+      }
+      return {
+        puzzleId: problem.mappedPuzzleId,
+        title: problem.title,
+        concept: problem.concept,
+        state,
+      };
     });
 
     const isFinished = selectedProblemCount > 0 && solvedCount >= selectedProblemCount;

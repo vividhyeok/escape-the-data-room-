@@ -252,10 +252,20 @@ export function ResultDashboardPage(): React.JSX.Element {
                       <span className={badgeClass(s.status)}>{s.status}</span>
                     </div>
                     <div className="td-track">
-                      <div className="td-cells" title={`${s.solvedCount}/${s.selectedProblemCount} 해결`}>
-                        {s.problemCells.map((c, i) => (
-                          <i className={`td-cell ${c}`} key={i} />
-                        ))}
+                      <div className="td-cells">
+                        {s.problemCells.map((c, i) => {
+                          const stateLabel =
+                            c.state === "solved" ? "정답" :
+                            c.state === "skipped" ? "건너뛰기" :
+                            c.state === "attempted" ? "시도 중" : "미시작";
+                          return (
+                            <i
+                              className={`td-cell ${c.state}`}
+                              key={i}
+                              title={`${i + 1}. ${c.title} [${c.concept}] - ${stateLabel}`}
+                            />
+                          );
+                        })}
                       </div>
                       <div className="td-track-meta">
                         <span>{s.progressPercent}% 완료</span>
@@ -273,6 +283,7 @@ export function ResultDashboardPage(): React.JSX.Element {
 
             <div className="td-legend">
               <span><i className="solved" /> 해결</span>
+              <span><i className="skipped" /> 건너뜀</span>
               <span><i className="attempted" /> 시도 중</span>
               <span><i className="untouched" /> 미시작</span>
             </div>
