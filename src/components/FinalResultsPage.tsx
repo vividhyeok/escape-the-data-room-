@@ -88,10 +88,17 @@ export function FinalResultsPage(): React.JSX.Element {
     <main className="fr">
       {/* ── 상단 바 ── */}
       <header className="fr-topbar">
-        <a className="td-back" href="#/dashboard">
-          <ArrowLeft size={14} /> 실시간 모니터
+        <a className="td-back" href="#/teacher">
+          <ArrowLeft size={14} /> 수업 목록
         </a>
-        <h1>수업 최종 결과</h1>
+        <a className="td-back" href="#/dashboard">진행 현황</a>
+        <h1>결과 리포트</h1>
+        {analytics ? (
+          <span className="td-class-title">
+            {analytics.classSession.title}
+            {!analytics.isLive ? " · 종료된 수업" : ""}
+          </span>
+        ) : null}
         <div className="fr-topbar-right">
           <input
             className="td-code-input"

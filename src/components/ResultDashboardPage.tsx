@@ -30,8 +30,13 @@ function badgeClass(status: StudentStatus): string {
   }
 }
 
-function lastActivityText(s: StudentProgress): string {
+function lastActivityText(s: StudentProgress, isEnded: boolean): string {
   if (s.minutesSinceLastActivity === null) return "—";
+  if (isEnded) {
+    // 종료된 수업 기록: 수업 종료 시각 기준의 마지막 활동
+    if (s.minutesSinceLastActivity <= 0) return "종료 직전";
+    return `종료 ${s.minutesSinceLastActivity}분 전`;
+  }
   if (s.minutesSinceLastActivity <= 0) return "방금";
   return `${s.minutesSinceLastActivity}분 전`;
 }
@@ -107,11 +112,14 @@ export function ResultDashboardPage(): React.JSX.Element {
     }
   }, [classCode, loadAnalytics]);
 
+  // 종료된 수업 기록은 더 이상 바뀌지 않으므로 자동 새로고침을 멈춘다.
+  const isEnded = analytics !== null && !analytics.isLive;
+
   useEffect(() => {
-    if (!autoRefresh || classCode.length !== 6) return;
+    if (!autoRefresh || isEnded || classCode.length !== 6) return;
     const timer = window.setInterval(() => void loadAnalytics(classCode, true), POLL_INTERVAL_MS);
     return () => window.clearInterval(timer);
-  }, [autoRefresh, classCode, loadAnalytics]);
+  }, [autoRefresh, isEnded, classCode, loadAnalytics]);
 
   // 진행이 늘어난 학생을 잠깐 강조
   const prevSolved = useRef<Map<string, number>>(new Map());
@@ -138,9 +146,14 @@ export function ResultDashboardPage(): React.JSX.Element {
       {/* ── 상단 바 ── */}
       <header className="td-topbar">
         <div className="td-topbar-left">
-          <a className="td-back" href="#/">← 홈</a>
-          <h1>실시간 모니터</h1>
-          {autoRefresh ? <span className="td-live-dot">실시간</span> : null}
+          <a className="td-back" href="#/teacher">← 수업 목록</a>
+          <h1>{isEnded ? "수업 기록" : "실시간 모니터"}</h1>
+          {isEnded ? (
+            <span className="td-ended-chip">종료된 수업</span>
+          ) : autoRefresh ? (
+            <span className="td-live-dot">실시간</span>
+          ) : null}
+          {analytics ? <span className="td-class-title">{analytics.classSession.title}</span> : null}
         </div>
 
         <div className="td-topbar-right">
@@ -156,12 +169,14 @@ export function ResultDashboardPage(): React.JSX.Element {
             <RefreshCw size={14} />
             {isLoading ? "불러오는 중…" : "새로고침"}
           </button>
-          <label className="td-switch">
-            <input checked={autoRefresh} onChange={(e) => setAutoRefresh(e.currentTarget.checked)} type="checkbox" />
-            자동
-          </label>
+          {!isEnded ? (
+            <label className="td-switch">
+              <input checked={autoRefresh} onChange={(e) => setAutoRefresh(e.currentTarget.checked)} type="checkbox" />
+              자동
+            </label>
+          ) : null}
           <a className="td-btn primary" href="#/results">
-            최종 결과 보기 →
+            결과 리포트 →
           </a>
         </div>
       </header>
@@ -201,7 +216,14 @@ export function ResultDashboardPage(): React.JSX.Element {
               <div className="td-progress-fill" style={{ width: `${analytics.averageProgress}%` }} />
             </div>
             <span className="td-progress-pct">{analytics.averageProgress}%</span>
-            {lastUpdated ? (
+            {isEnded && analytics.endedAt ? (
+              <span className="td-progress-updated">
+                {new Date(analytics.endedAt).toLocaleString("ko-KR", {
+                  month: "long", day: "numeric", hour: "2-digit", minute: "2-digit",
+                })}{" "}
+                종료
+              </span>
+            ) : lastUpdated ? (
               <span className="td-progress-updated">갱신 {lastUpdated.toLocaleTimeString("ko-KR")}</span>
             ) : null}
           </div>
@@ -211,7 +233,9 @@ export function ResultDashboardPage(): React.JSX.Element {
             <section className="td-help-alert">
               <h2>
                 <AlertTriangle size={16} />
-                지금 도움이 필요한 학생 ({analytics.helpNeededStudents.length}명)
+                {isEnded
+                  ? `수업 중 도움이 필요했던 학생 (${analytics.helpNeededStudents.length}명)`
+                  : `지금 도움이 필요한 학생 (${analytics.helpNeededStudents.length}명)`}
               </h2>
               {analytics.helpNeededStudents.map((s) => (
                 <div className="td-help-row" key={s.studentId}>
@@ -269,12 +293,12 @@ export function ResultDashboardPage(): React.JSX.Element {
                       </div>
                       <div className="td-track-meta">
                         <span>{s.progressPercent}% 완료</span>
-                        <span>{lastActivityText(s)}</span>
+                        {s.lastProblemTitle ? <span>최근: {s.lastProblemTitle}</span> : null}
                       </div>
                     </div>
                     <div className="td-student-meta">
                       <span className="td-student-frac">{s.solvedCount}/{s.selectedProblemCount}</span>
-                      <span className="td-student-time">{lastActivityText(s)}</span>
+                      <span className="td-student-time">{lastActivityText(s, isEnded)}</span>
                     </div>
                   </div>
                 ))}

@@ -1,4 +1,4 @@
-import { Home, Loader2, Play } from "lucide-react";
+import { ArrowLeft, Joystick, Loader2, Play } from "lucide-react";
 import { useState } from "react";
 import { resetGameWindows } from "./GameWindow";
 import { useGameStore } from "../store/gameStore";
@@ -24,7 +24,9 @@ export function StudentJoinPage({ requireCodeNotice = false }: StudentJoinPagePr
     setClassCode(value.replace(/\D/g, "").slice(0, 6));
   }
 
-  async function handleJoin(): Promise<void> {
+  async function handleJoin(event?: React.FormEvent): Promise<void> {
+    event?.preventDefault();
+
     if (classCode.length !== 6) {
       setMessage("6자리 수업 코드를 입력해 주세요.");
       return;
@@ -60,58 +62,66 @@ export function StudentJoinPage({ requireCodeNotice = false }: StudentJoinPagePr
   }
 
   return (
-    <main className="classroom-page join-page page-enter">
-      <div className="classroom-scanlines" aria-hidden="true" />
-      <section className="join-console page-enter-item" style={{ ["--i" as string]: 0 }}>
-        <span className="classroom-kicker">// STUDENT ACCESS</span>
-        <h1>ETDR 수업 입장</h1>
-        <p>교사가 알려준 6자리 코드를 입력하면 방탈출형 파이썬 복습 활동에 참여합니다.</p>
+    <main className="edu edu-join">
+      <div className="edu-join-wrap">
+        <a className="edu-login-home" href="#/">
+          <ArrowLeft size={14} aria-hidden="true" /> 코드룸 홈
+        </a>
 
-        {requireCodeNotice ? (
-          <p className="classroom-message error">
-            수업 코드 입력이 필요합니다. 아래에 교사가 알려준 6자리 코드와 닉네임을 입력해 주세요.
+        <form className="edu-join-card" onSubmit={handleJoin}>
+          <span className="edu-join-icon" aria-hidden="true">
+            <Joystick size={26} />
+          </span>
+          <h1>수업 입장</h1>
+          <p className="edu-join-desc">
+            선생님이 알려준 <strong>6자리 수업 코드</strong>와 닉네임을 입력하면 게임이 시작됩니다.
           </p>
-        ) : null}
 
-        <label className="classroom-field">
-          <span>클래스 코드 (6자리)</span>
-          <input
-            inputMode="numeric"
-            maxLength={6}
-            onChange={(event) => updateClassCode(event.currentTarget.value)}
-            placeholder="000000"
-            value={classCode}
-          />
-        </label>
+          {requireCodeNotice ? (
+            <p className="edu-form-error" role="alert">
+              수업 코드 입력이 필요합니다. 교사가 알려준 코드를 입력해 주세요.
+            </p>
+          ) : null}
 
-        <label className="classroom-field">
-          <span>닉네임</span>
-          <input
-            onChange={(event) => setNickname(event.currentTarget.value)}
-            placeholder="예: 민준"
-            value={nickname}
-          />
-        </label>
+          <label className="edu-input-group">
+            <span>수업 코드</span>
+            <input
+              autoFocus
+              className="edu-code-input"
+              inputMode="numeric"
+              maxLength={6}
+              onChange={(event) => updateClassCode(event.currentTarget.value)}
+              placeholder="000000"
+              value={classCode}
+            />
+          </label>
 
-        {message ? <p className="classroom-message error">{message}</p> : null}
+          <label className="edu-input-group">
+            <span>닉네임</span>
+            <input
+              maxLength={12}
+              onChange={(event) => setNickname(event.currentTarget.value)}
+              placeholder="예: 민준"
+              value={nickname}
+            />
+          </label>
 
-        <div className="classroom-actions-row">
-          <button className="classroom-button primary" disabled={isJoining} onClick={handleJoin} type="button">
-            {isJoining ? <Loader2 className="spin" size={18} /> : <Play size={18} />}
-            수업 코드 확인 후 입장
+          {message ? (
+            <p className="edu-form-error" role="alert">{message}</p>
+          ) : null}
+
+          <button className="edu-btn primary block" disabled={isJoining} type="submit">
+            {isJoining ? <Loader2 className="spin" size={17} /> : <Play size={17} />}
+            입장하기
           </button>
-          <a className="classroom-button" href="#/">
-            <Home size={18} />
-            랜딩으로 돌아가기
-          </a>
-        </div>
 
-        <ul className="join-notice">
-          <li>입장 후 게임은 메인 화면(타이틀)에서 시작됩니다.</li>
-          <li>풀이 기록은 교사용 대시보드에 저장됩니다.</li>
-          <li>정답을 몰라도 괜찮습니다. 이 활동은 수업 초반에 어려운 개념을 찾기 위한 진단 활동입니다.</li>
-        </ul>
-      </section>
+          <ul className="edu-join-notice">
+            <li>입장하면 게임 타이틀 화면부터 시작됩니다.</li>
+            <li>정답을 몰라도 괜찮아요. 어떤 개념이 어려운지 찾는 활동입니다.</li>
+            <li>풀이 기록은 선생님 화면에만 표시됩니다.</li>
+          </ul>
+        </form>
+      </div>
     </main>
   );
 }

@@ -1,10 +1,16 @@
 import {
+  getDemoClassRecord,
+  getDemoClassRecords,
+  isDemoClassCode,
+  SKIP_MARKER,
+} from "../data/demoClassroom";
+import {
   getTextbookProblemByPuzzleId,
   getTextbookProblems,
   getTextbookProblemsByIds,
   type TextbookProblem,
 } from "../data/textbookProblemBank";
-import { getSupabaseClient } from "./supabaseClient";
+import { getSupabaseClient, isSupabaseConfigured } from "./supabaseClient";
 
 // 수업 중 "활동 없음"으로 간주하는 기준 시간(분).
 // 실제 수업에서는 진행 속도에 따라 조정할 수 있는 값입니다.
@@ -12,7 +18,8 @@ const STALE_ACTIVITY_MINUTES = 5;
 
 // 학생이 문제를 직접 풀지 않고 '건너뛰기'로 완료했을 때 attempt 로그에 남기는 마커.
 // success=true 로 기록(=게임 진행/완료에는 포함)하되, 이 마커로 '직접 풀이'와 구분한다.
-export const SKIP_MARKER = "__SKIPPED__";
+// (원천 정의는 demoClassroom — 데모 데이터와 동일한 값을 쓰기 위해 재노출한다.)
+export { SKIP_MARKER };
 
 export const CURRENT_STUDENT_SESSION_KEY = "etdr.currentStudentSession";
 export const LAST_CLASS_CODE_KEY = "etdr.lastClassCode";
@@ -109,8 +116,26 @@ export type StudentProgress = {
   helpReason: string | null;
 };
 
+// 교사 콘솔 "수업 기록" 목록에 보여줄 요약 정보
+export type ClassRecordSummary = {
+  classCode: string;
+  title: string;
+  createdAt: string | null;
+  studentCount: number;
+  problemCount: number;
+  /** 평균 진행률(%) — 빠르게 계산 가능한 경우에만 채운다 */
+  averageProgress: number | null;
+  /** 이미 종료된(기록만 남은) 수업인지 */
+  isEnded: boolean;
+  endedAt: string | null;
+};
+
 export type ClassAnalytics = {
   classSession: ClassSession;
+  /** 종료된 수업 기록이면 false — 실시간 모니터에서 자동 새로고침을 끈다 */
+  isLive: boolean;
+  /** 종료된 수업의 종료 시각 (마지막 활동 경과 시간의 기준) */
+  endedAt: string | null;
   students: StudentSession[];
   attemptLogs: AttemptLog[];
   studentCount: number;
@@ -270,6 +295,12 @@ export async function getClassSessionByCode(classCode: string): Promise<ClassSes
 export async function joinClassSession(classCode: string, nickname: string): Promise<StudentSession> {
   const normalizedCode = normalizeClassCode(classCode);
   const cleanNickname = nickname.trim();
+
+  // 종료된 지난 수업(기록 보관용)에는 새로 입장할 수 없다.
+  if (isDemoClassCode(normalizedCode)) {
+    throw new Error("이미 종료된 수업 코드입니다. 선생님께 새 수업 코드를 받아 주세요.");
+  }
+
   const classSession = await getClassSessionByCode(normalizedCode);
 
   if (!classSession) {
@@ -350,11 +381,11 @@ function getAttemptStudentKey(log: AttemptLog): string {
   return log.studentId || log.nickname || log.id;
 }
 
-function minutesSince(isoString: string | null): number | null {
+function minutesSince(isoString: string | null, nowMs: number): number | null {
   if (!isoString) return null;
   const then = new Date(isoString).getTime();
   if (Number.isNaN(then)) return null;
-  return Math.max(0, Math.round((Date.now() - then) / 60000));
+  return Math.max(0, Math.round((nowMs - then) / 60000));
 }
 
 // 학생별 진행 상태를 계산합니다.
@@ -364,6 +395,7 @@ function buildStudentProgress(
   students: StudentSession[],
   attemptLogs: AttemptLog[],
   selectedProblems: TextbookProblem[],
+  nowMs: number,
 ): StudentProgress[] {
   const selectedPuzzleIds = new Set(selectedProblems.map((p) => p.mappedPuzzleId));
   const selectedProblemCount = selectedProblems.length;
@@ -425,7 +457,7 @@ function buildStudentProgress(
 
     const lastLog = logs[logs.length - 1] ?? null;
     const lastActivityAt = lastLog?.createdAt ?? null;
-    const minutesSinceLastActivity = minutesSince(lastActivityAt);
+    const minutesSinceLastActivity = minutesSince(lastActivityAt, nowMs);
     const lastProblem = lastLog ? getTextbookProblemByPuzzleId(lastLog.puzzleId) : undefined;
     const lastProblemTitle = lastProblem?.title ?? null;
     const lastProblemConcept = lastProblem?.concept ?? null;
@@ -518,37 +550,18 @@ function buildRecommendations(problemStats: ProblemAnalytics[]): string[] {
   });
 }
 
-export async function getClassAnalytics(classCode: string): Promise<ClassAnalytics | null> {
-  const normalizedCode = normalizeClassCode(classCode);
-  const classSession = await getClassSessionByCode(normalizedCode);
+type AnalyticsContext = {
+  classSession: ClassSession;
+  students: StudentSession[];
+  attemptLogs: AttemptLog[];
+  isLive: boolean;
+  endedAt: string | null;
+  /** "마지막 활동 n분 전" 계산의 기준 시각 — 종료된 수업은 종료 시각으로 고정 */
+  nowMs: number;
+};
 
-  if (!classSession) {
-    return null;
-  }
-
-  const client = getSupabaseClient();
-
-  const [{ data: studentRows, error: studentError }, { data: attemptRows, error: attemptError }] =
-    await Promise.all([
-      client
-        .from("student_sessions")
-        .select("id,class_code,nickname,created_at")
-        .eq("class_code", normalizedCode)
-        .order("created_at", { ascending: true })
-        .returns<StudentSessionRow[]>(),
-      client
-        .from("attempt_logs")
-        .select("id,class_code,student_id,nickname,puzzle_id,success,error_message,code,created_at")
-        .eq("class_code", normalizedCode)
-        .order("created_at", { ascending: true })
-        .returns<AttemptLogRow[]>(),
-    ]);
-
-  if (studentError) throw studentError;
-  if (attemptError) throw attemptError;
-
-  const students = (studentRows ?? []).map(toStudentSession);
-  const attemptLogs = (attemptRows ?? []).map(toAttemptLog);
+function computeClassAnalytics(context: AnalyticsContext): ClassAnalytics {
+  const { classSession, students, attemptLogs, isLive, endedAt, nowMs } = context;
   const attemptStudentCount = new Set(attemptLogs.map(getAttemptStudentKey)).size;
   const studentCount = Math.max(students.length, attemptStudentCount);
 
@@ -625,7 +638,7 @@ export async function getClassAnalytics(classCode: string): Promise<ClassAnalyti
     };
   });
 
-  const studentProgress = buildStudentProgress(students, attemptLogs, selectedProblems);
+  const studentProgress = buildStudentProgress(students, attemptLogs, selectedProblems, nowMs);
 
   const notStartedCount = studentProgress.filter((s) => s.attemptCount === 0).length;
   const solvedAnyCount = studentProgress.filter((s) => s.solvedCount > 0).length;
@@ -658,6 +671,8 @@ export async function getClassAnalytics(classCode: string): Promise<ClassAnalyti
 
   return {
     classSession,
+    isLive,
+    endedAt,
     students,
     attemptLogs,
     studentCount,
@@ -679,4 +694,143 @@ export async function getClassAnalytics(classCode: string): Promise<ClassAnalyti
     recommendations: buildRecommendations(problemStats),
     hasAttempts: attemptLogs.length > 0,
   };
+}
+
+export async function getClassAnalytics(classCode: string): Promise<ClassAnalytics | null> {
+  const normalizedCode = normalizeClassCode(classCode);
+
+  // 종료된 지난 수업(데모 기록)은 로컬 데이터에서 즉시 계산한다.
+  // "마지막 활동" 경과 시간은 수업 종료 시각 기준으로 고정되어, 언제 열어 봐도 같은 기록이 보인다.
+  const demoRecord = getDemoClassRecord(normalizedCode);
+  if (demoRecord) {
+    return computeClassAnalytics({
+      classSession: demoRecord.session,
+      students: demoRecord.students,
+      attemptLogs: demoRecord.attemptLogs,
+      isLive: false,
+      endedAt: demoRecord.endedAt,
+      nowMs: new Date(demoRecord.endedAt).getTime(),
+    });
+  }
+
+  const classSession = await getClassSessionByCode(normalizedCode);
+
+  if (!classSession) {
+    return null;
+  }
+
+  const client = getSupabaseClient();
+
+  const [{ data: studentRows, error: studentError }, { data: attemptRows, error: attemptError }] =
+    await Promise.all([
+      client
+        .from("student_sessions")
+        .select("id,class_code,nickname,created_at")
+        .eq("class_code", normalizedCode)
+        .order("created_at", { ascending: true })
+        .returns<StudentSessionRow[]>(),
+      client
+        .from("attempt_logs")
+        .select("id,class_code,student_id,nickname,puzzle_id,success,error_message,code,created_at")
+        .eq("class_code", normalizedCode)
+        .order("created_at", { ascending: true })
+        .returns<AttemptLogRow[]>(),
+    ]);
+
+  if (studentError) throw studentError;
+  if (attemptError) throw attemptError;
+
+  return computeClassAnalytics({
+    classSession,
+    students: (studentRows ?? []).map(toStudentSession),
+    attemptLogs: (attemptRows ?? []).map(toAttemptLog),
+    isLive: true,
+    endedAt: null,
+    nowMs: Date.now(),
+  });
+}
+
+// ───────────────────────── 교사 콘솔: 수업 기록 목록 ─────────────────────────
+
+function buildDemoSummaries(): ClassRecordSummary[] {
+  return getDemoClassRecords().map((record) => {
+    const problemCount = record.session.selectedProblemIds.length;
+    const solvedByStudent = new Map<string, Set<string>>();
+    record.students.forEach((s) => solvedByStudent.set(s.studentId, new Set()));
+    record.attemptLogs.forEach((log) => {
+      if (log.success && log.studentId) {
+        solvedByStudent.get(log.studentId)?.add(log.puzzleId);
+      }
+    });
+    const progressSum = [...solvedByStudent.values()].reduce(
+      (sum, set) => sum + (problemCount > 0 ? set.size / problemCount : 0),
+      0,
+    );
+    const averageProgress =
+      record.students.length > 0 ? Math.round((progressSum / record.students.length) * 100) : 0;
+
+    return {
+      classCode: record.session.classCode,
+      title: record.session.title,
+      createdAt: record.session.createdAt ?? null,
+      studentCount: record.students.length,
+      problemCount,
+      averageProgress,
+      isEnded: true,
+      endedAt: record.endedAt,
+    };
+  });
+}
+
+/**
+ * 교사 콘솔의 "수업 기록" 목록.
+ * 종료된 데모 수업 기록 + 이 도구로 새로 만든 실제 수업(Supabase)을 최신순으로 합쳐 돌려준다.
+ * Supabase 가 설정되지 않은 환경(로컬 시연 등)에서는 데모 기록만 반환한다.
+ */
+export async function listClassRecords(): Promise<ClassRecordSummary[]> {
+  const summaries: ClassRecordSummary[] = [...buildDemoSummaries()];
+
+  if (isSupabaseConfigured) {
+    try {
+      const client = getSupabaseClient();
+      const [{ data: sessionRows, error: sessionError }, { data: studentRows }] = await Promise.all([
+        client
+          .from("class_sessions")
+          .select("id,class_code,title,selected_problem_ids,created_at")
+          .order("created_at", { ascending: false })
+          .limit(40)
+          .returns<ClassSessionRow[]>(),
+        client
+          .from("student_sessions")
+          .select("class_code")
+          .returns<{ class_code: string }[]>(),
+      ]);
+
+      if (!sessionError && sessionRows) {
+        const studentCountByCode = new Map<string, number>();
+        (studentRows ?? []).forEach((row) => {
+          studentCountByCode.set(row.class_code, (studentCountByCode.get(row.class_code) ?? 0) + 1);
+        });
+
+        sessionRows.forEach((row) => {
+          if (isDemoClassCode(row.class_code)) return; // 코드 충돌 시 데모 기록 우선
+          summaries.push({
+            classCode: row.class_code,
+            title: row.title,
+            createdAt: row.created_at ?? null,
+            studentCount: studentCountByCode.get(row.class_code) ?? 0,
+            problemCount: row.selected_problem_ids?.length ?? 0,
+            averageProgress: null,
+            isEnded: false,
+            endedAt: null,
+          });
+        });
+      }
+    } catch (error) {
+      // 네트워크/설정 문제로 실제 수업 목록을 못 불러와도 데모 기록은 보여준다.
+      console.warn("수업 목록을 불러오지 못했습니다.", error);
+    }
+  }
+
+  return summaries.sort((a, b) => (b.createdAt ?? "").localeCompare(a.createdAt ?? ""));
 }
