@@ -177,7 +177,7 @@ const STATIC_PROBLEM_BANK: TextbookProblem[] = [
 
 const CMASS_CURRICULUM = "씨마스 프로그래밍(파이썬)";
 
-const CMASS_PROBLEM_BANK: TextbookProblem[] = [
+export const CMASS_PROBLEM_BANK: TextbookProblem[] = [
   {
     id: "cmass-01", mappedPuzzleId: "room-0-pattern-tiles",
     title: "문자열 덧셈과 정수 덧셈 비교", unit: "자료형과 연산", concept: "자료형·연산", difficulty: "하",
@@ -375,6 +375,19 @@ export function getDefaultProblemSet(): ProblemSet {
 
 export function getProblemSetById(id: string): ProblemSet | undefined {
   return PROBLEM_SETS.find((set) => set.id === id);
+}
+
+// 수업의 selectedProblemIds 로부터 어떤 문제집을 쓰는지 판정한다.
+// (게임이 어떤 문제 세트를 띄울지 결정하는 데 사용)
+export function getProblemSetIdForProblemIds(ids: string[]): string {
+  for (const set of PROBLEM_SETS) {
+    if (ids.length > 0 && ids.every((id) => set.problemIds.includes(id))) {
+      return set.id;
+    }
+  }
+  // 부분 일치 폴백: cmass 접두사가 하나라도 있으면 교과서 세트로 본다.
+  if (ids.some((id) => id.startsWith("cmass-"))) return "cmass-python-textbook";
+  return "tcr-foundation";
 }
 
 // ---- 문제 조회 어댑터 ----

@@ -50,6 +50,8 @@ export function StudentJoinPage({ requireCodeNotice = false }: StudentJoinPagePr
       // #/play 로 이동하기 전 게임 진행 상태와 창 레이아웃을 초기화합니다.
       // (이렇게 해야 항상 타이틀/메인 배너부터 시작합니다.)
       useGameStore.getState().resetProgress();
+      // 이 수업이 사용하는 문제집을 게임에 반영 (reset 이후에 설정해 기본값을 덮어씀)
+      useGameStore.getState().setActiveProblemSetId(session.problemSetId ?? "tcr-foundation");
       resetGameWindows();
 
       window.location.hash = "#/play";

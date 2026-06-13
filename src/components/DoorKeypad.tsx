@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from "react";
-import { getPuzzlesForRoom } from "../data/puzzles";
+import { getPuzzlesForRoomBySet } from "../data/puzzles";
 import type { Room } from "../data/types";
 import { useGameStore } from "../store/gameStore";
 import { GameWindow } from "./GameWindow";
@@ -14,12 +14,13 @@ export function DoorKeypad({ room, onClose }: DoorKeypadProps): React.JSX.Elemen
   const clearRoom = useGameStore((state) => state.clearRoom);
   const solvedPuzzleIds = useGameStore((state) => state.solvedPuzzleIds);
   const isDemoMode = useGameStore((state) => state.isDemoMode);
+  const activeProblemSetId = useGameStore((state) => state.activeProblemSetId);
   const [unlocking, setUnlocking] = useState(false);
   const [unlocked, setUnlocked] = useState(false);
   const [scramble, setScramble] = useState(0);
 
-  // 이 방의 퍼즐 = 조각. 각 문제를 풀면 1조각씩 모인다.
-  const roomPieces = getPuzzlesForRoom(room.id).filter((p) => p.requiredForDoor && !p.isHidden);
+  // 이 방의 퍼즐 = 조각. 각 문제를 풀면 1조각씩 모인다. (현재 문제집 세트 기준)
+  const roomPieces = getPuzzlesForRoomBySet(room.id, activeProblemSetId).filter((p) => p.requiredForDoor && !p.isHidden);
   const totalPieces = roomPieces.length;
   const collectedPieces = roomPieces.filter((p) => solvedPuzzleIds.includes(p.id)).length;
   const allCollected = totalPieces > 0 && collectedPieces >= totalPieces;

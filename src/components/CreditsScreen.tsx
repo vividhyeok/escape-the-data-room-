@@ -1,5 +1,5 @@
 import { useMemo, useState, useEffect } from "react";
-import { puzzles } from "../data/puzzles";
+import { getMainPuzzlesForSet } from "../data/puzzles";
 import { getTextbookProblemByPuzzleId } from "../data/textbookProblemBank";
 import { useGameStore } from "../store/gameStore";
 import { SoundEngine } from "../utils/SoundEngine";
@@ -26,14 +26,15 @@ export function CreditsScreen(): React.JSX.Element {
   const skippedPuzzleIds = useGameStore((state) => state.skippedPuzzleIds);
   const puzzleFailCounts = useGameStore((state) => state.puzzleFailCounts);
   const resetProgress = useGameStore((state) => state.resetProgress);
+  const activeProblemSetId = useGameStore((state) => state.activeProblemSetId);
 
   const [showCredits, setShowCredits] = useState(false);
 
   const hasFinishedRoom3 = clearedRoomIds.includes("room-3");
 
   const stats = useMemo(() => {
-    const mainPuzzles = puzzles.filter(
-      (p) => MAIN_ROOMS.includes(p.roomId) && p.requiredForDoor && !p.isHidden,
+    const mainPuzzles = getMainPuzzlesForSet(MAIN_ROOMS, activeProblemSetId).filter(
+      (p) => p.requiredForDoor && !p.isHidden,
     );
     const total = mainPuzzles.length;
     const solvedMain = mainPuzzles.filter((p) => solvedPuzzleIds.includes(p.id));
@@ -54,7 +55,7 @@ export function CreditsScreen(): React.JSX.Element {
       totalTries,
       roomsCleared: MAIN_ROOMS.filter((r) => clearedRoomIds.includes(r)).length,
     };
-  }, [solvedPuzzleIds, skippedPuzzleIds, puzzleFailCounts, clearedRoomIds]);
+  }, [solvedPuzzleIds, skippedPuzzleIds, puzzleFailCounts, clearedRoomIds, activeProblemSetId]);
 
   const { grade, line } = gradeFor(stats.genuine, stats.total, stats.skipped);
 

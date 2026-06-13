@@ -1,8 +1,11 @@
 import { create } from "zustand";
 import { createJSONStorage, persist } from "zustand/middleware";
-import { DEMO_CODE_DRAFTS } from "../data/demoSolutions";
+import { getDemoSolutionsForSet } from "../data/demoSolutions";
 import type { Puzzle, RoomHint, ViewId } from "../data/types";
 import { GAME_STORAGE_KEY, getGameStorage } from "../lib/storage";
+
+// 기본 문제집(게임 본편) 세트 id
+const DEFAULT_PROBLEM_SET_ID = "tcr-foundation";
 
 type GameProgress = {
   currentRoomId: string;
@@ -24,6 +27,8 @@ type GameProgress = {
   sfxVolume: number;
   isMuted: boolean;
   isDemoMode: boolean;
+  // 현재 플레이 중인 문제집 세트 (tcr-foundation = 게임 본편 / cmass-python-textbook = 교과서)
+  activeProblemSetId: string;
 };
 
 type GameActions = {
@@ -47,6 +52,7 @@ type GameActions = {
   setDemoMode: (enabled: boolean) => void;
   activateDemoMode: () => void;
   deactivateDemoMode: () => void;
+  setActiveProblemSetId: (setId: string) => void;
 };
 
 export type GameStore = GameProgress & GameActions;
@@ -71,6 +77,7 @@ const initialProgress: GameProgress = {
   sfxVolume: 0.8,
   isMuted: false,
   isDemoMode: false,
+  activeProblemSetId: DEFAULT_PROBLEM_SET_ID,
 };
 
 function addUnique<T>(items: T[], item: T, predicate: (existing: T) => boolean): T[] {
@@ -157,15 +164,15 @@ export const useGameStore = create<GameStore>()(
       setSfxVolume: (vol) => set({ sfxVolume: vol }),
       setIsMuted: (muted) => set({ isMuted: muted }),
       setDemoMode: (enabled) => set({ isDemoMode: enabled }),
-      // 시연 모드 켜기: 진행 상태를 처음으로 되돌리되, 모든 문제의 정답 코드를
+      // 시연 모드 켜기: 진행 상태를 처음으로 되돌리되, 현재 문제집 세트의 정답 코드를
       // 에디터에 미리 채워 둔다. (타이틀에 머무르므로 START 를 누르면 바로 시작)
       activateDemoMode: () =>
-        set({
+        set((state) => ({
           isDemoMode: true,
           gameState: "TITLE",
           currentRoomId: "room-0",
           currentViewId: "center",
-          codeDrafts: { ...DEMO_CODE_DRAFTS },
+          codeDrafts: { ...getDemoSolutionsForSet(state.activeProblemSetId) },
           solvedPuzzleIds: [],
           skippedPuzzleIds: [],
           puzzleFailCounts: {},
@@ -176,8 +183,9 @@ export const useGameStore = create<GameStore>()(
           reviewRoomId: undefined,
           currentDialogueId: null,
           unlockedStories: [],
-        }),
+        })),
       deactivateDemoMode: () => set({ isDemoMode: false, codeDrafts: {} }),
+      setActiveProblemSetId: (setId) => set({ activeProblemSetId: setId }),
     }),
     {
       name: GAME_STORAGE_KEY,
@@ -197,6 +205,7 @@ export const useGameStore = create<GameStore>()(
         reviewRoomId: state.reviewRoomId,
         gameState: state.gameState,
         currentDialogueId: state.currentDialogueId,
+        activeProblemSetId: state.activeProblemSetId,
       }),
     },
   ),

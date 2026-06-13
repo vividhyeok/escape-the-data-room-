@@ -1,3 +1,5 @@
+import { CMASS_DEMO_SOLUTIONS } from "./cmassPuzzles";
+
 // 시연(데모) 모드용 정답 코드 모음.
 //
 // 교수님께 설명하며 시연할 때, 각 문제의 코드 에디터에 정답이 미리 입력된 채로 열리도록
@@ -38,3 +40,13 @@ export const DEMO_CODE_DRAFTS: Record<string, string> = {
   // Room 3 — 보너스
   "room-3-validator":       "data = input()\nprint(data[::-1])\n",
 };
+
+// 문제집(세트)에 맞는 시연용 정답 코드 맵을 돌려준다.
+// 교과서 세트는 교과서 예제 코드를, 기본 세트는 방탈출 정답 코드를 미리 채운다.
+export function getDemoSolutionsForSet(setId?: string): Record<string, string> {
+  if (setId === "cmass-python-textbook") {
+    // 교과서 슬롯에 없는 방(room-3 등)은 기본 정답으로 폴백
+    return { ...DEMO_CODE_DRAFTS, ...CMASS_DEMO_SOLUTIONS };
+  }
+  return DEMO_CODE_DRAFTS;
+}

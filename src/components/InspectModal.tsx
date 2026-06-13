@@ -105,11 +105,14 @@ export function InspectModal({
   const firstRhs = firstInputCode.includes("=") ? firstInputCode.split("=")[1].trim() : firstInputCode.trim();
   const isGivenData = firstRhs.startsWith("[") || firstRhs.startsWith("{");
   const isNumberInput = !isGivenData && /^-?\d/.test(firstRhs);
+  // 입력 없이 '예상 출력'만 맞추는 문제(교과서 세트) — 모든 테스트 케이스에 입력값이 없음
+  const isFixedOutput = (puzzle.testCases ?? []).length > 0 && (puzzle.testCases ?? []).every((tc) => !(tc.inputCode ?? "").trim());
 
   const [code, setCode] = useState(() => codeDrafts[puzzle.id] ?? puzzle.starterCode ?? "");
   const [isShaking, setIsShaking] = useState(false);
   const [isChecking, setIsChecking] = useState(false);
   const [errorMsg, setErrorMsg] = useState("");
+  const [briefTab, setBriefTab] = useState<"problem" | "reference">("problem");
 
   // 교사용 데이터 저장 (#/play 에서 학생 세션이 있을 때만)
   function logAttempt(success: boolean, errorMessage: string, attemptCode: string): void {
@@ -186,47 +189,91 @@ export function InspectModal({
               <span className={`solved-badge ${statusClass}`}>{statusLabel}</span>
             </div>
 
-            <p className="situation-text">{puzzle.situationText}</p>
+            <div className="brief-tabs">
+              <button className={`brief-tab ${briefTab === "problem" ? "active" : ""}`} onClick={() => setBriefTab("problem")} type="button">문제 설명</button>
+              {puzzle.referenceItems && puzzle.referenceItems.length > 0 && (
+                <button className={`brief-tab ${briefTab === "reference" ? "active" : ""}`} onClick={() => setBriefTab("reference")} type="button">학습 레퍼런스</button>
+              )}
+            </div>
 
-            {(puzzle.requiredSyntax?.length || puzzle.bannedSyntax?.length) ? (
-              <div className="syntax-rules">
-                {puzzle.requiredSyntax && puzzle.requiredSyntax.length > 0 && (
-                  <div className="rule-line">
-                    <span className="rule-tag use">반드시 사용</span>
-                    <span>{puzzle.requiredSyntax.map((s) => SYNTAX_LABELS[s] ?? s).join(" · ")}</span>
-                  </div>
-                )}
-                {puzzle.bannedSyntax && puzzle.bannedSyntax.length > 0 && (
-                  <div className="rule-line">
-                    <span className="rule-tag ban">사용 금지</span>
-                    <span className="ban-text">{puzzle.bannedSyntax.map((s) => SYNTAX_LABELS[s] ?? s).join(" · ")}</span>
-                  </div>
-                )}
-              </div>
-            ) : null}
+            <div className="brief-content">
+              {briefTab === "problem" ? (
+                <>
+                  <p className="situation-text">{puzzle.situationText}</p>
 
-            <div className="io-examples">
-              <div className="io-head">
-                <span className="io-col">입력</span>
-                <span className="io-col">출력</span>
-              </div>
-              {(puzzle.testCases ?? []).slice(0, 3).map((tc, index) => (
-                <div className="io-row" key={index}>
-                  <code className="io-in">{inputValue(tc.inputCode)}</code>
-                  <span className="io-arrow">→</span>
-                  <code className="io-out">{printedForm(tc.expectedOutput)}</code>
+                  {(puzzle.requiredSyntax?.length || puzzle.bannedSyntax?.length) ? (
+                    <div className="syntax-rules">
+                      {puzzle.requiredSyntax && puzzle.requiredSyntax.length > 0 && (
+                        <div className="rule-line">
+                          <span className="rule-tag use">반드시 사용</span>
+                          <span>{puzzle.requiredSyntax.map((s) => SYNTAX_LABELS[s] ?? s).join(" · ")}</span>
+                        </div>
+                      )}
+                      {puzzle.bannedSyntax && puzzle.bannedSyntax.length > 0 && (
+                        <div className="rule-line">
+                          <span className="rule-tag ban">사용 금지</span>
+                          <span className="ban-text">{puzzle.bannedSyntax.map((s) => SYNTAX_LABELS[s] ?? s).join(" · ")}</span>
+                        </div>
+                      )}
+                    </div>
+                  ) : null}
+
+                  <div className="io-examples">
+                    {isFixedOutput ? (
+                      <>
+                        <div className="io-head">
+                          <span className="io-col">예상 출력</span>
+                        </div>
+                        <pre className="io-expected">{printedForm(puzzle.testCases?.[0]?.expectedOutput)}</pre>
+                        <p className="io-note">
+                          위 <b>예상 출력</b>이 그대로 나오도록 코드를 작성한 뒤 <b>print()</b> 로 출력하면 자동 채점됩니다.
+                        </p>
+                      </>
+                    ) : (
+                      <>
+                        <div className="io-head">
+                          <span className="io-col">입력</span>
+                          <span className="io-col">출력</span>
+                        </div>
+                        {(puzzle.testCases ?? []).slice(0, 3).map((tc, index) => (
+                          <div className="io-row" key={index}>
+                            <code className="io-in">{inputValue(tc.inputCode)}</code>
+                            <span className="io-arrow">→</span>
+                            <code className="io-out">{printedForm(tc.expectedOutput)}</code>
+                          </div>
+                        ))}
+                        <p className="io-note">
+                          {isGivenData ? (
+                            <>리스트 <b>data</b> 가 미리 주어집니다. 반복문으로 처리한 결과를 <b>print()</b> 로 출력하면 자동 채점됩니다.</>
+                          ) : (
+                            <>
+                              먼저 <b>data = {isNumberInput ? "int(input())" : "input()"}</b> 로 입력을 직접 받으세요. 그런 다음
+                              오른쪽 <b>출력</b>이 나오도록 <b>print()</b> 로 출력하면 자동 채점됩니다.
+                            </>
+                          )}
+                        </p>
+                      </>
+                    )}
+                  </div>
+                </>
+              ) : (
+                <div className="problem-reference">
+                  {puzzle.referenceItems.map((ref, idx) => (
+                    <div className="ref-item-block" key={idx}>
+                      {ref.label && <h4 className="ref-item-label">{ref.label}</h4>}
+                      <p className="ref-item-desc">{ref.description}</p>
+                      {ref.bullets && ref.bullets.length > 0 && (
+                        <ul className="ref-item-bullets">
+                          {ref.bullets.map((b, i) => <li key={i}>{b}</li>)}
+                        </ul>
+                      )}
+                      {ref.codeSnippet && (
+                        <pre className="ref-item-code"><code>{ref.codeSnippet}</code></pre>
+                      )}
+                    </div>
+                  ))}
                 </div>
-              ))}
-              <p className="io-note">
-                {isGivenData ? (
-                  <>리스트 <b>data</b> 가 미리 주어집니다. 반복문으로 처리한 결과를 <b>print()</b> 로 출력하면 자동 채점됩니다.</>
-                ) : (
-                  <>
-                    먼저 <b>data = {isNumberInput ? "int(input())" : "input()"}</b> 로 입력을 직접 받으세요. 그런 다음
-                    오른쪽 <b>출력</b>이 나오도록 <b>print()</b> 로 출력하면 자동 채점됩니다.
-                  </>
-                )}
-              </p>
+              )}
             </div>
           </div>
 

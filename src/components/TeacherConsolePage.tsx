@@ -21,7 +21,10 @@ import {
   getProblemSets,
   getTextbookProblemsByIds,
   type ProblemSet,
+  type TextbookProblem,
 } from "../data/textbookProblemBank";
+import { DEMO_CODE_DRAFTS } from "../data/demoSolutions";
+import { puzzlesById } from "../data/puzzles";
 import {
   createClassSession,
   deleteClassRecord,
@@ -373,7 +376,7 @@ function CreateClassPanel({ onCreated }: { onCreated: () => void }): React.JSX.E
                       <span className="edu-set-title-row">
                         <strong>{set.title}</strong>
                         <em className={`edu-set-tag ${set.source === "textbook" ? "textbook" : "game"}`}>
-                          {set.source === "textbook" ? "교과서" : "게임 연동"}
+                          {set.source === "textbook" ? "교과서" : "자체 제작"}
                         </em>
                       </span>
                       <span className="edu-set-desc">{set.description}</span>
@@ -434,6 +437,40 @@ function CreateClassPanel({ onCreated }: { onCreated: () => void }): React.JSX.E
 
 // ───────────────────────── 문제 자세히 보기 모달 ─────────────────────────
 
+// 파이썬 값을 화면 표시용 문자열로 (게임 문제의 기대 출력 표시용)
+function pyDisplay(value: unknown): string {
+  if (typeof value === "string") return value;
+  if (typeof value === "boolean") return value ? "True" : "False";
+  if (value === null || value === undefined) return "";
+  if (Array.isArray(value)) {
+    return "[" + value.map((v) => (typeof v === "string" ? `'${v}'` : pyDisplay(v))).join(", ") + "]";
+  }
+  if (typeof value === "object") {
+    return "{" + Object.entries(value as Record<string, unknown>)
+      .map(([k, v]) => `'${k}': ${typeof v === "string" ? `'${v}'` : pyDisplay(v)}`)
+      .join(", ") + "}";
+  }
+  return String(value);
+}
+
+type ProblemSample = { code: string | null; input: string | null; output: string };
+
+// 교과서 문제는 sampleCode/IO 를 그대로, 자체 제작(게임) 문제는 모범 코드 + 첫 예시로 구성한다.
+function getProblemSample(problem: TextbookProblem): ProblemSample {
+  if (problem.sampleCode || problem.sampleOutput) {
+    return {
+      code: problem.sampleCode ?? null,
+      input: problem.sampleInput ?? null,
+      output: problem.sampleOutput ?? "",
+    };
+  }
+  const code = DEMO_CODE_DRAFTS[problem.mappedPuzzleId] ?? null;
+  const tc = puzzlesById[problem.mappedPuzzleId]?.testCases?.[0];
+  if (!tc) return { code, input: null, output: "" };
+  const rhs = tc.inputCode.includes("=") ? tc.inputCode.split("=")[1].trim() : tc.inputCode.trim();
+  return { code, input: rhs || null, output: pyDisplay(tc.expectedOutput) };
+}
+
 function ProblemSetDetailModal({ set, onClose }: { set: ProblemSet; onClose: () => void }): React.JSX.Element {
   const problems = useMemo(() => getTextbookProblemsByIds(set.problemIds), [set]);
   const isTextbook = set.source === "textbook";
@@ -444,7 +481,7 @@ function ProblemSetDetailModal({ set, onClose }: { set: ProblemSet; onClose: () 
         <div className="edu-modal-head">
           <div>
             <span className="edu-modal-kicker">
-              {isTextbook ? "교과서 문제집" : "게임 연동 문제집"} · {problems.length}문제
+              {isTextbook ? "교과서 문제집" : "자체 제작 문제집"} · {problems.length}문제
             </span>
             <h2>{set.title}</h2>
             {set.curriculum ? <p className="edu-modal-sub">{set.curriculum}</p> : null}
@@ -455,38 +492,27 @@ function ProblemSetDetailModal({ set, onClose }: { set: ProblemSet; onClose: () 
         </div>
 
         <div className="edu-modal-body">
-          {isTextbook ? (
-            <ol className="edu-detail-list">
-              {problems.map((problem, i) => (
+          <ol className="edu-detail-list">
+            {problems.map((problem, i) => {
+              const sample = getProblemSample(problem);
+              return (
                 <li className="edu-detail-item" key={problem.id}>
                   <div className="edu-detail-head">
                     <span className="edu-detail-title">{i + 1}. {problem.title}</span>
                     <span className="edu-detail-meta">{problem.unit} · {problem.concept} · 난이도 {problem.difficulty}</span>
                   </div>
                   <p className="edu-detail-desc">{problem.description}</p>
-                  {problem.sampleCode ? <pre className="edu-detail-code">{problem.sampleCode}</pre> : null}
+                  {sample.code ? <pre className="edu-detail-code">{sample.code}</pre> : null}
                   <div className="edu-detail-io">
-                    {problem.sampleInput
-                      ? <span>입력 <code>{problem.sampleInput}</code></span>
+                    {sample.input
+                      ? <span>입력 <code>{sample.input}</code></span>
                       : <span className="muted">입력 없음</span>}
-                    <span>출력 <code>{problem.sampleOutput}</code></span>
+                    {sample.output ? <span>출력 <code>{sample.output}</code></span> : null}
                   </div>
                 </li>
-              ))}
-            </ol>
-          ) : (
-            <ol className="edu-detail-list">
-              {problems.map((problem, i) => (
-                <li className="edu-detail-item compact" key={problem.id}>
-                  <div className="edu-detail-head">
-                    <span className="edu-detail-title">{i + 1}. {problem.title}</span>
-                    <span className="edu-detail-meta">{problem.unit} · {problem.concept} · 난이도 {problem.difficulty}</span>
-                  </div>
-                  <p className="edu-detail-desc">{problem.description}</p>
-                </li>
-              ))}
-            </ol>
-          )}
+              );
+            })}
+          </ol>
         </div>
       </div>
     </div>

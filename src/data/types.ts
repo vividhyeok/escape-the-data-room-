@@ -39,8 +39,10 @@ export type RoomObject = {
 };
 
 export type ReferenceItem = {
-  label: string;
+  label?: string;
   description: string;
+  codeSnippet?: string;
+  bullets?: string[];
 };
 
 export type RoomHint = {

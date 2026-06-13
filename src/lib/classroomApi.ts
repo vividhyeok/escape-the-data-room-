@@ -5,6 +5,7 @@ import {
   SKIP_MARKER,
 } from "../data/demoClassroom";
 import {
+  getProblemSetIdForProblemIds,
   getTextbookProblemByPuzzleId,
   getTextbookProblems,
   getTextbookProblemsByIds,
@@ -40,6 +41,8 @@ export type StudentSession = {
   studentId: string;
   classCode: string;
   nickname: string;
+  /** 이 수업이 사용하는 문제집 세트 id (게임이 어떤 문제를 띄울지 결정) */
+  problemSetId?: string;
 };
 
 export type AttemptLogInput = {
@@ -361,7 +364,10 @@ export async function joinClassSession(classCode: string, nickname: string): Pro
     throw error ?? new Error("학생 세션 생성에 실패했습니다.");
   }
 
-  return toStudentSession(data);
+  const session = toStudentSession(data);
+  // 이 수업이 어떤 문제집을 쓰는지 함께 저장해, 게임이 해당 문제를 띄우게 한다.
+  session.problemSetId = getProblemSetIdForProblemIds(classSession.selectedProblemIds);
+  return session;
 }
 
 export function saveCurrentStudentSession(session: StudentSession): void {
@@ -382,6 +388,7 @@ export function getCurrentStudentSession(): StudentSession | null {
       studentId: parsed.studentId,
       classCode: parsed.classCode,
       nickname: parsed.nickname,
+      problemSetId: parsed.problemSetId,
     };
   } catch {
     return null;

@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from "react";
-import { puzzlesById } from "../data/puzzles";
+import { getPuzzleById, puzzlesById } from "../data/puzzles";
 import { DEMO_CODE_DRAFTS } from "../data/demoSolutions";
 import { getRoomObjects, roomOrder, roomsById } from "../data/rooms";
 import type { Puzzle as _Puzzle, RoomObject } from "../data/types";
@@ -48,12 +48,13 @@ export function GameShell(): React.JSX.Element {
   const bgmVolume = useGameStore((state) => state.bgmVolume);
   const setBgmVolume = useGameStore((state) => state.setBgmVolume);
   const isDemoMode = useGameStore((state) => state.isDemoMode);
+  const activeProblemSetId = useGameStore((state) => state.activeProblemSetId);
   const activeDoorId = selectedObject?.kind === "door" ? selectedObject.id : null;
 
   const room = roomsById[currentRoomId] ?? roomsById["room-1"];
   const objects = getRoomObjects(room.id);
-  const selectedPuzzle = selectedObject?.kind === "puzzle" ? puzzlesById[selectedObject.puzzleId] : undefined;
-  const activeLabPuzzle = labPuzzleId ? puzzlesById[labPuzzleId] : undefined;
+  const selectedPuzzle = selectedObject?.kind === "puzzle" ? getPuzzleById(selectedObject.puzzleId, activeProblemSetId) : undefined;
+  const activeLabPuzzle = labPuzzleId ? getPuzzleById(labPuzzleId, activeProblemSetId) : undefined;
   const collectedHints = useGameStore((state) => state.collectedHints);
 
   // Full-screen tension mechanics
