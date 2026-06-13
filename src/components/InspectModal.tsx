@@ -100,6 +100,12 @@ export function InspectModal({
   const isSkipped = skippedPuzzleIds.includes(puzzle.id);
   const skipAvailable = !isSolved && failCount >= SKIP_THRESHOLD;
 
+  // 리스트/딕셔너리 문제는 data 가 미리 주어진다(채점기와 동일 규칙). 그 외는 input() 으로 직접 입력받는다.
+  const firstInputCode = puzzle.testCases?.[0]?.inputCode ?? "";
+  const firstRhs = firstInputCode.includes("=") ? firstInputCode.split("=")[1].trim() : firstInputCode.trim();
+  const isGivenData = firstRhs.startsWith("[") || firstRhs.startsWith("{");
+  const isNumberInput = !isGivenData && /^-?\d/.test(firstRhs);
+
   const [code, setCode] = useState(() => codeDrafts[puzzle.id] ?? puzzle.starterCode ?? "");
   const [isShaking, setIsShaking] = useState(false);
   const [isChecking, setIsChecking] = useState(false);
@@ -212,8 +218,14 @@ export function InspectModal({
                 </div>
               ))}
               <p className="io-note">
-                왼쪽 <b>입력</b>이 <b>input()</b> 으로 주어집니다. 오른쪽 <b>출력</b>이 나오도록
-                <b>print()</b> 로 출력하면 자동 채점됩니다.
+                {isGivenData ? (
+                  <>리스트 <b>data</b> 가 미리 주어집니다. 반복문으로 처리한 결과를 <b>print()</b> 로 출력하면 자동 채점됩니다.</>
+                ) : (
+                  <>
+                    먼저 <b>data = {isNumberInput ? "int(input())" : "input()"}</b> 로 입력을 직접 받으세요. 그런 다음
+                    오른쪽 <b>출력</b>이 나오도록 <b>print()</b> 로 출력하면 자동 채점됩니다.
+                  </>
+                )}
               </p>
             </div>
           </div>

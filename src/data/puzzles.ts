@@ -37,10 +37,9 @@ export const puzzles: Puzzle[] = [
     rewardHint: hint("room-0-hint-tiles", "room-0", "room-0-pattern-tiles",
       "[코드 조각 획득] 변수는 값을 담는 그릇이다. 첫 번째 열쇠 파편: 8"),
     starterCode:
-      "data = eval(input())   # 입력을 받습니다 (이 줄은 그대로 두세요)\n" +
+      "# 1) data 를 입력받으세요. (숫자는 int(input()) 으로 받습니다)\n" +
       "\n" +
-      "# [목표] data 의 값을 그대로 print() 로 출력하세요.\n" +
-      "#  - data 는 시스템이 자동으로 채워 주는 변수입니다.\n" +
+      "# [목표] 입력받은 data 의 값을 그대로 print() 로 출력하세요.\n" +
       "#  - 결과는 print() 로 출력하면 됩니다.\n" +
       "\n",
     imageUrl: "/assets/images/objects/room-0/pattern-tile-box.png",
@@ -69,7 +68,7 @@ export const puzzles: Puzzle[] = [
     rewardHint: hint("room-0-hint-crt-tv", "room-0", "room-0-tv-sequence",
       "[코드 조각 획득] 연산으로 신호를 보정했다. 두 번째 열쇠 파편: 5"),
     starterCode:
-      "data = eval(input())   # 입력을 받습니다 (이 줄은 그대로 두세요)\n" +
+      "# 1) data 를 입력받으세요. (숫자는 int(input()) 으로 받습니다)\n" +
       "\n" +
       "# [목표] data 에 10 을 더한 값을 print() 로 출력하세요.\n" +
       "#  - 예) data 가 5 이면 출력은 15\n" +
@@ -101,7 +100,7 @@ export const puzzles: Puzzle[] = [
     rewardHint: hint("room-0-hint-terminal", "room-0", "room-0-desk-terminal",
       "[코드 조각 획득] 데이터의 시작은 항상 0이다. 세 번째 열쇠 파편: 2"),
     starterCode:
-      "data = eval(input())   # 입력을 받습니다 (이 줄은 그대로 두세요)\n" +
+      "# 1) data 를 입력받으세요. (문자열은 input() 으로 받습니다)\n" +
       "\n" +
       "# [목표] data 문자열의 '첫 번째 글자'를 print() 로 출력하세요.\n" +
       "#  - 인덱싱 [ ] 을 사용합니다. (파이썬 인덱스는 0 부터 시작)\n" +
@@ -133,7 +132,7 @@ export const puzzles: Puzzle[] = [
     rewardHint: hint("room-0-hint-ox", "room-0", "room-0-mini-ox-card",
       "[코드 조각 획득] 슬라이싱으로 코드를 잘라냈다. 네 번째 열쇠 파편: 2"),
     starterCode:
-      "data = eval(input())   # 입력을 받습니다 (이 줄은 그대로 두세요)\n" +
+      "# 1) data 를 입력받으세요. (문자열은 input() 으로 받습니다)\n" +
       "\n" +
       "# [목표] data 문자열의 '앞 3글자'를 잘라 print() 로 출력하세요.\n" +
       "#  - 슬라이싱 [시작:끝] 을 사용합니다. (끝 인덱스는 포함되지 않음)\n" +
@@ -164,7 +163,7 @@ export const puzzles: Puzzle[] = [
     rewardHint: hint("room-0-hint-names", "room-0", "room-0-name-tags",
       "[검증 단서] 네 자리 코드 합계 힌트 — 8+5+2+2 = 17"),
     starterCode:
-      "data = eval(input())   # 입력을 받습니다 (이 줄은 그대로 두세요)\n" +
+      "# 1) data 를 입력받으세요. (문자열은 input() 으로 받습니다)\n" +
       "\n" +
       "# [목표] data 의 길이(글자 수)를 구해 print() 로 출력하세요.\n" +
       "#  - len() 함수를 사용합니다.\n" +
@@ -196,7 +195,7 @@ export const puzzles: Puzzle[] = [
     rewardHint: hint("room-0-hint-note", "room-0", "room-0-bookshelf-note",
       "[검증 단서] 세 번째와 네 번째 자리는 같은 숫자"),
     starterCode:
-      "data = eval(input())   # 입력을 받습니다 (이 줄은 그대로 두세요)\n" +
+      "# 1) data 를 입력받으세요. (문자열은 input() 으로 받습니다)\n" +
       "\n" +
       "# [목표] data 문자열을 3번 반복한 결과를 print() 로 출력하세요.\n" +
       "#  - 예) data 가 'AB' 이면 출력은 'ABABAB'\n" +
@@ -235,7 +234,7 @@ export const puzzles: Puzzle[] = [
     rewardHint: hint("room-1-hint-word", "room-1", "room-1-word-billboard",
       "[코드 조각 획득] 신호가 정규화됐다. 첫 번째 열쇠 파편: 7"),
     starterCode:
-      "data = eval(input())   # 입력을 받습니다 (이 줄은 그대로 두세요)\n" +
+      "# 1) data 를 입력받으세요. (문자열은 input() 으로 받습니다)\n" +
       "\n" +
       "# [목표] data 문자열을 모두 대문자로 바꿔 print() 로 출력하세요.\n" +
       "#  - 문자열 메서드를 사용합니다. (반드시 .upper() 사용)\n" +
@@ -267,7 +266,7 @@ export const puzzles: Puzzle[] = [
     rewardHint: hint("room-1-hint-ox", "room-1", "room-1-ox-monitor",
       "[코드 조각 획득] 오염된 신호가 복구됐다. 두 번째 열쇠 파편: 4"),
     starterCode:
-      "data = eval(input())   # 입력을 받습니다 (이 줄은 그대로 두세요)\n" +
+      "# 1) data 를 입력받으세요. (문자열은 input() 으로 받습니다)\n" +
       "\n" +
       "# [목표] data 안의 모든 'X' 를 'O' 로 바꿔 print() 로 출력하세요.\n" +
       "#  - 문자열 메서드를 사용합니다. (반드시 .replace() 사용)\n" +
@@ -298,7 +297,7 @@ export const puzzles: Puzzle[] = [
     rewardHint: hint("room-1-hint-num", "room-1", "room-1-number-panel",
       "[코드 조각 획득] 코드가 분리됐다. 세 번째 열쇠 파편: 7"),
     starterCode:
-      "data = eval(input())   # 입력을 받습니다 (이 줄은 그대로 두세요)\n" +
+      "# 1) data 를 입력받으세요. (문자열은 input() 으로 받습니다)\n" +
       "\n" +
       "# [목표] data 를 공백 기준으로 나눠 리스트로 만들어 print() 로 출력하세요.\n" +
       "#  - 문자열 메서드를 사용합니다. (반드시 .split() 사용)\n" +
@@ -331,7 +330,7 @@ export const puzzles: Puzzle[] = [
     rewardHint: hint("room-1-hint-radio", "room-1", "room-1-radio-signal",
       "[코드 조각 획득] 신호 강도가 판별됐다. 네 번째 열쇠 파편: 9"),
     starterCode:
-      "data = eval(input())   # 입력을 받습니다 (이 줄은 그대로 두세요)\n" +
+      "# 1) data 를 입력받으세요. (숫자는 int(input()) 으로 받습니다)\n" +
       "\n" +
       "# [목표] data 가 100 이상이면 'PASS', 아니면 'FAIL' 을 print() 로 출력하세요.\n" +
       "#  - if / else 조건문과 비교 연산자(>=)를 사용합니다.\n" +
@@ -363,7 +362,7 @@ export const puzzles: Puzzle[] = [
     rewardHint: hint("room-1-hint-name", "room-1", "room-1-name-card",
       "[검증 단서] 첫 번째 자리 = 세 번째 자리 (같은 숫자)"),
     starterCode:
-      "data = eval(input())   # 입력을 받습니다 (이 줄은 그대로 두세요)\n" +
+      "# 1) data 를 입력받으세요. (숫자는 int(input()) 으로 받습니다)\n" +
       "\n" +
       "# [목표] data 가 짝수면 True, 홀수면 False 를 print() 로 출력하세요.\n" +
       "#  - 힌트: 짝수는 2 로 나눈 나머지(%)가 0 입니다.\n" +
@@ -395,7 +394,7 @@ export const puzzles: Puzzle[] = [
     rewardHint: hint("room-1-hint-noise", "room-1", "room-1-checksum-tablet",
       "[검증 단서] 네 자리 합계 = 27"),
     starterCode:
-      "data = eval(input())   # 입력을 받습니다 (이 줄은 그대로 두세요)\n" +
+      "# 1) data 를 입력받으세요. (숫자는 int(input()) 으로 받습니다)\n" +
       "\n" +
       "# [목표] data 가 0 보다 크고 동시에 10 보다 작으면 True, 아니면 False 를 print() 로 출력하세요.\n" +
       "#  - 두 조건을 and 로 연결합니다.\n" +
@@ -435,7 +434,7 @@ export const puzzles: Puzzle[] = [
     rewardHint: hint("room-2-hint-file", "room-2", "room-2-file-cabinet",
       "[코드 조각 획득] 기록을 집계했다. 첫 번째 열쇠 파편: 3"),
     starterCode:
-      "data = eval(input())   # 입력을 받습니다 (이 줄은 그대로 두세요)\n" +
+      "# data 리스트가 미리 주어집니다. 직접 input() 으로 받을 필요는 없습니다.\n" +
       "\n" +
       "# [목표] 리스트 data 의 모든 값을 더한 총합을 print() 로 출력하세요.\n" +
       "#  - for 반복문으로 직접 누적하세요. (sum() 사용 금지)\n" +
@@ -469,7 +468,7 @@ export const puzzles: Puzzle[] = [
     rewardHint: hint("room-2-hint-tags", "room-2", "room-2-broken-tags",
       "[코드 조각 획득] 손상 데이터를 걸러냈다. 두 번째 열쇠 파편: 5"),
     starterCode:
-      "data = eval(input())   # 입력을 받습니다 (이 줄은 그대로 두세요)\n" +
+      "# data 리스트가 미리 주어집니다. 직접 input() 으로 받을 필요는 없습니다.\n" +
       "\n" +
       "# [목표] 리스트 data 에서 0 보다 큰 값만 모아 새 리스트를 만들어 print() 로 출력하세요.\n" +
       "#  - for 와 if 를 사용합니다. (filter() 사용 금지)\n" +
@@ -503,7 +502,7 @@ export const puzzles: Puzzle[] = [
     rewardHint: hint("room-2-hint-score", "room-2", "room-2-score-board",
       "[코드 조각 획득] 최고 점수를 찾아냈다. 세 번째 열쇠 파편: 4"),
     starterCode:
-      "data = eval(input())   # 입력을 받습니다 (이 줄은 그대로 두세요)\n" +
+      "# data 리스트가 미리 주어집니다. 직접 input() 으로 받을 필요는 없습니다.\n" +
       "\n" +
       "# [목표] 딕셔너리 리스트 data 에서 가장 높은 'score' 값을 print() 로 출력하세요.\n" +
       "#  - for, if, 그리고 item['score'] 접근을 사용합니다. (max() 사용 금지)\n" +
@@ -536,7 +535,7 @@ export const puzzles: Puzzle[] = [
     rewardHint: hint("room-2-hint-time", "room-2", "room-2-timeline",
       "[코드 조각 획득] 카운트다운 완료. 네 번째 열쇠 파편: 7"),
     starterCode:
-      "data = eval(input())   # 입력을 받습니다 (이 줄은 그대로 두세요)\n" +
+      "# 1) data 를 입력받으세요. (숫자는 int(input()) 으로 받습니다)\n" +
       "\n" +
       "# [목표] data 부터 1 까지 1 씩 줄어드는 숫자 리스트를 만들어 print() 로 출력하세요.\n" +
       "#  - while 반복문을 사용합니다.\n" +
@@ -568,7 +567,7 @@ export const puzzles: Puzzle[] = [
     rewardHint: hint("room-2-hint-log", "room-2", "room-2-access-log",
       "[검증 단서] 짝수 번째 자리(2번·4번) 합 = 12"),
     starterCode:
-      "data = eval(input())   # 입력을 받습니다 (이 줄은 그대로 두세요)\n" +
+      "# data 리스트가 미리 주어집니다. 직접 input() 으로 받을 필요는 없습니다.\n" +
       "\n" +
       "# [목표] 리스트 data 에서 0 보다 큰 값만 2배로 만든 리스트를 print() 로 출력하세요.\n" +
       "#  - 리스트 컴프리헨션을 사용합니다.  형태: [표현식 for 변수 in 리스트 if 조건]\n" +
@@ -601,7 +600,7 @@ export const puzzles: Puzzle[] = [
     rewardHint: hint("room-2-hint-checksum", "room-2", "room-2-checksum-ledger",
       "[검증 단서] 네 자리 중 가장 작은 값은 첫 번째 자리 (3)"),
     starterCode:
-      "data = eval(input())   # 입력을 받습니다 (이 줄은 그대로 두세요)\n" +
+      "# 1) data 를 입력받으세요. (문자열은 input() 으로 받습니다)\n" +
       "\n" +
       "# [목표] data 문자열에서 모음(a, e, i, o, u)을 모두 제거한 문자열을 print() 로 출력하세요.\n" +
       "#  - for 반복문과 if (in 연산자)를 사용합니다.\n" +
@@ -638,7 +637,7 @@ export const puzzles: Puzzle[] = [
     rewardHint: hint("room-3-hint-1", "room-3", "room-3-validator",
       "[보너스] 역방향 슬라이싱 완료. [::-1] 은 파이썬만의 우아한 기법이다."),
     starterCode:
-      "data = eval(input())   # 입력을 받습니다 (이 줄은 그대로 두세요)\n" +
+      "# 1) data 를 입력받으세요. (문자열은 input() 으로 받습니다)\n" +
       "\n" +
       "# [목표] data 문자열을 거꾸로 뒤집어 print() 로 출력하세요.\n" +
       "#  - 슬라이싱의 스텝(세 번째 값)을 사용합니다.\n" +

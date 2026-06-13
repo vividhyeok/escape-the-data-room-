@@ -2,29 +2,66 @@
 /* Applied to .room-area when game-shell has .tension-active */
 
 .game-shell.tension-active .room-area {
-  animation: tensionPulse 3s infinite alternate ease-in-out;
+  animation: tensionPulse 1.2s infinite alternate ease-in-out;
 }
 
-/* Red vignette overlay across the background area ONLY, behind the UI */
+/* Background tint (behind UI) */
 .game-shell.tension-active .room-area::after {
   content: "";
   position: absolute;
   top: 0; left: 0; right: 0; bottom: 0;
-  box-shadow: inset 0 0 120px 40px rgba(180, 0, 0, 0.35);
+  box-shadow: inset 0 0 180px 70px rgba(200, 0, 0, 0.5);
   pointer-events: none;
-  z-index: 50; /* Above the 3D scene but below the HUD/Modals */
-  animation: vignetteFlicker 3s infinite;
+  z-index: 50;
+  animation: vignetteFlicker 1.2s infinite;
+}
+
+/* Full-viewport red danger overlay — frames the WHOLE screen in pulsing red so it is
+   clearly visible on any monitor/brightness, even with a modal open (edge glow). */
+.game-shell.tension-active::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 9000; /* above HUD and game windows, below nothing that needs clicks */
+  box-shadow: inset 0 0 260px 110px rgba(225, 0, 0, 0.6);
+  background:
+    radial-gradient(ellipse at center, rgba(255, 0, 0, 0) 45%, rgba(150, 0, 0, 0.32) 100%);
+  animation: tensionRedPulse 1.1s infinite ease-in-out;
+  mix-blend-mode: normal;
+}
+
+/* Pulsing top/bottom "alert" bars for extra visibility */
+.game-shell.tension-active::after {
+  content: "";
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 9001;
+  border-top: 5px solid rgba(255, 40, 40, 0.9);
+  border-bottom: 5px solid rgba(255, 40, 40, 0.9);
+  animation: tensionBars 1.1s infinite ease-in-out;
 }
 
 @keyframes tensionPulse {
   0%   { filter: contrast(1) brightness(1); }
-  100% { filter: contrast(1.08) brightness(0.95); }
+  100% { filter: contrast(1.15) brightness(0.9) saturate(1.2); }
 }
 
 @keyframes vignetteFlicker {
-  0%   { opacity: 0.6; }
+  0%   { opacity: 0.7; }
   50%  { opacity: 1; }
-  100% { opacity: 0.7; }
+  100% { opacity: 0.8; }
+}
+
+@keyframes tensionRedPulse {
+  0%, 100% { opacity: 0.55; }
+  50%      { opacity: 1; }
+}
+
+@keyframes tensionBars {
+  0%, 100% { opacity: 0.35; }
+  50%      { opacity: 1; }
 }
 
 /* ===== Success Animation (inside InspectModal) ===== */
