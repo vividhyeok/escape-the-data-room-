@@ -7972,15 +7972,24 @@ button, a, select, input[type="button"], input[type="submit"] { cursor: pointer;
 
 .fr-concept-row {
   display: grid;
-  grid-template-columns: 120px 1fr 50px;
+  grid-template-columns: 168px 1fr 48px;
   gap: 14px;
   align-items: center;
+}
+
+.fr-concept-label {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 0;
 }
 
 .fr-concept-name {
   font-size: 0.9rem;
   font-weight: 700;
   color: #1a1d23;
+  line-height: 1.3;
+  word-break: keep-all;
 }
 
 .fr-concept-bar {
@@ -8024,15 +8033,18 @@ button, a, select, input[type="button"], input[type="submit"] { cursor: pointer;
 
 .fr-concept-level {
   display: inline-block;
+  align-self: flex-start;
   padding: 2px 8px;
   border-radius: 999px;
   font-size: 0.72rem;
   font-weight: 700;
+  white-space: nowrap;
 }
 
-.fr-concept-level.high { background: #fef2f2; color: #ef4444; }
+/* 성취 수준 기준(정답률) — good: 잘 이해함 / mid: 추가 연습 / bad: 집중 보완 */
+.fr-concept-level.good { background: #ecfdf5; color: #059669; }
 .fr-concept-level.mid { background: #fffbeb; color: #d97706; }
-.fr-concept-level.low { background: #ecfdf5; color: #059669; }
+.fr-concept-level.bad { background: #fef2f2; color: #ef4444; }
 
 /* --- Problem table --- */
 .fr-table {
@@ -8108,6 +8120,215 @@ button, a, select, input[type="button"], input[type="submit"] { cursor: pointer;
   line-height: 1.55;
 }
 
+/* --- Topbar layout --- */
+.fr-topbar-left {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-width: 0;
+}
+
+.fr-head-icon {
+  display: inline;
+  vertical-align: -2px;
+  margin-right: 6px;
+}
+
+.fr-panel-note {
+  font-size: 0.78rem;
+  color: #9099a5;
+}
+
+.fr-panel-body--flush {
+  padding: 0;
+}
+
+.fr-empty-note {
+  color: #9099a5;
+  text-align: center;
+  padding: 20px 0;
+}
+
+.fr-cell-title {
+  font-weight: 600;
+}
+
+/* --- 다음 수업 가이드 --- */
+.fr-guide {
+  margin-bottom: 24px;
+  padding: 22px 24px;
+  background: linear-gradient(180deg, #f7f9ff, #ffffff);
+  border: 1px solid #dfe6fb;
+  border-radius: 14px;
+  box-shadow: 0 1px 3px rgba(67, 97, 238, 0.06);
+}
+
+.fr-guide-head {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: #3a55d6;
+}
+
+.fr-guide-head h2 {
+  margin: 0;
+  font-size: 1.1rem;
+  font-weight: 800;
+  color: #1a1d23;
+}
+
+.fr-guide-headline {
+  margin: 12px 0 0;
+  font-size: 1rem;
+  font-weight: 700;
+  line-height: 1.6;
+  color: #1a1d23;
+  letter-spacing: -0.01em;
+}
+
+.fr-guide-subhead {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin: 20px 0 12px;
+  font-size: 0.8rem;
+  font-weight: 700;
+  color: #5f6673;
+  text-transform: none;
+}
+
+.fr-guide-subhead svg {
+  color: #f59e0b;
+}
+
+.fr-focus-list {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.fr-focus-card {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 16px 18px;
+  background: #fff;
+  border: 1px solid #eef0f3;
+  border-radius: 12px;
+  border-left: 4px solid #cbd5e1;
+}
+
+.fr-focus-card.low { border-left-color: #ef4444; }
+.fr-focus-card.mid { border-left-color: #f59e0b; }
+.fr-focus-card.high { border-left-color: #10b981; }
+
+.fr-focus-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.fr-focus-concept {
+  font-size: 1rem;
+  font-weight: 800;
+  color: #1a1d23;
+  letter-spacing: -0.01em;
+}
+
+.fr-focus-rate {
+  display: inline-block;
+  padding: 3px 10px;
+  border-radius: 999px;
+  font-size: 0.74rem;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+.fr-focus-rate.low { background: #fef2f2; color: #ef4444; }
+.fr-focus-rate.mid { background: #fffbeb; color: #d97706; }
+.fr-focus-rate.high { background: #ecfdf5; color: #059669; }
+
+.fr-focus-reason {
+  margin: 0;
+  font-size: 0.86rem;
+  line-height: 1.55;
+  color: #5f6673;
+}
+
+.fr-focus-action {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  padding: 10px 12px;
+  background: #f4f7ff;
+  border-radius: 8px;
+  font-size: 0.88rem;
+  font-weight: 600;
+  line-height: 1.5;
+  color: #2f3b8c;
+}
+
+.fr-focus-action svg {
+  flex-shrink: 0;
+  margin-top: 2px;
+  color: #4361ee;
+}
+
+.fr-focus-example {
+  font-size: 0.78rem;
+  color: #9099a5;
+}
+
+.fr-guide-empty {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 16px 0 0;
+  padding: 14px 16px;
+  background: #ecfdf5;
+  border-radius: 10px;
+  font-size: 0.92rem;
+  font-weight: 600;
+  color: #059669;
+}
+
+.fr-strong {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+  margin-top: 18px;
+  padding-top: 16px;
+  border-top: 1px solid #eef0f3;
+}
+
+.fr-strong-label {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 0.82rem;
+  font-weight: 700;
+  color: #059669;
+}
+
+.fr-strong-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.fr-strong-chips em {
+  font-style: normal;
+  padding: 4px 11px;
+  border-radius: 999px;
+  background: #ecfdf5;
+  color: #059669;
+  font-size: 0.8rem;
+  font-weight: 600;
+}
+
 /* --- Two-column layout --- */
 .fr-grid {
   display: grid;
@@ -8121,13 +8342,18 @@ button, a, select, input[type="button"], input[type="submit"] { cursor: pointer;
 }
 
 /* --- Student results table --- */
+/* 진행률(막대+칸+분수)이 들어가는 컬럼을 가장 넓은 유연 컬럼으로 둔다. */
 .fr-student-row {
   display: grid;
-  grid-template-columns: minmax(80px, 1fr) 100px 100px 80px 100px;
-  gap: 8px;
+  grid-template-columns: 88px minmax(240px, 1fr) 80px 72px 96px;
+  gap: 14px;
   align-items: center;
-  padding: 10px 14px;
+  padding: 12px 18px;
   border-bottom: 1px solid #f5f6f8;
+}
+
+.fr-student-row > span {
+  min-width: 0;
 }
 
 .fr-student-row:last-child {
@@ -8145,6 +8371,24 @@ button, a, select, input[type="button"], input[type="submit"] { cursor: pointer;
   text-transform: uppercase;
   letter-spacing: 0.04em;
   border-bottom: 2px solid #eef0f3;
+}
+
+.fr-student-name {
+  font-weight: 700;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.fr-student-progress {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+
+.fr-student-frac {
+  font-size: 0.82rem;
+  color: #5f6673;
 }
 
 .fr-student-row .fr-mini-bar {
@@ -8194,14 +8438,44 @@ button, a, select, input[type="button"], input[type="submit"] { cursor: pointer;
     grid-template-columns: 1fr;
   }
 
-  .fr-concept-row {
-    grid-template-columns: 80px 1fr 40px;
+  .fr-focus-list {
+    grid-template-columns: 1fr;
   }
 
-  .fr-student-row {
-    grid-template-columns: 1fr 1fr;
-    gap: 4px;
+  .fr-concept-row {
+    grid-template-columns: 116px 1fr 40px;
   }
+
+  /* 학생 행: 이름+상태 한 줄, 진행률 한 줄, 정답률·건너뜀 한 줄 */
+  .fr-student-row {
+    grid-template-columns: 1fr auto;
+    gap: 6px 12px;
+    align-items: center;
+  }
+
+  .fr-student-name {
+    grid-column: 1;
+  }
+
+  .fr-student-row > span:nth-child(5) {
+    grid-column: 2;
+    justify-self: end;
+  }
+
+  .fr-student-progress {
+    grid-column: 1 / -1;
+    order: 3;
+  }
+
+  .fr-student-row > span:nth-child(3),
+  .fr-student-row > span:nth-child(4) {
+    order: 4;
+    font-size: 0.82rem;
+    color: #5f6673;
+  }
+
+  .fr-student-row > span:nth-child(3) { grid-column: 1; }
+  .fr-student-row > span:nth-child(4) { grid-column: 2; justify-self: end; }
 
   .fr-student-row.header {
     display: none;
@@ -8686,7 +8960,56 @@ button, a, select, input[type="button"], input[type="submit"] { cursor: pointer;
 
 .edu-record-actions {
   display: flex;
+  align-items: center;
   gap: 8px;
+}
+
+.edu-record-confirm {
+  flex-wrap: wrap;
+  justify-content: flex-end;
+}
+
+.edu-confirm-text {
+  font-size: 0.84rem;
+  font-weight: 600;
+  color: var(--td-text-secondary);
+}
+
+/* 아이콘 전용 버튼 (삭제 등) */
+.edu-icon-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 38px;
+  height: 38px;
+  border: 1px solid var(--td-border);
+  border-radius: var(--td-radius-sm);
+  background: var(--td-surface);
+  color: var(--td-text-muted);
+  cursor: pointer;
+  transition: background 150ms, border-color 150ms, color 150ms;
+}
+
+.edu-icon-btn:hover {
+  background: var(--td-danger-light);
+  border-color: #f5c2c2;
+  color: var(--td-danger);
+}
+
+.edu-icon-btn:focus-visible {
+  outline: 2px solid var(--td-danger);
+  outline-offset: 2px;
+}
+
+.edu-btn.danger {
+  background: var(--td-danger);
+  border-color: var(--td-danger);
+  color: #fff;
+}
+
+.edu-btn.danger:hover {
+  background: #dc2f2f;
+  border-color: #dc2f2f;
 }
 
 /* ---------- 새 수업 만들기 ---------- */

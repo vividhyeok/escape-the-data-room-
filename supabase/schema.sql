@@ -64,3 +64,21 @@ using (true);
 create policy "demo_insert_attempt_logs"
 on attempt_logs for insert
 with check (true);
+
+-- 교사 콘솔의 "수업 기록 삭제"를 위한 delete 정책 (시연용: 누구나 삭제 가능).
+-- 실제 서비스에서는 교사 소유권 검증으로 대체해야 한다.
+drop policy if exists "demo_delete_class_sessions" on class_sessions;
+drop policy if exists "demo_delete_student_sessions" on student_sessions;
+drop policy if exists "demo_delete_attempt_logs" on attempt_logs;
+
+create policy "demo_delete_class_sessions"
+on class_sessions for delete
+using (true);
+
+create policy "demo_delete_student_sessions"
+on student_sessions for delete
+using (true);
+
+create policy "demo_delete_attempt_logs"
+on attempt_logs for delete
+using (true);

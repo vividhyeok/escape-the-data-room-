@@ -10,6 +10,7 @@ import {
   Loader2,
   LogOut,
   Plus,
+  Trash2,
   Users,
 } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
@@ -21,6 +22,7 @@ import {
 } from "../data/textbookProblemBank";
 import {
   createClassSession,
+  deleteClassRecord,
   listClassRecords,
   saveLastClassCode,
   type ClassRecordSummary,
@@ -61,6 +63,9 @@ function openReport(classCode: string): void {
 function ClassRecordList(): React.JSX.Element {
   const [records, setRecords] = useState<ClassRecordSummary[] | null>(null);
   const [loadError, setLoadError] = useState("");
+  // 삭제 확인 중인 수업 코드 / 삭제 진행 중인 수업 코드
+  const [pendingDelete, setPendingDelete] = useState<string | null>(null);
+  const [deletingCode, setDeletingCode] = useState<string | null>(null);
 
   useEffect(() => {
     let cancelled = false;
@@ -79,6 +84,20 @@ function ClassRecordList(): React.JSX.Element {
       cancelled = true;
     };
   }, []);
+
+  async function handleDelete(classCode: string): Promise<void> {
+    setDeletingCode(classCode);
+    try {
+      await deleteClassRecord(classCode);
+      setRecords((prev) => (prev ? prev.filter((r) => r.classCode !== classCode) : prev));
+    } catch (error) {
+      console.warn(error);
+      setLoadError("수업 삭제 중 문제가 발생했습니다.");
+    } finally {
+      setDeletingCode(null);
+      setPendingDelete(null);
+    }
+  }
 
   if (records === null) {
     return (
@@ -108,50 +127,86 @@ function ClassRecordList(): React.JSX.Element {
         </div>
       ) : (
         <ul className="edu-record-list">
-          {records.map((record) => (
-            <li className="edu-record" key={record.classCode}>
-              <div className="edu-record-main">
-                <div className="edu-record-title-row">
-                  <strong className="edu-record-title">{record.title}</strong>
-                  <span className={`edu-chip ${record.isEnded ? "done" : "live"}`}>
-                    {record.isEnded ? "종료됨" : "진행 가능"}
-                  </span>
+          {records.map((record) => {
+            const confirming = pendingDelete === record.classCode;
+            const isDeleting = deletingCode === record.classCode;
+            return (
+              <li className="edu-record" key={record.classCode}>
+                <div className="edu-record-main">
+                  <div className="edu-record-title-row">
+                    <strong className="edu-record-title">{record.title}</strong>
+                    <span className={`edu-chip ${record.isEnded ? "done" : "live"}`}>
+                      {record.isEnded ? "종료됨" : "진행 가능"}
+                    </span>
+                  </div>
+                  <div className="edu-record-meta">
+                    <span>{formatClassDate(record.createdAt)}</span>
+                    <span className="edu-record-code">코드 {record.classCode}</span>
+                    <span>
+                      <Users size={13} aria-hidden="true" /> 학생 {record.studentCount}명
+                    </span>
+                    <span>{record.problemCount}문제</span>
+                  </div>
                 </div>
-                <div className="edu-record-meta">
-                  <span>{formatClassDate(record.createdAt)}</span>
-                  <span className="edu-record-code">코드 {record.classCode}</span>
-                  <span>
-                    <Users size={13} aria-hidden="true" /> 학생 {record.studentCount}명
-                  </span>
-                  <span>{record.problemCount}문항</span>
-                </div>
-              </div>
 
-              <div className="edu-record-progress">
-                {record.averageProgress !== null ? (
-                  <>
-                    <div className="edu-mini-bar" aria-hidden="true">
-                      <span style={{ width: `${record.averageProgress}%` }} />
-                    </div>
-                    <span className="edu-mini-bar-label">평균 진행률 {record.averageProgress}%</span>
-                  </>
+                <div className="edu-record-progress">
+                  {record.averageProgress !== null ? (
+                    <>
+                      <div className="edu-mini-bar" aria-hidden="true">
+                        <span style={{ width: `${record.averageProgress}%` }} />
+                      </div>
+                      <span className="edu-mini-bar-label">평균 진행률 {record.averageProgress}%</span>
+                    </>
+                  ) : (
+                    <span className="edu-mini-bar-label muted">진행률은 모니터에서 확인</span>
+                  )}
+                </div>
+
+                {confirming ? (
+                  <div className="edu-record-actions edu-record-confirm">
+                    <span className="edu-confirm-text">이 수업 기록을 삭제할까요?</span>
+                    <button
+                      className="edu-btn danger"
+                      disabled={isDeleting}
+                      onClick={() => void handleDelete(record.classCode)}
+                      type="button"
+                    >
+                      {isDeleting ? <Loader2 className="spin" size={15} /> : <Trash2 size={15} />}
+                      삭제
+                    </button>
+                    <button
+                      className="edu-btn"
+                      disabled={isDeleting}
+                      onClick={() => setPendingDelete(null)}
+                      type="button"
+                    >
+                      취소
+                    </button>
+                  </div>
                 ) : (
-                  <span className="edu-mini-bar-label muted">진행률은 모니터에서 확인</span>
+                  <div className="edu-record-actions">
+                    <button className="edu-btn" onClick={() => openMonitor(record.classCode)} type="button">
+                      <Activity size={15} />
+                      진행 현황
+                    </button>
+                    <button className="edu-btn primary" onClick={() => openReport(record.classCode)} type="button">
+                      <BarChart3 size={15} />
+                      결과 리포트
+                    </button>
+                    <button
+                      className="edu-icon-btn"
+                      aria-label="수업 기록 삭제"
+                      title="수업 기록 삭제"
+                      onClick={() => setPendingDelete(record.classCode)}
+                      type="button"
+                    >
+                      <Trash2 size={16} />
+                    </button>
+                  </div>
                 )}
-              </div>
-
-              <div className="edu-record-actions">
-                <button className="edu-btn" onClick={() => openMonitor(record.classCode)} type="button">
-                  <Activity size={15} />
-                  진행 현황
-                </button>
-                <button className="edu-btn primary" onClick={() => openReport(record.classCode)} type="button">
-                  <BarChart3 size={15} />
-                  결과 리포트
-                </button>
-              </div>
-            </li>
-          ))}
+              </li>
+            );
+          })}
         </ul>
       )}
     </section>
@@ -216,7 +271,7 @@ function CreateClassPanel({ onCreated }: { onCreated: () => void }): React.JSX.E
       setCopied(true);
       window.setTimeout(() => setCopied(false), 1600);
     } catch {
-      setMessage(`클래스 코드: ${createdSession.classCode}`);
+      setMessage(`수업 코드: ${createdSession.classCode}`);
     }
   }
 
@@ -315,7 +370,7 @@ function CreateClassPanel({ onCreated }: { onCreated: () => void }): React.JSX.E
                     <strong>{set.title}</strong>
                     <span className="edu-set-desc">{set.description}</span>
                     <span className="edu-set-meta">
-                      {setProblems.length}문항 · {set.gradeBand ?? "기초"} · 전체 풀이 약{" "}
+                      {setProblems.length}문제 · {set.gradeBand ?? "기초"} · 전체 풀이 약{" "}
                       {estimateMinutesForProblems(setProblems)}분
                     </span>
                   </span>
@@ -333,7 +388,7 @@ function CreateClassPanel({ onCreated }: { onCreated: () => void }): React.JSX.E
 
           {selectedSet ? (
             <details className="edu-preview">
-              <summary>문항 미리보기 ({problemCount}문항)</summary>
+              <summary>문제 미리보기 ({problemCount}문제)</summary>
               <ol>
                 {selectedProblems.map((problem) => (
                   <li key={problem.id}>
@@ -362,7 +417,7 @@ function CreateClassPanel({ onCreated }: { onCreated: () => void }): React.JSX.E
             </div>
             <div>
               <dt>구성</dt>
-              <dd>{problemCount}문항 · 전체 풀이 약 {estimatedMinutes}분</dd>
+              <dd>{problemCount}문제 · 전체 풀이 약 {estimatedMinutes}분</dd>
             </div>
           </dl>
           <button

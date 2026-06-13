@@ -23,6 +23,10 @@ export { SKIP_MARKER };
 
 export const CURRENT_STUDENT_SESSION_KEY = "etdr.currentStudentSession";
 export const LAST_CLASS_CODE_KEY = "etdr.lastClassCode";
+// 교사가 수업 기록 목록에서 삭제(숨김)한 수업 코드 목록.
+// 데모 수업은 코드 자체가 정적이라 진짜 삭제가 불가능하므로 여기에 기록해 목록에서 가린다.
+// (브라우저 데이터 초기화 시 데모 기록은 다시 복원된다 — 논문/시연용 데이터 보존)
+export const DELETED_CLASS_CODES_KEY = "etdr.deletedClassCodes";
 
 export type ClassSession = {
   id: string;
@@ -71,11 +75,28 @@ export type ProblemAnalytics = {
   successRate: number; // 직접 풀이 기준 성공률
 };
 
+// 개념별 성취 수준 — 학생들이 이 개념을 얼마나 이해했는지를 정답률로 직접 분류한다.
+//  high: 잘 이해함 / mid: 추가 연습 권장 / low: 집중 보완 필요
+export type ConceptAttainment = "high" | "mid" | "low";
+
 export type ConceptAnalytics = {
   concept: string;
   averageSuccessRate: number;
   failCount: number;
-  level: "낮음" | "보통" | "높음";
+  problemCount: number; // 이 개념을 다루는 문제 수
+  attainment: ConceptAttainment;
+};
+
+// 다음 수업 설계를 돕는 "집중 보완 개념" — 어려워한 개념 + 왜 + 무엇을 다시 설명할지
+export type TeachingFocus = {
+  concept: string;
+  averageSuccessRate: number;
+  attainment: ConceptAttainment;
+  failCount: number;
+  unsolvedStudentCount: number; // 이 개념의 대표 문제를 끝내 못 푼 학생 수
+  reason: string; // 학생들이 주로 어디서 막혔는지(흔한 오개념)
+  action: string; // 다음 수업에서 짚어 줄 구체적 행동
+  exampleProblemTitle: string | null; // 대표(가장 어려웠던) 문제
 };
 
 // 수업 중 교사가 한눈에 읽는 학생 상태 라벨
@@ -155,9 +176,11 @@ export type ClassAnalytics = {
   helpNeededStudents: StudentProgress[];
   problemStats: ProblemAnalytics[];
   conceptStats: ConceptAnalytics[];
-  hardestConcept: string | null;
   hardestProblem: ProblemAnalytics | null;
-  recommendations: string[];
+  // 다음 수업 설계 가이드
+  headline: string; // 한 줄 총평
+  teachingFocus: TeachingFocus[]; // 집중 보완이 필요한 개념 (심각도순, 최대 4개)
+  strongConcepts: string[]; // 이미 잘 이해한 개념
   hasAttempts: boolean;
 };
 
@@ -237,6 +260,23 @@ function setStoredValue(key: string, value: string): void {
 function removeStoredValue(key: string): void {
   if (typeof window === "undefined") return;
   window.localStorage.removeItem(key);
+}
+
+function getDeletedClassCodes(): Set<string> {
+  const raw = getStoredValue(DELETED_CLASS_CODES_KEY);
+  if (!raw) return new Set();
+  try {
+    const parsed = JSON.parse(raw) as unknown;
+    return new Set(Array.isArray(parsed) ? parsed.map(String) : []);
+  } catch {
+    return new Set();
+  }
+}
+
+function addDeletedClassCode(code: string): void {
+  const set = getDeletedClassCodes();
+  set.add(code);
+  setStoredValue(DELETED_CLASS_CODES_KEY, JSON.stringify([...set]));
 }
 
 export function generateClassCode(): string {
@@ -523,31 +563,146 @@ function buildStudentProgress(
   });
 }
 
-function buildRecommendations(problemStats: ProblemAnalytics[]): string[] {
-  const weakProblems = problemStats
-    .filter((stat) => stat.attemptCount > 0 && (stat.successRate < 80 || stat.failCount > 2))
-    .sort((a, b) => {
-      if (a.successRate !== b.successRate) return a.successRate - b.successRate;
-      return b.failCount - a.failCount;
-    })
-    .slice(0, 3);
+// 정답률을 성취 수준으로 변환 (개념·문제 공통 기준)
+function toAttainment(rate: number): ConceptAttainment {
+  if (rate >= 80) return "high";
+  if (rate >= 50) return "mid";
+  return "low";
+}
 
-  return weakProblems.map((stat) => {
-    const { problem } = stat;
-    if (problem.concept === "for") {
-      return "반복문 문제에서 실패 시도가 많습니다. 누적 변수 초기화와 for문의 실행 순서를 다시 설명하는 것이 좋습니다.";
+// 개념별로 "학생들이 주로 어디서 막히는지(reason)" + "다음 수업에서 무엇을 짚어 줄지(action)".
+// 진단 결과를 곧바로 다음 수업 행동으로 옮길 수 있도록 구체적으로 작성한다.
+const CONCEPT_TEACHING: Record<string, { reason: string; action: string }> = {
+  "변수": {
+    reason: "= 을 '같다'로 오해해 값을 저장하지 못하는 경우가 보입니다.",
+    action: "= 가 오른쪽 값을 왼쪽 변수에 '저장'하는 것임을 한 번 더 짚어 주세요.",
+  },
+  "연산": {
+    reason: "숫자와 문자열을 섞어 연산하다 타입 오류를 내는 경우가 있습니다.",
+    action: "+ 가 숫자끼리는 덧셈, 문자열끼리는 이어붙이기임을 예시로 비교해 주세요.",
+  },
+  "인덱싱": {
+    reason: "인덱스를 1부터 세어 첫 글자를 놓치는 학생이 많습니다.",
+    action: "인덱스가 0부터 시작한다는 점을 한 문자열로 직접 세어 보여 주세요.",
+  },
+  "슬라이싱": {
+    reason: "슬라이싱의 끝 인덱스가 포함되지 않는 점에서 자주 막힙니다.",
+    action: "data[:3] 이 0·1·2번째까지(3번째 제외)임을 칸으로 그려 설명해 주세요.",
+  },
+  "내장함수 len": {
+    reason: "len(data) 대신 data.len() 형태로 호출하는 실수가 보입니다.",
+    action: "len() 은 값을 괄호 안에 넣어 호출하는 내장함수임을 짚어 주세요.",
+  },
+  "문자열 연산": {
+    reason: "문자열 * 정수(반복)와 + (이어붙이기)를 헷갈리는 경우가 있습니다.",
+    action: "'A' * 3 과 'A' + 'A' + 'A' 가 같은 결과임을 나란히 보여 주세요.",
+  },
+  "문자열 메서드(upper)": {
+    reason: ".upper() 의 괄호를 빠뜨리거나 메서드 호출 형식을 어려워합니다.",
+    action: "값.메서드() 형태(점 + 괄호)로 호출한다는 규칙을 다시 정리해 주세요.",
+  },
+  "문자열 메서드(replace)": {
+    reason: "replace(찾을값, 바꿀값) 의 인자 순서를 바꿔 쓰는 경우가 많습니다.",
+    action: "replace 는 '무엇을→무엇으로' 순서임을 예시로 고정해 주세요.",
+  },
+  "문자열 메서드(split)": {
+    reason: "split() 의 결과가 리스트라는 점을 인지하지 못하는 경우가 있습니다.",
+    action: "split() 이 문자열을 잘라 리스트로 돌려준다는 점을 출력으로 확인시켜 주세요.",
+  },
+  "if/else": {
+    reason: "비교 연산자(>=, ==)나 if/else 들여쓰기에서 자주 막힙니다.",
+    action: "조건 → 참일 때 / 거짓일 때의 분기 흐름을 순서도로 다시 설명해 주세요.",
+  },
+  "나머지 연산·비교": {
+    reason: "% 연산과 == 비교를 결합해 짝수를 판별하는 데서 막힙니다.",
+    action: "data % 2 == 0 한 줄을 단계별로 분해해 의미를 짚어 주세요.",
+  },
+  "논리 연산": {
+    reason: "and/or 로 두 조건을 묶는 부분에서 실수가 많습니다.",
+    action: "and 는 '둘 다 참', or 는 '하나만 참'임을 표로 정리해 주세요.",
+  },
+  "for": {
+    reason: "누적 변수 초기화(total = 0)를 빠뜨리거나 for 실행 순서를 어려워합니다.",
+    action: "반복 전에 변수를 0으로 두고, 한 항목씩 더해 가는 과정을 단계별로 보여 주세요.",
+  },
+  "for+if 필터링": {
+    reason: "빈 리스트 준비와 조건부 append 위치에서 자주 막힙니다.",
+    action: "빈 리스트 → 반복 → 조건 통과 시에만 append 흐름을 다시 시연해 주세요.",
+  },
+  "for+딕셔너리": {
+    reason: "딕셔너리 키 접근(item['score'])과 최댓값 갱신 패턴을 어려워합니다.",
+    action: "최댓값 변수를 두고 더 큰 값을 만나면 갱신하는 패턴을 짚어 주세요.",
+  },
+  "while": {
+    reason: "while 종료 조건과 변수 감소 시점을 헷갈려 무한 반복에 빠지기 쉽습니다.",
+    action: "조건이 거짓이 되는 순간 멈춘다는 점과 감소 위치를 함께 설명해 주세요.",
+  },
+  "컴프리헨션": {
+    reason: "[식 for x in ... if 조건] 구조 자체를 처음 접해 어려워합니다.",
+    action: "먼저 for+if 로 푼 코드를 컴프리헨션 한 줄로 바꾸는 과정을 보여 주세요.",
+  },
+  "for+조건": {
+    reason: "문자열을 순회하며 조건에 맞는 글자만 누적하는 흐름에서 막힙니다.",
+    action: "글자를 하나씩 확인해 조건에 맞을 때만 이어붙이는 과정을 시연해 주세요.",
+  },
+};
+
+function teachingFor(concept: string): { reason: string; action: string } {
+  return (
+    CONCEPT_TEACHING[concept] ?? {
+      reason: "여러 학생이 이 개념의 문제에서 정답에 이르지 못했습니다.",
+      action: `${concept} 개념의 풀이 과정을 다음 수업에서 짧게 다시 짚어 주세요.`,
     }
-    if (problem.concept === "인덱싱") {
-      return "문자열 인덱싱 문제의 성공률이 낮습니다. 인덱스가 0부터 시작한다는 점을 짚어 주세요.";
-    }
-    if (problem.concept === "if/else") {
-      return "조건문 문제에서 오답이 많습니다. if/else 분기 구조와 비교 연산자 사용을 다시 확인해 주세요.";
-    }
-    if (problem.concept === "필터링") {
-      return "리스트 필터링 문제에서 조건식과 append 위치를 헷갈릴 수 있습니다. 조건에 맞는 값만 새 리스트에 넣는 흐름을 다시 보여 주세요.";
-    }
-    return `${problem.concept} 개념에서 보완이 필요합니다. "${problem.title}" 풀이 과정을 짧게 다시 설명하는 것이 좋습니다.`;
-  });
+  );
+}
+
+// 집중 보완이 필요한 개념을 심각도순으로 추린다.
+function buildTeachingFocus(
+  conceptStats: ConceptAnalytics[],
+  problemStats: ProblemAnalytics[],
+): TeachingFocus[] {
+  return conceptStats
+    .filter((c) => c.attainment !== "high" || c.failCount > 3)
+    .sort((a, b) => a.averageSuccessRate - b.averageSuccessRate || b.failCount - a.failCount)
+    .slice(0, 4)
+    .map((concept) => {
+      // 이 개념을 다루는 문제 중 가장 어려웠던 문제를 대표로 사용
+      const conceptProblems = problemStats
+        .filter((p) => p.problem.concept === concept.concept)
+        .sort((a, b) => a.successRate - b.successRate || b.failCount - a.failCount);
+      const hardest = conceptProblems[0];
+      const { reason, action } = teachingFor(concept.concept);
+      return {
+        concept: concept.concept,
+        averageSuccessRate: concept.averageSuccessRate,
+        attainment: concept.attainment,
+        failCount: concept.failCount,
+        unsolvedStudentCount: hardest?.unsolvedStudentCount ?? 0,
+        reason,
+        action,
+        exampleProblemTitle: hardest?.problem.title ?? null,
+      };
+    });
+}
+
+// 교사가 가장 먼저 읽는 한 줄 총평.
+function buildHeadline(
+  teachingFocus: TeachingFocus[],
+  strongConcepts: string[],
+  hasAttempts: boolean,
+): string {
+  if (!hasAttempts) {
+    return "아직 제출된 풀이가 없습니다. 학생들이 활동을 시작하면 분석이 채워집니다.";
+  }
+  if (teachingFocus.length === 0) {
+    return "전반적으로 고르게 이해하고 있습니다. 다음 단원으로 진도를 이어가도 좋습니다.";
+  }
+  const lowOrMid = teachingFocus.filter((f) => f.attainment !== "high").map((f) => f.concept);
+  const names = (lowOrMid.length > 0 ? lowOrMid : teachingFocus.map((f) => f.concept)).slice(0, 2);
+  const concepts = names.join(" · ");
+  const strongTail =
+    strongConcepts.length > 0 ? ` ${strongConcepts.slice(0, 2).join(" · ")} 개념은 잘 이해하고 있습니다.` : "";
+  return `학생 다수가 ${concepts} 개념에서 막혔습니다. 다음 수업 도입부에서 이 부분을 먼저 짚어 주세요.${strongTail}`;
 }
 
 type AnalyticsContext = {
@@ -607,15 +762,17 @@ function computeClassAnalytics(context: AnalyticsContext): ClassAnalytics {
     };
   });
 
-  const conceptStats = Object.values(
-    problemStats.reduce<Record<string, { concept: string; rates: number[]; failCount: number }>>((acc, stat) => {
+  const conceptStats: ConceptAnalytics[] = Object.values(
+    problemStats.reduce<Record<string, { concept: string; rates: number[]; failCount: number; problemCount: number }>>((acc, stat) => {
       const current = acc[stat.problem.concept] ?? {
         concept: stat.problem.concept,
         rates: [],
         failCount: 0,
+        problemCount: 0,
       };
       current.rates.push(stat.successRate);
       current.failCount += stat.failCount;
+      current.problemCount += 1;
       acc[stat.problem.concept] = current;
       return acc;
     }, {}),
@@ -623,18 +780,14 @@ function computeClassAnalytics(context: AnalyticsContext): ClassAnalytics {
     const averageSuccessRate = concept.rates.length
       ? Math.round(concept.rates.reduce((sum, rate) => sum + rate, 0) / concept.rates.length)
       : 0;
-    const level: ConceptAnalytics["level"] =
-      averageSuccessRate >= 80 && concept.failCount <= 2
-        ? "낮음"
-        : averageSuccessRate >= 50
-          ? "보통"
-          : "높음";
 
     return {
       concept: concept.concept,
       averageSuccessRate,
       failCount: concept.failCount,
-      level,
+      problemCount: concept.problemCount,
+      // 성취 수준은 정답률로 직접 분류 (차트 색/배지가 정답률과 일치하도록)
+      attainment: toAttainment(averageSuccessRate),
     };
   });
 
@@ -659,15 +812,22 @@ function computeClassAnalytics(context: AnalyticsContext): ClassAnalytics {
   const unfinishedStudents = studentProgress.filter((s) => !s.isFinished);
   const allFinished = studentProgress.length > 0 && unfinishedStudents.length === 0;
 
-  // 가장 어려운 개념 = 평균 성공률이 가장 낮은(어려움이 가장 높은) 개념
-  const hardestConcept = [...conceptStats]
-    .filter((c) => c.failCount > 0 || c.averageSuccessRate < 100)
-    .sort((a, b) => a.averageSuccessRate - b.averageSuccessRate || b.failCount - a.failCount)[0]?.concept ?? null;
-
   // 가장 어려운 문제 = 성공률이 낮고 실패가 많은 문제
   const hardestProblem = [...problemStats]
     .filter((p) => p.attemptCount > 0)
     .sort((a, b) => a.successRate - b.successRate || b.failCount - a.failCount)[0] ?? null;
+
+  const hasAttempts = attemptLogs.length > 0;
+  // 다음 수업 가이드: 집중 보완 개념 / 이미 잘 이해한 개념 / 한 줄 총평
+  const teachingFocus = hasAttempts ? buildTeachingFocus(conceptStats, problemStats) : [];
+  const focusConceptNames = new Set(teachingFocus.map((f) => f.concept));
+  const strongConcepts = hasAttempts
+    ? [...conceptStats]
+        .filter((c) => c.attainment === "high" && !focusConceptNames.has(c.concept))
+        .sort((a, b) => b.averageSuccessRate - a.averageSuccessRate)
+        .map((c) => c.concept)
+    : [];
+  const headline = buildHeadline(teachingFocus, strongConcepts, hasAttempts);
 
   return {
     classSession,
@@ -689,10 +849,11 @@ function computeClassAnalytics(context: AnalyticsContext): ClassAnalytics {
     helpNeededStudents,
     problemStats,
     conceptStats,
-    hardestConcept,
     hardestProblem,
-    recommendations: buildRecommendations(problemStats),
-    hasAttempts: attemptLogs.length > 0,
+    headline,
+    teachingFocus,
+    strongConcepts,
+    hasAttempts,
   };
 }
 
@@ -832,5 +993,33 @@ export async function listClassRecords(): Promise<ClassRecordSummary[]> {
     }
   }
 
-  return summaries.sort((a, b) => (b.createdAt ?? "").localeCompare(a.createdAt ?? ""));
+  const deleted = getDeletedClassCodes();
+  return summaries
+    .filter((summary) => !deleted.has(summary.classCode))
+    .sort((a, b) => (b.createdAt ?? "").localeCompare(a.createdAt ?? ""));
+}
+
+/**
+ * 수업 기록을 삭제(목록에서 제거)한다.
+ * - 실제 수업(Supabase)이면 attempt_logs → student_sessions → class_sessions 순으로 정리한다(베스트 에포트).
+ * - 데모 수업이면 정적 데이터라 DB 정리는 생략하고, 목록에서만 숨긴다.
+ * 어느 경우든 localStorage 의 삭제 목록에 기록해 즉시·영구적으로 목록에서 사라지게 한다.
+ */
+export async function deleteClassRecord(classCode: string): Promise<void> {
+  const code = normalizeClassCode(classCode);
+
+  if (!isDemoClassCode(code) && isSupabaseConfigured) {
+    try {
+      const client = getSupabaseClient();
+      // attempt_logs 는 class_code 가 FK 가 아니므로 명시적으로 먼저 삭제한다.
+      await client.from("attempt_logs").delete().eq("class_code", code);
+      // student_sessions 는 class_sessions 삭제 시 CASCADE 되지만, 안전하게 먼저 정리한다.
+      await client.from("student_sessions").delete().eq("class_code", code);
+      await client.from("class_sessions").delete().eq("class_code", code);
+    } catch (error) {
+      console.warn("수업 삭제 중 DB 정리에 실패했습니다.", error);
+    }
+  }
+
+  addDeletedClassCode(code);
 }

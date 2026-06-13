@@ -147,7 +147,7 @@ export function ResultDashboardPage(): React.JSX.Element {
       <header className="td-topbar">
         <div className="td-topbar-left">
           <a className="td-back" href="#/teacher">← 수업 목록</a>
-          <h1>{isEnded ? "수업 기록" : "실시간 모니터"}</h1>
+          <h1>진행 현황</h1>
           {isEnded ? (
             <span className="td-ended-chip">종료된 수업</span>
           ) : autoRefresh ? (
@@ -280,7 +280,7 @@ export function ResultDashboardPage(): React.JSX.Element {
                         {s.problemCells.map((c, i) => {
                           const stateLabel =
                             c.state === "solved" ? "정답" :
-                            c.state === "skipped" ? "건너뛰기" :
+                            c.state === "skipped" ? "건너뜀" :
                             c.state === "attempted" ? "시도 중" : "미시작";
                           return (
                             <i
