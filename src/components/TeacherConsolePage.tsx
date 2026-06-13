@@ -5,6 +5,7 @@ import {
   CheckCircle2,
   ClipboardList,
   Copy,
+  Eye,
   GraduationCap,
   History,
   Loader2,
@@ -12,6 +13,7 @@ import {
   Plus,
   Trash2,
   Users,
+  X,
 } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 import {
@@ -217,6 +219,7 @@ function ClassRecordList(): React.JSX.Element {
 
 function CreateClassPanel({ onCreated }: { onCreated: () => void }): React.JSX.Element {
   const problemSets = useMemo(() => getProblemSets(), []);
+  const [detailSet, setDetailSet] = useState<ProblemSet | null>(null);
   const [title, setTitle] = useState("파이썬 기초 복습 수업");
   const [selectedSetId, setSelectedSetId] = useState<string>(problemSets[0]?.id ?? "");
   const [createdSession, setCreatedSession] = useState<ClassSession | null>(null);
@@ -357,50 +360,39 @@ function CreateClassPanel({ onCreated }: { onCreated: () => void }): React.JSX.E
               const selected = set.id === selectedSetId;
               const setProblems = getTextbookProblemsByIds(set.problemIds);
               return (
-                <button
-                  aria-checked={selected}
-                  className={`edu-set-card ${selected ? "selected" : ""}`}
-                  key={set.id}
-                  onClick={() => setSelectedSetId(set.id)}
-                  role="radio"
-                  type="button"
-                >
-                  <span className="edu-set-radio" aria-hidden="true" />
-                  <span className="edu-set-body">
-                    <strong>{set.title}</strong>
-                    <span className="edu-set-desc">{set.description}</span>
-                    <span className="edu-set-meta">
-                      {setProblems.length}문제 · {set.gradeBand ?? "기초"} · 전체 풀이 약{" "}
-                      {estimateMinutesForProblems(setProblems)}분
+                <div className={`edu-set-card ${selected ? "selected" : ""}`} key={set.id}>
+                  <button
+                    aria-checked={selected}
+                    className="edu-set-select"
+                    onClick={() => setSelectedSetId(set.id)}
+                    role="radio"
+                    type="button"
+                  >
+                    <span className="edu-set-radio" aria-hidden="true" />
+                    <span className="edu-set-body">
+                      <span className="edu-set-title-row">
+                        <strong>{set.title}</strong>
+                        <em className={`edu-set-tag ${set.source === "textbook" ? "textbook" : "game"}`}>
+                          {set.source === "textbook" ? "교과서" : "게임 연동"}
+                        </em>
+                      </span>
+                      <span className="edu-set-desc">{set.description}</span>
+                      <span className="edu-set-meta">
+                        {setProblems.length}문제 · {set.gradeBand ?? "기초"} · 전체 풀이 약{" "}
+                        {estimateMinutesForProblems(setProblems)}분
+                      </span>
                     </span>
-                  </span>
-                </button>
+                  </button>
+                  <button className="edu-set-detail-btn" onClick={() => setDetailSet(set)} type="button">
+                    <Eye size={14} />
+                    문제 자세히 보기
+                  </button>
+                </div>
               );
             })}
-            <div className="edu-set-card disabled" aria-disabled="true">
-              <span className="edu-set-radio" aria-hidden="true" />
-              <span className="edu-set-body">
-                <strong>추가 문제집 준비 중</strong>
-                <span className="edu-set-desc">단원별·교육과정별 문제집이 이곳에 추가될 예정입니다.</span>
-              </span>
-            </div>
-          </div>
 
-          {selectedSet ? (
-            <details className="edu-preview">
-              <summary>문제 미리보기 ({problemCount}문제)</summary>
-              <ol>
-                {selectedProblems.map((problem) => (
-                  <li key={problem.id}>
-                    <span className="edu-preview-title">{problem.title}</span>
-                    <span className="edu-preview-meta">
-                      {problem.unit} · {problem.concept} · 난이도 {problem.difficulty}
-                    </span>
-                  </li>
-                ))}
-              </ol>
-            </details>
-          ) : null}
+            <p className="edu-set-soon-label">다른 교과서 기반 문제집도 순차적으로 추가됩니다</p>
+          </div>
         </div>
 
         <div className="edu-panel edu-create-summary">
@@ -432,7 +424,72 @@ function CreateClassPanel({ onCreated }: { onCreated: () => void }): React.JSX.E
           {message ? <p className="edu-form-error">{message}</p> : null}
         </div>
       </div>
+
+      {detailSet ? (
+        <ProblemSetDetailModal set={detailSet} onClose={() => setDetailSet(null)} />
+      ) : null}
     </section>
+  );
+}
+
+// ───────────────────────── 문제 자세히 보기 모달 ─────────────────────────
+
+function ProblemSetDetailModal({ set, onClose }: { set: ProblemSet; onClose: () => void }): React.JSX.Element {
+  const problems = useMemo(() => getTextbookProblemsByIds(set.problemIds), [set]);
+  const isTextbook = set.source === "textbook";
+
+  return (
+    <div className="edu-modal-overlay" onClick={onClose}>
+      <div className="edu-modal" onClick={(e) => e.stopPropagation()} role="dialog" aria-modal="true">
+        <div className="edu-modal-head">
+          <div>
+            <span className="edu-modal-kicker">
+              {isTextbook ? "교과서 문제집" : "게임 연동 문제집"} · {problems.length}문제
+            </span>
+            <h2>{set.title}</h2>
+            {set.curriculum ? <p className="edu-modal-sub">{set.curriculum}</p> : null}
+          </div>
+          <button className="edu-icon-btn" onClick={onClose} aria-label="닫기" type="button">
+            <X size={18} />
+          </button>
+        </div>
+
+        <div className="edu-modal-body">
+          {isTextbook ? (
+            <ol className="edu-detail-list">
+              {problems.map((problem, i) => (
+                <li className="edu-detail-item" key={problem.id}>
+                  <div className="edu-detail-head">
+                    <span className="edu-detail-title">{i + 1}. {problem.title}</span>
+                    <span className="edu-detail-meta">{problem.unit} · {problem.concept} · 난이도 {problem.difficulty}</span>
+                  </div>
+                  <p className="edu-detail-desc">{problem.description}</p>
+                  {problem.sampleCode ? <pre className="edu-detail-code">{problem.sampleCode}</pre> : null}
+                  <div className="edu-detail-io">
+                    {problem.sampleInput
+                      ? <span>입력 <code>{problem.sampleInput}</code></span>
+                      : <span className="muted">입력 없음</span>}
+                    <span>출력 <code>{problem.sampleOutput}</code></span>
+                  </div>
+                </li>
+              ))}
+            </ol>
+          ) : (
+            <ol className="edu-detail-list">
+              {problems.map((problem, i) => (
+                <li className="edu-detail-item compact" key={problem.id}>
+                  <div className="edu-detail-head">
+                    <span className="edu-detail-title">{i + 1}. {problem.title}</span>
+                    <span className="edu-detail-meta">{problem.unit} · {problem.concept} · 난이도 {problem.difficulty}</span>
+                  </div>
+                  <p className="edu-detail-desc">{problem.description}</p>
+                </li>
+              ))}
+            </ol>
+          )}
+        </div>
+      </div>
+    </div>
   );
 }
 
