@@ -1,5 +1,6 @@
 import { create } from "zustand";
 import { createJSONStorage, persist } from "zustand/middleware";
+import { DEMO_CODE_DRAFTS } from "../data/demoSolutions";
 import type { Puzzle, RoomHint, ViewId } from "../data/types";
 import { GAME_STORAGE_KEY, getGameStorage } from "../lib/storage";
 
@@ -44,6 +45,8 @@ type GameActions = {
   setSfxVolume: (vol: number) => void;
   setIsMuted: (muted: boolean) => void;
   setDemoMode: (enabled: boolean) => void;
+  activateDemoMode: () => void;
+  deactivateDemoMode: () => void;
 };
 
 export type GameStore = GameProgress & GameActions;
@@ -154,6 +157,27 @@ export const useGameStore = create<GameStore>()(
       setSfxVolume: (vol) => set({ sfxVolume: vol }),
       setIsMuted: (muted) => set({ isMuted: muted }),
       setDemoMode: (enabled) => set({ isDemoMode: enabled }),
+      // 시연 모드 켜기: 진행 상태를 처음으로 되돌리되, 모든 문제의 정답 코드를
+      // 에디터에 미리 채워 둔다. (타이틀에 머무르므로 START 를 누르면 바로 시작)
+      activateDemoMode: () =>
+        set({
+          isDemoMode: true,
+          gameState: "TITLE",
+          currentRoomId: "room-0",
+          currentViewId: "center",
+          codeDrafts: { ...DEMO_CODE_DRAFTS },
+          solvedPuzzleIds: [],
+          skippedPuzzleIds: [],
+          puzzleFailCounts: {},
+          collectedHints: [],
+          doorInputs: {},
+          doorAttempts: {},
+          clearedRoomIds: [],
+          reviewRoomId: undefined,
+          currentDialogueId: null,
+          unlockedStories: [],
+        }),
+      deactivateDemoMode: () => set({ isDemoMode: false, codeDrafts: {} }),
     }),
     {
       name: GAME_STORAGE_KEY,

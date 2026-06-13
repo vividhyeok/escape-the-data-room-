@@ -13,6 +13,7 @@ type DoorKeypadProps = {
 export function DoorKeypad({ room, onClose }: DoorKeypadProps): React.JSX.Element {
   const clearRoom = useGameStore((state) => state.clearRoom);
   const solvedPuzzleIds = useGameStore((state) => state.solvedPuzzleIds);
+  const isDemoMode = useGameStore((state) => state.isDemoMode);
   const [unlocking, setUnlocking] = useState(false);
   const [unlocked, setUnlocked] = useState(false);
   const [scramble, setScramble] = useState(0);
@@ -76,7 +77,8 @@ export function DoorKeypad({ room, onClose }: DoorKeypadProps): React.JSX.Elemen
   }
 
   function handleUnlock(): void {
-    if (!allCollected || unlocking) return;
+    // 시연 모드에서는 조각을 다 모으지 않아도 바로 열 수 있다.
+    if ((!allCollected && !isDemoMode) || unlocking) return;
     setUnlocking(true);
     SoundEngine.playGlitch();
     // 짧은 '해독 시퀀스' 후 잠금 해제
@@ -155,6 +157,18 @@ export function DoorKeypad({ room, onClose }: DoorKeypadProps): React.JSX.Elemen
           >
             {unlocking ? "해제 중…" : allCollected ? "🔓 잠금 해제" : `조각을 모으세요 (${collectedPieces}/${totalPieces})`}
           </button>
+
+          {/* 시연 모드: 조각 수와 무관하게 바로 열기 */}
+          {isDemoMode && !allCollected ? (
+            <button
+              className="door-demo-btn"
+              onClick={handleUnlock}
+              type="button"
+              disabled={unlocking}
+            >
+              🎬 시연: 바로 열기
+            </button>
+          ) : null}
         </div>
       </div>
     </GameWindow>

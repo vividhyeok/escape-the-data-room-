@@ -21,12 +21,14 @@ export function TitleScreen(): React.JSX.Element {
   const isMuted = useGameStore((state) => state.isMuted);
   const setIsMuted = useGameStore((state) => state.setIsMuted);
   const isDemoMode = useGameStore((state) => state.isDemoMode);
-  const setDemoMode = useGameStore((state) => state.setDemoMode);
+  const activateDemoMode = useGameStore((state) => state.activateDemoMode);
+  const deactivateDemoMode = useGameStore((state) => state.deactivateDemoMode);
 
   const [showSettings, setShowSettings] = useState(false);
   const [showCredits, setShowCredits] = useState(false);
   const [showStoryArchive, setShowStoryArchive] = useState(false);
   const [resetMsg, setResetMsg] = useState("");
+  const [demoMsg, setDemoMsg] = useState("");
   const [isFullscreen, setIsFullscreen] = useState(!!document.fullscreenElement);
 
   useEffect(() => {
@@ -93,19 +95,23 @@ export function TitleScreen(): React.JSX.Element {
     SoundEngine.setMuted(next);
   };
 
+  // 크레딧의 '호'를 누르면 페이지 새로고침 없이 즉시 시연 모드를 켜고 끈다.
+  // (새로고침하면 pyodide 등이 다시 로드돼 시연 중 끊김이 생기므로 in-place 로 전환)
   const toggleDemoMode = () => {
     SoundEngine.playGlitch();
-    const nextMode = !isDemoMode;
-    setDemoMode(nextMode);
-    const params = new URLSearchParams(window.location.search);
-    if (nextMode) params.set("mode", "demo");
-    else params.delete("mode");
-    window.location.assign(`${window.location.pathname}?${params.toString()}${window.location.hash}`);
+    if (isDemoMode) {
+      deactivateDemoMode();
+      setDemoMsg("시연 모드 OFF");
+    } else {
+      activateDemoMode();
+      setDemoMsg("시연 모드 ON — START를 누르면 정답 코드가 미리 입력된 채로 시작됩니다.");
+    }
   };
 
   return (
     <div className={`title-screen crt-glitch ${isDemoMode ? "glitch-active" : ""}`}>
       <div className="title-quick-actions">
+        {isDemoMode && <span className="title-demo-pill">시연 모드 ON</span>}
         <button className="title-quick-btn" onClick={toggleFullscreen} title={isFullscreen ? "창 모드" : "전체화면"} type="button">
           {isFullscreen ? <Minimize size={20} /> : <Maximize size={20} />}
         </button>
@@ -230,6 +236,21 @@ export function TitleScreen(): React.JSX.Element {
                   }}
                 >호</button> 제작
               </p>
+              {demoMsg && (
+                <div
+                  style={{
+                    marginTop: "8px",
+                    padding: "10px 12px",
+                    border: `1px solid ${isDemoMode ? "#00ff88" : "#ff6b6b"}`,
+                    borderRadius: "6px",
+                    color: isDemoMode ? "#00ff88" : "#ff6b6b",
+                    fontSize: "0.95rem",
+                    lineHeight: "1.5",
+                  }}
+                >
+                  {demoMsg}
+                </div>
+              )}
             </div>
           </div>
         </div>

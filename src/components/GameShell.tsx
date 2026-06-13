@@ -1,8 +1,9 @@
 import { useEffect, useRef, useState } from "react";
 import { puzzlesById } from "../data/puzzles";
+import { DEMO_CODE_DRAFTS } from "../data/demoSolutions";
 import { getRoomObjects, roomOrder, roomsById } from "../data/rooms";
 import type { Puzzle as _Puzzle, RoomObject } from "../data/types";
-import { Maximize, Volume2, VolumeX } from "lucide-react";
+import { Maximize, MonitorPlay, Volume2, VolumeX } from "lucide-react";
 import { useGameStore } from "../store/gameStore";
 import { DoorKeypad } from "./DoorKeypad";
 import { resetGameWindows, setDemoLayout } from "./GameWindow";
@@ -18,29 +19,6 @@ import { DialogueOverlay } from "./DialogueOverlay";
 import { SoundEngine } from "../utils/SoundEngine";
 
 const GAME_BGM_URL = "/assets/audio/black-circuit.mp3";
-
-const DEMO_INPUT = "data = eval(input())\n";
-const DEMO_CODE_DRAFTS: Record<string, string> = {
-  "room-0-pattern-tiles":   DEMO_INPUT + "print(data)\n",
-  "room-0-tv-sequence":     DEMO_INPUT + "print(data + 10)\n",
-  "room-0-desk-terminal":   DEMO_INPUT + "print(data[0])\n",
-  "room-0-mini-ox-card":    DEMO_INPUT + "print(data[:3])\n",
-  "room-0-name-tags":       DEMO_INPUT + "print(len(data))\n",
-  "room-0-bookshelf-note":  DEMO_INPUT + "print(data * 3)\n",
-  "room-1-word-billboard":  DEMO_INPUT + "print(data.upper())\n",
-  "room-1-ox-monitor":      DEMO_INPUT + "print(data.replace('X', 'O'))\n",
-  "room-1-number-panel":    DEMO_INPUT + "print(data.split())\n",
-  "room-1-radio-signal":    DEMO_INPUT + "if data >= 100:\n    print('PASS')\nelse:\n    print('FAIL')\n",
-  "room-1-name-card":       DEMO_INPUT + "print(data % 2 == 0)\n",
-  "room-1-checksum-tablet": DEMO_INPUT + "print(data > 0 and data < 10)\n",
-  "room-2-file-cabinet":    DEMO_INPUT + "total = 0\nfor x in data:\n    total = total + x\nprint(total)\n",
-  "room-2-broken-tags":     DEMO_INPUT + "result = []\nfor x in data:\n    if x > 0:\n        result.append(x)\nprint(result)\n",
-  "room-2-score-board":     DEMO_INPUT + "best = 0\nfor item in data:\n    if item['score'] > best:\n        best = item['score']\nprint(best)\n",
-  "room-2-timeline":        DEMO_INPUT + "result = []\nn = data\nwhile n > 0:\n    result.append(n)\n    n = n - 1\nprint(result)\n",
-  "room-2-access-log":      DEMO_INPUT + "print([x * 2 for x in data if x > 0])\n",
-  "room-2-checksum-ledger": DEMO_INPUT + "result = ''\nfor char in data:\n    if char not in 'aeiou':\n        result = result + char\nprint(result)\n",
-  "room-3-validator":       DEMO_INPUT + "print(data[::-1])\n",
-};
 
 export function GameShell(): React.JSX.Element {
   const bootModeApplied = useRef(false);
@@ -69,6 +47,7 @@ export function GameShell(): React.JSX.Element {
   const setIsMuted = useGameStore((state) => state.setIsMuted);
   const bgmVolume = useGameStore((state) => state.bgmVolume);
   const setBgmVolume = useGameStore((state) => state.setBgmVolume);
+  const isDemoMode = useGameStore((state) => state.isDemoMode);
   const activeDoorId = selectedObject?.kind === "door" ? selectedObject.id : null;
 
   const room = roomsById[currentRoomId] ?? roomsById["room-1"];
@@ -351,21 +330,7 @@ export function GameShell(): React.JSX.Element {
 
   // 시연용: 타이틀에서 START → 튜토리얼 → 정상 흐름으로 진행하되 코드가 미리 입력돼 있음
   function activateDemoMode(): void {
-    useGameStore.setState({
-      isDemoMode: true,
-      gameState: "TITLE",
-      currentRoomId: "room-0",
-      currentViewId: "center",
-      codeDrafts: DEMO_CODE_DRAFTS,
-      solvedPuzzleIds: [],
-      collectedHints: [],
-      doorInputs: { "room-0": "8522", "room-1": "7479", "room-2": "3547" },
-      clearedRoomIds: [],
-      reviewRoomId: undefined,
-      currentDialogueId: null,
-      unlockedStories: [],
-      doorAttempts: {},
-    });
+    useGameStore.getState().activateDemoMode();
     showToast("[ 시연 모드 활성화 — START를 눌러 게임을 시작하세요 ]");
   }
 
@@ -488,6 +453,13 @@ export function GameShell(): React.JSX.Element {
           </button>
         </div>
       </header>
+
+      {isDemoMode ? (
+        <div className="demo-mode-banner hud-layer" aria-live="polite">
+          <MonitorPlay size={15} />
+          <span><strong>시연 모드</strong> · 정답 코드가 미리 입력되어 있고, 문은 바로 열 수 있습니다</span>
+        </div>
+      ) : null}
 
       {selectedObject && selectedPuzzle ? (
         <InspectModal

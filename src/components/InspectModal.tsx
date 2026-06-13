@@ -93,6 +93,7 @@ export function InspectModal({
   const skipPuzzle = useGameStore((state) => state.skipPuzzle);
   const solvedPuzzleIds = useGameStore((state) => state.solvedPuzzleIds);
   const skippedPuzzleIds = useGameStore((state) => state.skippedPuzzleIds);
+  const isDemoMode = useGameStore((state) => state.isDemoMode);
   const failCount = useGameStore((state) => state.puzzleFailCounts[puzzle.id] ?? 0);
 
   const isSolved = solvedPuzzleIds.includes(puzzle.id);
@@ -219,7 +220,10 @@ export function InspectModal({
 
           {/* 코드 작성 영역 (크게) */}
           <div className="inspect-editor-col">
-            <span className="inspect-kicker">/ PYTHON</span>
+            <div className="editor-col-head">
+              <span className="inspect-kicker">/ PYTHON</span>
+              {isDemoMode ? <span className="editor-demo-badge">시연: 정답 미리 입력됨</span> : null}
+            </div>
             <div
               className="editor-container big-editor"
               onKeyDownCapture={(e) => {
